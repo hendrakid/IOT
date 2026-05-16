@@ -118,3 +118,10 @@ cd android && ./gradlew connectedAndroidTest  # E2E tests
 ## Beginner Context
 
 The developer is a beginner in IoT but has programming fundamentals. When explaining hardware-related concepts (SPI, I2C, GPIO, interrupts, voltage levels), provide brief clear explanations. Link to relevant docs when helpful.
+
+## Hardware Photo Validation Protocol
+
+- For any wiring-related response or wiring document update, first review the available hardware photos in `.github/hardware pics`.
+- Treat `.github/hardware pics` as the source of truth for physical pin labels and module variants.
+- If a component is not present in `.github/hardware pics`, mark it as unverified and do not provide a final ASCII wiring diagram for that component.
+- When updating wiring docs, align pin names/order with what is visible in the photos and explicitly call out any missing hardware evidence.

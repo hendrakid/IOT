@@ -3,6 +3,22 @@ description: "Use when asking about wiring, pin connections, hardware setup, sch
 ---
 # Hardware & Wiring Reference
 
+## Hardware Evidence Policy (Mandatory)
+
+Before giving wiring guidance or updating this file:
+
+1. Review hardware photos in `.github/hardware pics`.
+2. Validate module identity and printed pin labels from the photos.
+3. Only include Module Pinout (ASCII) for components that have photo evidence. Do not draw connection lines between modules in the ASCII diagram — use Connection Summary for wiring info.
+4. If a component photo is missing, mark it as **Pending Hardware Evidence** and do not include its ASCII pinout diagram.
+
+Current evidence in `.github/hardware pics`:
+
+- `EPS DEVKIT V1 CP2102 Type C.jpeg` (ESP32 DevKit V1)
+- `RFID RC522.jpeg` (MFRC522 module)
+- `OLED 0.96 128x64 I2C IIC.jpeg` (SSD1306 OLED, pin order visible: GND, VDD, SCK, SDA)
+- Relay photo: **Not available** (Pending Hardware Evidence)
+
 ## Component Specifications
 
 | Component | Model | Interface | Voltage | Notes |
@@ -10,7 +26,7 @@ description: "Use when asking about wiring, pin connections, hardware setup, sch
 | Microcontroller | ESP32 DevKit V1 (CP2102, USB Type-C) | — | 3.3V logic, 5V USB power | 38 pins, dual-core, WiFi+BT |
 | RFID Reader | RFID-RC522 (MFRC522) | **SPI** | 3.3V | 13.56 MHz, Mifare Classic/Ultralight; pins: SDA, SCK, MOSI, MISO, IRQ, GND, RST, 3.3V |
 | OLED Display | SSD1306 0.96" 128x64 | **I2C** | 3.3V–5V | Address: 0x3C; pin order on module: **GND, VDD, SCK, SDA** |
-| Relay Module | 5V 1-Channel | **Digital GPIO** | 5V coil, 3.3V signal OK | Active LOW (most modules) |
+| Relay Module | 5V 1-Channel | **Digital GPIO** | 5V coil, 3.3V signal OK | **Pending Hardware Evidence**: do not generate ASCII wiring until relay photo is available |
 | Power Supply | 12V Adaptor | — | 12V DC | For solenoid/external loads |
 
 ## ESP32 Pin Capabilities & Constraints
@@ -51,75 +67,141 @@ description: "Use when asking about wiring, pin connections, hardware setup, sch
 | — | MFRC522 IRQ | — | **Leave unconnected** (not used in this project) |
 | GPIO 21 | OLED SDA (pin 4 on module) | I2C | I2C data line |
 | GPIO 22 | OLED SCK/SCL (pin 3 on module) | I2C | I2C clock line — module label is "SCK" |
-| GPIO 26 | Relay IN | Digital | Relay control signal |
+| GPIO 26 | Relay IN (planned) | Digital | Planned pin mapping only; ASCII wiring is blocked until relay photo is available |
 | 3.3V | MFRC522 VCC, OLED VCC | Power | 3.3V rail from ESP32 |
-| 5V (VIN) | Relay VCC | Power | 5V from USB or external |
+| 5V (VIN) | Relay VCC (planned) | Power | Planned only; verify with relay module photo first |
 | GND | All GND pins | Power | Common ground — ALL components share GND |
 
-## Wiring Diagram (ASCII)
+## Module Pinout Reference (ASCII)
+
+> Pin labels match physical markings on each module as seen in `.github/hardware pics`. No connection lines are drawn here — see Connection Summary for wiring info.
+
+### ESP32 DevKit V1 (CP2102, USB Type-C)
 
 ```
-  RFID-RC522 (MFRC522)          ESP32 DevKit V1 (CP2102)           RELAY MODULE
-  ┌─────────────┐           ┌──────────────────────────┐          ┌─────────────┐
-  │        3.3V ├───────────┤ 3V3 ●              ● VIN ├──────────┤ VCC         │
-  │         RST ├───────────┤ D4  ●              ● GND ├────┐     │ GND ────────┼──┐
-  │         GND ├────────┬──┤ GND ●              ● D13 │    │     │ IN  ────────┼──┼──── D26
-  │         IRQ │  (NC)  │  │ D15 ●              ● D12 │    │     ├─────────────┤  │
-  │        MISO ├─────── ┼──┤ D19 ●              ● D14 │    │     │ COM ──┐     │  │
-  │        MOSI ├────────┼──┤ D23 ●              ● D27 │    │     │ NO  ──┼─ Solenoid Lock (+)
-  │         SCK ├────────┼──┤ D18 ●              ● D26 ├────┼──►  │ NC    │  (unused)
-  │         SDA ├────────┼──┤ D5  ●              ● D25 │    │     └───────┼─────┘  │
-  └─────────────┘        │  │ TX2 ●              ● D33 │    │             │        │
-                         │  │ RX2 ●              ● D32 │    │      12V Adaptor (+) │
-  OLED SSD1306            │  │ D21 ●──────────┐  ● D35 │    │      Solenoid GND    │
-  (pin order on module)   │  │ RX0 ●          │  ● D34 │    │      ↕ 12V circuit   │
-  ┌─────────────┐        │  │ TX0 ●          │  ● VN  │    │      (isolated from  │
-  │ 1: GND ─────┼────────┴──┤ GND ●          │  ● VP  │    │       ESP32 logic)   │
-  │ 2: VDD ─────┼───────────┤ 3V3 ●          │  ● EN  │    │                      │
-  │ 3: SCK ─────┼───────────┤ D22 ●          │        │    │                      │
-  │ 4: SDA ─────┼───────────┤ D21 ●◄─────────┘        │    └──────────────────────┘
-  └─────────────┘           │      [USB Type-C]        │    (Common GND rail)
-                            └──────────────────────────┘
+   
+ ESP32 DevKit V1 (CP2102)
+  ┌────[USB Type C]────┐
+ ●│3V3              VIN│●
+ ●│GND              GND│●
+ ●│D15              D13│●
+ ●│D2               D12│●
+ ●│D4               D14│●
+ ●│RX2              D27│●
+ ●│TX2              D26│●
+ ●│D5               D25│●
+ ●│D18              D33│●
+ ●│D19              D32│●
+ ●│D21              D35│●
+ ●│TX0              VN │●
+ ●│RX0              D34│●
+ ●│D22              VP │●
+ ●│D23              EN │●
+  └────────────────────┘
+```
 
-  Connection Summary:
+### RFID-RC522 (MFRC522)
+
+```
+  ┌─────────┐
+  │ SDA     │
+  │ SCK     │
+  │ MOSI    │
+  │ MISO    │
+  │ IRQ     │
+  │ GND     │
+  │ RST     │
+  │ 3.3V    │
+  └─────────┘
+```
+
+### OLED SSD1306 (0.96" 128×64, I2C)
+
+```
+  ┌─────────────────────┐
+  │ GND  VDD  SCK  SDA  │
+  └─────────────────────┘
+```
+
+### Relay Module
+
+**Pending Hardware Evidence** — relay photo not available in `.github/hardware pics`. No pinout diagram until photo is added.
+
+---
+
+## Wiring Diagram (Manual)
+
+Wiring diagram will be added manually.
+         
+  RFID-RC522 (MFRC522)                  ESP32 DevKit V1 (CP2102)
+  ┌─────────────┐                       ┌────[USB Type C]────┐
+  │    3.3V     │●─────────────────┌───●│3V3              VIN│●
+  │     RST     │●───────┐      ┌──┼┌──●│GND              GND│●
+  │     GND     │●───────┼──────┘  ││  ●│D15              D13│●
+  │     IRQ     │●       │         ││  ●│D2               D12│●
+  │    MISO     │●────┐  └─────────┼┼──●│D4               D14│●
+  │    MOSI     │●───┐│            ││  ●│RX2              D27│●
+  │     SCK     │●──┐││            ││  ●│TX2              D26│●
+  │     SDA     │●──┼┼┼────────────┼┼──●│D5               D25│●
+  └─────────────┘   └┼┼────────────┼┼──●│D18              D33│●
+                     │└────────────┼┼──●│D19              D32│●
+                     │           ┌─┼┼──●│D21              D35│●
+                     │           │ ││  ●│TX0              VN │●
+                     │           │ ││  ●│RX0              D34│●
+                     │           │┌┼┼──●│D22              VP │●
+                     └───────────┼┼┼┼──●│D23              EN │●
+                                 ││││   └────────────────────┘
+OLED SSD1306                     ││││
+(pin order on module)            ││││
+┌────────────┐                   ││││
+│     GND    │●──────────────────┼┼┼┘
+│     VDD    │●──────────────────┼┼┘
+│     SCK    │●──────────────────┼┘
+│     SDA    │●──────────────────┘
+└────────────┘
+
+---
+
+## Connection Summary
+
+```
   ┌─────────────────┬──────────────┬─────────────────────────────────────────────┐
   │ Module          │ Module Pin   │ ESP32 Pin                                   │
   ├─────────────────┼──────────────┼─────────────────────────────────────────────┤
-  │ RFID-RC522      │ 3.3V         │ 3V3                                         │
-  │                 │ GND          │ GND                                         │
-  │                 │ SDA (SS)     │ D5  (GPIO 5)                                │
+  │ RFID-RC522      │ SDA (SS)     │ D5  (GPIO 5)                                │
   │                 │ SCK          │ D18 (GPIO 18)                               │
   │                 │ MOSI         │ D23 (GPIO 23)                               │
   │                 │ MISO         │ D19 (GPIO 19)                               │
-  │                 │ RST          │ D4  (GPIO 4)                                │
   │                 │ IRQ          │ — (leave unconnected / NC)                  │
+  │                 │ GND          │ GND                                         │
+  │                 │ RST          │ D4  (GPIO 4)                                │
+  │                 │ 3.3V         │ 3V3                                         │
   ├─────────────────┼──────────────┼─────────────────────────────────────────────┤
   │ OLED SSD1306    │ GND (pin 1)  │ GND                                         │
   │                 │ VDD (pin 2)  │ 3V3                                         │
   │                 │ SCK (pin 3)  │ D22 (GPIO 22) — I2C SCL                    │
   │                 │ SDA (pin 4)  │ D21 (GPIO 21) — I2C SDA                    │
-  ├─────────────────┼──────────────┼─────────────────────────────────────────────┤
-  │ Relay Module    │ VCC          │ VIN (5V)                                    │
-  │                 │ GND          │ GND                                         │
-  │                 │ IN           │ D26 (GPIO 26)                               │
-  │                 │ COM + NO     │ → 12V solenoid circuit (isolated)           │
   └─────────────────┴──────────────┴─────────────────────────────────────────────┘
 
-  ⚠️  Relay COM/NO → External load (solenoid lock + 12V adaptor)
-  ⚠️  All modules share the same GND rail on ESP32
+  All verified modules share the same GND rail on ESP32
 ```
+
+## Pending Hardware Evidence (No ASCII Diagram Allowed)
+
+- Relay Module (5V 1-Channel): photo is not available in `.github/hardware pics`.
+- Therefore, do not add or update Relay Wiring Diagram (ASCII) in this document until a relay photo is provided.
+- Relay notes may be documented as text-only assumptions and must be clearly labeled as unverified.
 
 ## Power Distribution
 
 ```
-USB 5V ──┬──► ESP32 VIN (powers the board)
-          └──► Relay VCC (5V coil power)
+USB 5V ──► ESP32 VIN (powers the board)
 
 ESP32 3.3V regulator output ──┬──► MFRC522 3.3V (3.3V only!)
                               └──► OLED VDD (3.3V–5V)
 
-12V Adaptor ──► Solenoid Lock (via Relay NO/COM contacts)
-               ⚠️ Do NOT connect 12V to ESP32 or logic pins!
+12V adaptor and relay power path: pending hardware evidence (relay photo not available)
+Do NOT connect 12V to ESP32 or logic pins.
 ```
 
 ## Critical Warnings
@@ -131,5 +213,5 @@ ESP32 3.3V regulator output ──┬──► MFRC522 3.3V (3.3V only!)
 5. **MFRC522 RST uses GPIO 4** (not GPIO 22) — GPIO 22 is already used by I2C SCL (OLED SCK)
 6. **MFRC522 IRQ pin** — leave unconnected; not needed for polling-mode reads
 7. **OLED pin order on this module: GND (1), VDD (2), SCK (3), SDA (4)** — the "SCK" label on the OLED = I2C SCL; connect to GPIO 22
-8. **Relay module**: most modules are active LOW (IN pin LOW = relay ON). Verify your module's behavior
+8. **Relay module**: pending hardware evidence in this repo; do not publish relay ASCII wiring until relay photo exists
 9. **12V adaptor**: only connects to solenoid through relay contacts. Never to ESP32 pins
