@@ -7,8 +7,8 @@ description: "Use when asking about project progress, current status, completed 
 
 | Phase | Title | Status | Description |
 |-------|-------|--------|-------------|
-| 1 | Hardware Setup & Verification | Not Started | Wire all components, verify each works individually |
-| 2 | RFID Card Reading | Not Started | Read card UIDs, display on Serial & OLED |
+| 1 | Hardware Setup & Verification | In Progress | Wire all components, verify each works individually |
+| 2 | RFID Card Reading | Completed | Read card UIDs, display on Serial & OLED |
 | 3 | Relay Control | Not Started | Control relay based on card read, implement lock/unlock logic |
 | 4 | WiFi & HTTP Communication | Not Started | Connect ESP32 to WiFi, send data to API |
 | 5 | Backend API Development | Not Started | Build Express.js REST API with PostgreSQL |
@@ -20,15 +20,15 @@ description: "Use when asking about project progress, current status, completed 
 
 ## Current Phase
 
-**Phase**: — (Not started yet)
+**Phase**: 1 — Hardware Setup & Verification (In Progress)
 
-**Current Focus**: —
+**Current Focus**: OLED + RFID wiring verified on ESP32; whitelist-based Access Granted/Denied logic implemented. Next: relay module integration (after hardware evidence is available).
 
 ## Completed Milestones
 
 - [ ] ESP32 blinks LED (board works)
-- [ ] OLED displays text (I2C works)
-- [ ] MFRC522 reads card UID (SPI works)
+- [x] OLED displays text (I2C works)
+- [x] MFRC522 reads card UID (SPI works)
 - [ ] Relay toggles on/off (GPIO works)
 - [ ] ESP32 connects to WiFi
 - [ ] ESP32 sends HTTP POST to API
@@ -39,7 +39,7 @@ description: "Use when asking about project progress, current status, completed 
 
 ## Known Issues / Blockers
 
-(None yet)
+- Relay module photo/hardware evidence is not available yet in `.github/hardware pics`, so relay ASCII pinout/wiring cannot be finalized.
 
 ## Notes
 
