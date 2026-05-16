@@ -1,35 +1,125 @@
 #include <Arduino.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include "config.h"
 #include "display.h"
 #include "rfid.h"
 
-// How long (ms) to show the UID before returning to idle screen
+// How long (ms) to show the result before returning to idle screen
 static const uint32_t UID_DISPLAY_DURATION_MS = 3000;
 
-// Replace these sample UIDs with your real registered cards.
-static const char *AUTHORIZED_UIDS[] = {
-    "49 63 DE 6E",
-    "12 34 56 78"
-};
-static const size_t AUTHORIZED_UID_COUNT = sizeof(AUTHORIZED_UIDS) / sizeof(AUTHORIZED_UIDS[0]);
+static uint32_t g_uidShownAt = 0;
+static bool     g_showingUID = false;
 
-static uint32_t g_uidShownAt   = 0;
-static bool     g_showingUID   = false;
+// ── WiFi ─────────────────────────────────────────────────────────────────────
 
-bool isAuthorizedCard(const String &uid) {
-    for (size_t i = 0; i < AUTHORIZED_UID_COUNT; i++) {
-        if (uid.equals(AUTHORIZED_UIDS[i])) {
-            return true;
-        }
+static void connectWiFi() {
+    showMessage("Smart Lock", "Connecting WiFi...");
+    Serial.print(F("[WiFi] Connecting to "));
+    Serial.println(WIFI_SSID);
+
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+    const uint32_t deadline = millis() + WIFI_CONNECT_TIMEOUT_MS;
+    while (WiFi.status() != WL_CONNECTED && millis() < deadline) {
+        delay(500);
+        Serial.print('.');
     }
-    return false;
+
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.print(F("\n[WiFi] Connected. IP: "));
+        Serial.println(WiFi.localIP());
+        // Line 1: "Connected!" — Line 2: SSID
+        showMessage("Connected!", String(WIFI_SSID));
+        delay(1500);
+        // Line 1: "IP:" — Line 2: ESP32's IP address
+        showMessage("IP:", WiFi.localIP().toString());
+        delay(1500);
+    } else {
+        Serial.println(F("\n[WiFi] Connection FAILED"));
+        showMessage("WiFi Error", "Check config.h");
+    }
 }
+
+// ── HTTP scan ────────────────────────────────────────────────────────────────
+
+struct ScanResult {
+    bool   access;
+    bool   registered;
+    String userName;
+};
+
+/**
+ * POST {"uid": "<uid>"} to API_SCAN_ENDPOINT.
+ * On any network/parse error returns access=false (fail-safe: deny access).
+ */
+static ScanResult postScan(const String &uid) {
+    ScanResult result = { false, false, "" };
+
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println(F("[HTTP] WiFi not connected — reconnecting"));
+        connectWiFi();
+        if (WiFi.status() != WL_CONNECTED) return result;
+    }
+
+    HTTPClient http;
+    http.begin(API_SCAN_ENDPOINT);
+    http.addHeader("Content-Type", "application/json");
+    http.setTimeout(HTTP_TIMEOUT_MS);
+
+    JsonDocument reqDoc;
+    reqDoc["uid"] = uid;
+    String body;
+    serializeJson(reqDoc, body);
+
+    Serial.print(F("[HTTP] POST "));
+    Serial.print(API_SCAN_ENDPOINT);
+    Serial.print(F(" → "));
+    Serial.println(body);
+
+    int httpCode = http.POST(body);
+
+    if (httpCode != 200 && httpCode != 201) {
+        Serial.print(F("[HTTP] Error code: "));
+        Serial.println(httpCode);
+        http.end();
+        return result;
+    }
+
+    JsonDocument resDoc;
+    DeserializationError err = deserializeJson(resDoc, http.getString());
+    http.end();
+
+    if (err) {
+        Serial.print(F("[HTTP] JSON parse error: "));
+        Serial.println(err.c_str());
+        return result;
+    }
+
+    result.access     = resDoc["data"]["access"]     | false;
+    result.registered = resDoc["data"]["registered"] | false;
+    const char *name  = resDoc["data"]["user_name"];
+    if (name) result.userName = String(name);
+
+    Serial.print(F("[HTTP] access="));
+    Serial.print(result.access ? F("true") : F("false"));
+    Serial.print(F(" registered="));
+    Serial.print(result.registered ? F("true") : F("false"));
+    Serial.print(F(" user="));
+    Serial.println(result.userName);
+
+    return result;
+}
+
+// ── Arduino lifecycle ─────────────────────────────────────────────────────────
 
 void setup() {
     Serial.begin(115200);
     Serial.println(F("[BOOT] Smart Lock starting..."));
 
     if (!initDisplay()) {
-        // OLED failed — keep retrying in loop; log to serial only
         Serial.println(F("[BOOT] OLED init failed. Halting."));
         while (true) { delay(1000); }
     }
@@ -40,14 +130,16 @@ void setup() {
     initRfid();
     Serial.println(F("[BOOT] RFID OK"));
 
+    connectWiFi();
+
     showMessage("Smart Lock", "Tap your card...");
     Serial.println(F("[BOOT] Ready."));
 }
 
 void loop() {
-    uint32_t now = millis();
+    const uint32_t now = millis();
 
-    // If UID is being shown, wait for display duration then return to idle
+    // If result is being shown, wait then return to idle
     if (g_showingUID) {
         if (now - g_uidShownAt >= UID_DISPLAY_DURATION_MS) {
             g_showingUID = false;
@@ -62,14 +154,17 @@ void loop() {
         return;
     }
 
-    bool granted = isAuthorizedCard(uid);
-
     Serial.print(F("[RFID] Card UID: "));
-    Serial.print(uid);
-    Serial.print(F(" | Access: "));
-    Serial.println(granted ? F("GRANTED") : F("DENIED"));
+    Serial.println(uid);
 
-    showAccessResult(granted, uid);
+    showMessage("Checking...", uid);
+
+    ScanResult result = postScan(uid);
+
+    Serial.print(F("[RFID] Access: "));
+    Serial.println(result.access ? F("GRANTED") : F("DENIED"));
+
+    showScanResult(result.access, result.registered, result.userName, uid);
     g_showingUID = true;
     g_uidShownAt = now;
 }

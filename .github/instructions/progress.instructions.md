@@ -7,39 +7,50 @@ description: "Use when asking about project progress, current status, completed 
 
 | Phase | Title | Status | Description |
 |-------|-------|--------|-------------|
-| 1 | Hardware Setup & Verification | In Progress | Wire all components, verify each works individually |
+| 1 | Hardware Setup & Verification | Completed | Wire all components, verify each works individually |
 | 2 | RFID Card Reading | Completed | Read card UIDs, display on Serial & OLED |
 | 3 | Relay Control | Not Started | Control relay based on card read, implement lock/unlock logic |
-| 4 | WiFi & HTTP Communication | Not Started | Connect ESP32 to WiFi, send data to API |
-| 5 | Backend API Development | Not Started | Build Express.js REST API with PostgreSQL |
-| 6 | Full Integration (ESP32 ↔ API) | Not Started | ESP32 sends attendance, receives access decisions from API |
-| 7 | Web Dashboard | Not Started | Build admin dashboard for card/user/attendance management |
+| 4 | WiFi & HTTP Communication | Completed | Connect ESP32 to WiFi, send data to API |
+| 5 | Backend API Development | Completed | Build Express.js REST API with PostgreSQL |
+| 6 | Full Integration (ESP32 ↔ API) | Completed | ESP32 sends attendance, receives access decisions from API |
+| 7 | Web Dashboard | Completed | Build admin dashboard for card/user/attendance management |
 | 8 | Android App | Not Started | Build mobile app for monitoring and management |
-| 9 | Security & Hardening | Not Started | Add authentication, HTTPS, input validation |
-| 10 | Testing & Documentation | Not Started | Unit tests, E2E tests, final documentation |
+| 9 | Security & Hardening | In Progress | Add authentication, HTTPS, input validation |
+| 10 | Testing & Documentation | In Progress | Unit tests, E2E tests, final documentation |
 
 ## Current Phase
 
-**Phase**: 1 — Hardware Setup & Verification (In Progress)
+**Phase**: 9 — Security & Hardening (In Progress)
 
-**Current Focus**: OLED + RFID wiring verified on ESP32; whitelist-based Access Granted/Denied logic implemented. Next: relay module integration (after hardware evidence is available).
+**Current Focus**: Authentication middleware live on all protected API routes; input validation via Zod schemas. Relay wiring still pending hardware photo evidence. Next: relay integration, then Android app.
 
 ## Completed Milestones
 
-- [ ] ESP32 blinks LED (board works)
+- [x] ESP32 blinks LED (board works)
 - [x] OLED displays text (I2C works)
 - [x] MFRC522 reads card UID (SPI works)
 - [ ] Relay toggles on/off (GPIO works)
-- [ ] ESP32 connects to WiFi
-- [ ] ESP32 sends HTTP POST to API
-- [ ] Express API receives and stores attendance
-- [ ] Web dashboard displays attendance records
+- [x] ESP32 connects to WiFi
+- [x] ESP32 sends HTTP POST to API
+- [x] Express API receives and stores attendance
+- [x] Web dashboard displays attendance records
 - [ ] Android app shows attendance list
-- [ ] Full system integration working end-to-end
+- [x] Full system integration working end-to-end
+
+## Integration Details (Phase 6 — Completed May 2026)
+
+- `POST /api/scan` is the single ESP32 entry point (no JWT required)
+- Backend checks if card UID exists in `cards` table:
+  - **Registered** → records attendance (`access_granted`), returns `{access: true, registered: true, user_name}`
+  - **Unknown** → records attendance (`access_denied`), returns `{access: false, registered: false}`
+- SSE stream (`GET /api/scan/stream`) broadcasts scan events to dashboard in real-time
+- Dashboard auto-switches to Kartu tab + pre-fills UID when unknown card is tapped
+- Dashboard shows kehadiran toast when known card is tapped
+- Firmware: WiFi + HTTPClient + ArduinoJson; OLED shows Connected/IP on boot, then scan result with user name per tap
 
 ## Known Issues / Blockers
 
-- Relay module photo/hardware evidence is not available yet in `.github/hardware pics`, so relay ASCII pinout/wiring cannot be finalized.
+- Relay module photo/hardware evidence is not available yet in `.github/hardware pics`, so relay ASCII pinout/wiring cannot be finalized and relay control logic in firmware is not yet implemented.
 
 ## Notes
 

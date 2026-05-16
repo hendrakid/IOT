@@ -78,3 +78,34 @@ void showAccessResult(bool granted, const String &uid) {
 
     display.display();
 }
+
+// Shows scan result with optional user name (from API response).
+// registered=false → "Unknown Card"
+void showScanResult(bool granted, bool registered, const String &userName, const String &uid) {
+    display.clearDisplay();
+
+    display.setTextSize(1);
+    display.setCursor(0, 0);
+    if (!registered) {
+        display.println(F("Unknown Card"));
+    } else {
+        display.println(granted ? F("Access Granted") : F("Access Denied"));
+    }
+
+    display.drawFastHLine(0, 12, SCREEN_WIDTH, SSD1306_WHITE);
+
+    display.setCursor(0, 16);
+    if (registered && userName.length() > 0) {
+        display.println(userName);
+    } else {
+        display.println(F("Not registered"));
+    }
+
+    display.setCursor(0, 32);
+    display.setTextSize(1);
+    display.println(F("UID:"));
+    display.setCursor(0, 44);
+    display.println(uid);
+
+    display.display();
+}
