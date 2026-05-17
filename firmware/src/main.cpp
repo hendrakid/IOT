@@ -48,6 +48,7 @@ static void connectWiFi() {
 struct ScanResult {
     bool   access;
     bool   registered;
+    bool   serverError;
     String userName;
 };
 
@@ -56,12 +57,15 @@ struct ScanResult {
  * On any network/parse error returns access=false (fail-safe: deny access).
  */
 static ScanResult postScan(const String &uid) {
-    ScanResult result = { false, false, "" };
+    ScanResult result = { false, false, false, "" };
 
     if (WiFi.status() != WL_CONNECTED) {
         Serial.println(F("[HTTP] WiFi not connected — reconnecting"));
         connectWiFi();
-        if (WiFi.status() != WL_CONNECTED) return result;
+        if (WiFi.status() != WL_CONNECTED) {
+            result.serverError = true;
+            return result;
+        }
     }
 
     HTTPClient http;
@@ -85,6 +89,7 @@ static ScanResult postScan(const String &uid) {
         Serial.print(F("[HTTP] Error code: "));
         Serial.println(httpCode);
         http.end();
+        result.serverError = true;
         return result;
     }
 
@@ -95,6 +100,7 @@ static ScanResult postScan(const String &uid) {
     if (err) {
         Serial.print(F("[HTTP] JSON parse error: "));
         Serial.println(err.c_str());
+        result.serverError = true;
         return result;
     }
 
@@ -161,10 +167,14 @@ void loop() {
 
     ScanResult result = postScan(uid);
 
-    Serial.print(F("[RFID] Access: "));
-    Serial.println(result.access ? F("GRANTED") : F("DENIED"));
-
-    showScanResult(result.access, result.registered, result.userName, uid);
+    if (result.serverError) {
+        Serial.println(F("[RFID] Server error — access denied"));
+        showMessage("Server Error", "Cek IP / koneksi");
+    } else {
+        Serial.print(F("[RFID] Access: "));
+        Serial.println(result.access ? F("GRANTED") : F("DENIED"));
+        showScanResult(result.access, result.registered, result.userName, uid);
+    }
     g_showingUID = true;
-    g_uidShownAt = now;
+    g_uidShownAt = millis(); // ambil setelah postScan() selesai, bukan sebelumnya
 }
