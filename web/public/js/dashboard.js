@@ -52,15 +52,27 @@ function dashboard() {
 
     // Users
     users: [],
-    userForm: { name: "", email: "", role: "member" },
+    userForm: { name: "", email: "", role: "member", access_point_ids: [] },
     userLoading: false,
     userError: "",
     userSuccess: "",
+  // Access Points for user form
+  accessPoints: [],
 
     // Attendance
     attendance: [],
     attendanceMeta: { total: 0 },
     attendancePage: 1,
+
+    // Access Checker
+    accessCheck: {
+      card_uid: "",
+      accessPoints: [],
+      allowedIds: [],
+      error: "",
+      _resetTimer: null,
+      _lastUid: ""
+    },
 
     // SSE
     sseConnected: false,
@@ -75,8 +87,56 @@ function dashboard() {
         window.location.href = "/";
         return;
       }
-      await Promise.all([this.loadUsers(), this.loadCards()]);
+      await Promise.all([this.loadUsers(), this.loadCards(), this.loadAccessPoints()]);
       this.connectSSE();
+    },
+    async loadAccessPoints() {
+      const json = await apiFetch("/api/access-points");
+      if (json?.accessPoints) {
+        this.accessCheck.accessPoints = json.accessPoints;
+        this.accessPoints = json.accessPoints;
+      }
+    },
+
+    async checkCardAccess() {
+      this.accessCheck.error = "";
+      this.accessCheck.allowedIds = [];
+      if (!this.accessCheck.card_uid) return;
+      // Find card by UID
+      let card = this.cards.find(c => c.card_uid === this.accessCheck.card_uid);
+      if (!card) {
+        // Try fetch from API if not in local list
+        const json = await apiFetch(`/api/cards?uid=${this.accessCheck.card_uid}`);
+        if (json?.data?.length) card = json.data[0];
+      }
+      if (!card) {
+        this.accessCheck.error = "Kartu tidak ditemukan.";
+        this._resetAccessCheckTimer();
+        return;
+      }
+      // Fetch allowed access points
+      const json = await apiFetch(`/api/access-points/card/${card.id}`);
+      if (json?.accessPoints) {
+        this.accessCheck.allowedIds = json.accessPoints.map(ap => ap.id);
+        this.accessCheck._lastUid = this.accessCheck.card_uid;
+        this._resetAccessCheckTimer();
+      } else {
+        this.accessCheck.error = "Gagal mengambil data akses.";
+        this._resetAccessCheckTimer();
+      }
+    },
+
+    _resetAccessCheckTimer() {
+      // Reset highlight after 2 seconds if no new card tap
+      if (this.accessCheck._resetTimer) clearTimeout(this.accessCheck._resetTimer);
+      this.accessCheck._resetTimer = setTimeout(() => {
+        // Only reset if card_uid hasn't changed
+        if (this.accessCheck.card_uid === this.accessCheck._lastUid) {
+          this.accessCheck.allowedIds = [];
+          this.accessCheck.card_uid = "";
+          this.accessCheck.error = "";
+        }
+      }, 2000);
     },
 
     connectSSE() {
@@ -93,6 +153,13 @@ function dashboard() {
         try {
           const data = JSON.parse(event.data);
           if (!data.uid) return;
+
+          if (this.tab === "access-check") {
+            this.accessCheck.card_uid = data.uid;
+            this.checkCardAccess();
+            this.showToast(`Cek akses kartu (${data.uid})`, "info");
+            return;
+          }
 
           if (data.registered === false) {
             // Unregistered card: pre-fill registration form and switch to cards tab
@@ -195,13 +262,37 @@ function dashboard() {
         }
 
         this.userSuccess = `Pengguna ${this.userForm.name} berhasil ditambahkan!`;
-        this.userForm = { name: "", email: "", role: "member" };
+        this.userForm = { name: "", email: "", role: "member", access_point_ids: [] };
         await this.loadUsers();
       } catch (err) {
         this.userError = err.message;
       } finally {
         this.userLoading = false;
       }
+    },
+
+    // Toggle access point selection for user form
+    toggleAccessPoint(id) {
+      const idx = this.userForm.access_point_ids.indexOf(id);
+      if (idx === -1) {
+        this.userForm.access_point_ids.push(id);
+      } else {
+        this.userForm.access_point_ids.splice(idx, 1);
+      }
+    },
+
+    // Select all/deselect all access points
+    toggleSelectAllAccessPoints(event) {
+      if (event.target.checked) {
+        this.userForm.access_point_ids = this.accessPoints.map(ap => ap.id);
+      } else {
+        this.userForm.access_point_ids = [];
+      }
+    },
+
+    // Computed: are all access points selected?
+    get allAccessPointsSelected() {
+      return this.accessPoints.length > 0 && this.userForm.access_point_ids.length === this.accessPoints.length;
     },
 
     async loadAttendance() {

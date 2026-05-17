@@ -11,6 +11,7 @@ import usersRoutes from "./routes/users";
 import cardsRoutes from "./routes/cards";
 import attendanceRoutes from "./routes/attendance";
 import scanRoutes from "./routes/scan";
+import accessPointsRoutes from "./routes/accessPoints";
 import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
@@ -66,6 +67,7 @@ app.use("/api/users", usersRoutes);
 app.use("/api/cards", cardsRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/scan", scanRoutes);
+app.use("/api/access-points", accessPointsRoutes);
 
 // ── SPA fallback ──────────────────────────────────────────────────────────────
 app.get("/dashboard", (_req, res) => {

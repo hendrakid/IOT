@@ -44,6 +44,40 @@
         :class="tab === 'attendance' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'"
         class="px-4 py-2 text-sm font-medium transition-colors"
       >Log Absensi</button>
+      <button
+        @click="tab = 'access-check'; loadAccessPoints()"
+        :class="tab === 'access-check' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'"
+        class="px-4 py-2 text-sm font-medium transition-colors"
+      >Cek Akses Kartu</button>
+    </div>
+    <!-- ── ACCESS CHECKER tab ─────────────────────────────────────────────── -->
+    <div x-show="tab === 'access-check'" class="space-y-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <h2 class="text-base font-semibold text-gray-800 mb-4">Cek Akses Kartu</h2>
+        <form @submit.prevent="checkCardAccess" class="flex gap-2 mb-6">
+          <input
+            x-model="accessCheck.card_uid"
+            type="text" required placeholder="Tap kartu atau ketik UID"
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono uppercase"
+            @input="accessCheck.card_uid = accessCheck.card_uid.toUpperCase()"
+          />
+          <button type="submit"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg text-sm transition-colors"
+          >Cek Akses</button>
+        </form>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          <template x-for="ap in accessCheck.accessPoints" :key="ap.id">
+            <div
+              class="rounded-xl p-4 text-center border-2 font-semibold text-sm transition-colors"
+              :class="accessCheck.allowedIds.includes(ap.id) ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-400 bg-red-50 text-red-700'"
+            >
+              <div class="mb-1 text-lg font-bold" x-text="ap.name"></div>
+              <div class="text-xs text-gray-500" x-text="ap.type"></div>
+            </div>
+          </template>
+        </div>
+        <div x-show="accessCheck.error" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700" x-text="accessCheck.error"></div>
+      </div>
     </div>
 
     <!-- ── Toast notification ─────────────────────────────────────────────── -->
@@ -195,6 +229,26 @@
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
               </select>
+            </div>
+          </div>
+          <!-- Access Point Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Akses ke Access Point</label>
+            <div class="flex items-center mb-2 gap-2">
+              <input type="checkbox" id="selectAllAccessPoints" @change="toggleSelectAllAccessPoints($event)" :checked="allAccessPointsSelected" />
+              <label for="selectAllAccessPoints" class="text-xs font-medium text-gray-600 cursor-pointer">Pilih Semua</label>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+              <template x-for="ap in accessPoints" :key="ap.id">
+                <div
+                  @click="toggleAccessPoint(ap.id)"
+                  class="rounded-xl p-4 text-center border-2 font-semibold text-sm transition-colors cursor-pointer select-none"
+                  :class="userForm.access_point_ids.includes(ap.id) ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-400 bg-red-50 text-red-700'"
+                >
+                  <div class="mb-1 text-lg font-bold" x-text="ap.name"></div>
+                  <div class="text-xs text-gray-500" x-text="ap.type"></div>
+                </div>
+              </template>
             </div>
           </div>
           <div x-show="userError" class="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700" x-text="userError"></div>
