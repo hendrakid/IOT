@@ -12,6 +12,7 @@ import cardsRoutes from "./routes/cards";
 import attendanceRoutes from "./routes/attendance";
 import scanRoutes from "./routes/scan";
 import accessPointsRoutes from "./routes/accessPoints";
+import statsRoutes from "./routes/stats";
 import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
@@ -24,7 +25,7 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net", "'unsafe-inline'", "'unsafe-eval'"],
-        styleSrc: ["'self'", "https://cdn.tailwindcss.com", "'unsafe-inline'"],
+        styleSrc: ["'self'", "https://cdn.tailwindcss.com", "https://fonts.googleapis.com", "'unsafe-inline'"],
         connectSrc: ["'self'"],
         imgSrc: ["'self'", "data:"],
         fontSrc: ["'self'", "https:"],
@@ -49,7 +50,7 @@ app.use(
         callback(new Error(`CORS: origin ${origin} not allowed`));
       }
     },
-    methods: ["GET", "POST", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
@@ -68,11 +69,20 @@ app.use("/api/cards", cardsRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/scan", scanRoutes);
 app.use("/api/access-points", accessPointsRoutes);
+app.use("/api/stats", statsRoutes);
 
-// ── SPA fallback ──────────────────────────────────────────────────────────────
-app.get("/dashboard", (_req, res) => {
-  res.sendFile(path.join(__dirname, "../public/dashboard.html"));
-});
+// ── Page routes ──────────────────────────────────────────────────────────────
+const pages: Record<string, string> = {
+  "/dashboard": "dashboard.html",
+  "/access-logs": "access-logs.html",
+  "/user-management": "user-management.html",
+  "/hardware": "hardware.html",
+};
+for (const [route, file] of Object.entries(pages)) {
+  app.get(route, (_req, res) => {
+    res.sendFile(path.join(__dirname, "../public", file));
+  });
+}
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((_req, res) => {

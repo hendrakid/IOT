@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#d3e4fe",
+                    "background": "#f8f9ff",
+                    "surface-variant": "#d3e4fe",
+                    "primary-container": "#131b2e",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#7c839b",
+                    "surface-tint": "#565e74",
+                    "on-primary-fixed": "#131b2e",
+                    "on-error-container": "#93000a",
+                    "on-secondary-fixed": "#001a42",
+                    "on-primary-fixed-variant": "#3f465c",
+                    "surface-container": "#e5eeff",
+                    "surface-container-low": "#eff4ff",
+                    "primary-fixed": "#dae2fd",
+                    "outline-variant": "#c6c6cd",
+                    "inverse-surface": "#213145",
+                    "on-secondary-container": "#fefcff",
+                    "surface-bright": "#f8f9ff",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed-dim": "#bec6e0",
+                    "on-error": "#ffffff",
+                    "tertiary": "#000000",
+                    "outline": "#76777d",
+                    "on-secondary-fixed-variant": "#004395",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#009668",
+                    "on-surface-variant": "#45464d",
+                    "on-tertiary-fixed": "#002113",
+                    "surface": "#f8f9ff",
+                    "secondary-container": "#2170e4",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "error": "#ba1a1a",
+                    "tertiary-container": "#002113",
+                    "error-container": "#ffdad6",
+                    "surface-container-high": "#dce9ff",
+                    "secondary": "#0058be",
+                    "on-surface": "#0b1c30",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed": "#6ffbbe",
+                    "inverse-primary": "#bec6e0",
+                    "inverse-on-surface": "#eaf1ff",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "surface-dim": "#cbdbf5",
+                    "secondary-fixed": "#d8e2ff",
+                    "primary": "#000000",
+                    "on-background": "#0b1c30"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-desktop": "32px",
+                    "sm": "12px",
+                    "xs": "8px",
+                    "md": "16px",
+                    "xl": "32px",
+                    "lg": "24px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px",
+                    "base": "4px"
+            },
+            "fontFamily": {
+                    "title-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-xs": ["Inter"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-xs": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; }
+    </style>
+</head>
+<body class="bg-background text-on-background">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full w-[280px] z-40 bg-surface-container-lowest border-r border-outline-variant flex flex-col pt-8">
+<div class="px-6 mb-8">
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary">LockGuard Admin</h1>
+<p class="font-body-md text-body-md text-on-primary-container">IoT Security Suite</p>
+</div>
+<nav class="flex-1">
+<div class="space-y-1">
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Overview</span>
+</a>
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="list_alt">list_alt</span>
+<span class="font-label-md text-label-md">Access Logs</span>
+</a>
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="group">group</span>
+<span class="font-label-md text-label-md">User Management</span>
+</a>
+<a class="text-secondary font-bold border-r-4 border-secondary bg-surface-container-low flex items-center px-6 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="developer_board">developer_board</span>
+<span class="font-label-md text-label-md">Hardware Config</span>
+</a>
+</div>
+</nav>
+<div class="mt-auto border-t border-outline-variant py-4">
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="help">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 z-30 bg-surface border-b border-outline-variant flex justify-between items-center px-margin-desktop">
+<div class="flex items-center">
+<div class="relative w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-body-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary" placeholder="Search devices, MAC addresses..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-4">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-secondary cursor-pointer transition-colors" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-secondary cursor-pointer transition-colors" data-icon="history">history</span>
+</div>
+<div class="flex items-center space-x-3 border-l border-outline-variant pl-6">
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface leading-none">Admin User</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant uppercase">System Root</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] pt-16 min-h-screen">
+<div class="p-margin-desktop space-y-lg">
+<!-- Page Header Actions -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary">Hardware Management</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Monitor and control ESP32-based locking nodes across the facility.</p>
+</div>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-lg font-label-md flex items-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                    Add New Hardware
+                </button>
+</div>
+<!-- Stats Ribbon -->
+<div class="grid grid-cols-4 gap-gutter">
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-lg flex items-center justify-between">
+<div>
+<p class="font-label-xs text-label-xs text-on-surface-variant mb-1 uppercase">Total Nodes</p>
+<p class="font-headline-lg text-headline-lg text-on-surface">124</p>
+</div>
+<div class="p-sm bg-surface-container rounded-full text-secondary">
+<span class="material-symbols-outlined" data-icon="developer_board">developer_board</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-lg flex items-center justify-between">
+<div>
+<p class="font-label-xs text-label-xs text-on-surface-variant mb-1 uppercase">Active Online</p>
+<p class="font-headline-lg text-headline-lg text-on-surface">118</p>
+</div>
+<div class="p-sm bg-tertiary-container/10 rounded-full text-on-tertiary-container">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-lg flex items-center justify-between">
+<div>
+<p class="font-label-xs text-label-xs text-on-surface-variant mb-1 uppercase">Pending Updates</p>
+<p class="font-headline-lg text-headline-lg text-on-surface">6</p>
+</div>
+<div class="p-sm bg-secondary-container/10 rounded-full text-secondary">
+<span class="material-symbols-outlined" data-icon="system_update">system_update</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-lg flex items-center justify-between">
+<div>
+<p class="font-label-xs text-label-xs text-on-surface-variant mb-1 uppercase">Critical Alerts</p>
+<p class="font-headline-lg text-headline-lg text-on-error-container">2</p>
+</div>
+<div class="p-sm bg-error-container/10 rounded-full text-error">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+</div>
+</div>
+</div>
+<!-- Main Hardware Inventory Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+<div class="px-lg py-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low/50">
+<h3 class="font-title-md text-title-md text-on-surface">Device Inventory</h3>
+<div class="flex gap-md">
+<button class="text-on-surface-variant flex items-center gap-1 font-label-md hover:text-primary"><span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span> Filter</button>
+<button class="text-on-surface-variant flex items-center gap-1 font-label-md hover:text-primary"><span class="material-symbols-outlined text-sm" data-icon="download">download</span> Export</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container text-on-surface-variant font-label-xs uppercase">
+<th class="px-lg py-md font-label-xs">Device Name</th>
+<th class="px-lg py-md font-label-xs">Status</th>
+<th class="px-lg py-md font-label-xs">Network Info</th>
+<th class="px-lg py-md font-label-xs">Hardware Health</th>
+<th class="px-lg py-md font-label-xs">Firmware</th>
+<th class="px-lg py-md font-label-xs text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1: Active -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-surface-container rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="door_front">door_front</span>
+</div>
+<div>
+<p class="font-title-md text-title-md text-on-surface">Main Lobby Entry</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">North Wing, Zone A</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-md">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E6F4EA] text-[#1E8E3E]">
+<span class="w-2 h-2 rounded-full bg-[#1E8E3E] mr-2"></span>
+                                        Online
+                                    </span>
+</td>
+<td class="px-lg py-md">
+<div class="space-y-0.5">
+<p class="font-label-md text-label-md text-on-surface">192.168.1.45</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">MAC: 24:62:AB:F1:C0:12</p>
+</div>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-4">
+<div class="text-center">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant" data-icon="battery_full">battery_full</span>
+<p class="font-label-xs text-label-xs text-on-surface-variant">98%</p>
+</div>
+<div class="text-center">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant" data-icon="signal_cellular_alt">signal_cellular_alt</span>
+<p class="font-label-xs text-label-xs text-on-surface-variant">-45dBm</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-2">
+<span class="font-body-sm text-body-sm">v2.4.1</span>
+<span class="material-symbols-outlined text-secondary text-[18px]" data-icon="verified">verified</span>
+</div>
+</td>
+<td class="px-lg py-md text-right">
+<div class="flex justify-end gap-xs">
+<button class="p-2 text-on-surface-variant hover:text-secondary hover:bg-surface-container rounded-lg transition-colors" title="Remote Unlock"><span class="material-symbols-outlined" data-icon="lock_open">lock_open</span></button>
+<button class="p-2 text-on-surface-variant hover:text-secondary hover:bg-surface-container rounded-lg transition-colors" title="Restart Node"><span class="material-symbols-outlined" data-icon="restart_alt">restart_alt</span></button>
+<button class="p-2 text-on-surface-variant hover:text-secondary hover:bg-surface-container rounded-lg transition-colors" title="More Options"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Update Available -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-surface-container rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="garage">garage</span>
+</div>
+<div>
+<p class="font-title-md text-title-md text-on-surface">Garage Gate B</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Basement, Zone C</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-md">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E6F4EA] text-[#1E8E3E]">
+<span class="w-2 h-2 rounded-full bg-[#1E8E3E] mr-2"></span>
+                                        Online
+                                    </span>
+</td>
+<td class="px-lg py-md">
+<div class="space-y-0.5">
+<p class="font-label-md text-label-md text-on-surface">192.168.1.102</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">MAC: 24:62:AB:F1:D4:55</p>
+</div>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-4">
+<div class="text-center">
+<span class="material-symbols-outlined text-[20px] text-[#F9AB00]" data-icon="battery_3_bar">battery_3_bar</span>
+<p class="font-label-xs text-label-xs text-on-surface-variant">42%</p>
+</div>
+<div class="text-center">
+<span class="material-symbols-outlined text-[20px] text-[#F9AB00]" data-icon="signal_cellular_alt_2_bar">signal_cellular_alt_2_bar</span>
+<p class="font-label-xs text-label-xs text-on-surface-variant">-82dBm</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-2">
+<span class="font-body-sm text-body-sm text-on-surface-variant">v2.3.9</span>
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary text-[10px] rounded uppercase font-bold">Update Available</span>
+</div>
+</td>
+<td class="px-lg py-md text-right">
+<div class="flex justify-end gap-xs">
+<button class="bg-secondary text-on-secondary px-3 py-1.5 rounded text-label-xs flex items-center gap-1 hover:opacity-90"><span class="material-symbols-outlined text-[14px]" data-icon="upload">upload</span> Deploy</button>
+<button class="p-2 text-on-surface-variant hover:text-secondary hover:bg-surface-container rounded-lg transition-colors" title="Restart"><span class="material-symbols-outlined" data-icon="restart_alt">restart_alt</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Tampered -->
+<tr class="hover:bg-surface-container-low transition-colors group bg-error-container/5">
+<td class="px-lg py-md">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-error-container/10 rounded-lg text-error">
+<span class="material-symbols-outlined" data-icon="sensor_door">sensor_door</span>
+</div>
+<div>
+<p class="font-title-md text-title-md text-on-surface">Server Room Entry</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Core Hub, Zone S</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-md">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#FCE8E6] text-[#D93025]">
+<span class="w-2 h-2 rounded-full bg-[#D93025] mr-2"></span>
+                                        Tampered
+                                    </span>
+</td>
+<td class="px-lg py-md">
+<div class="space-y-0.5">
+<p class="font-label-md text-label-md text-on-surface">192.168.1.201</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">MAC: 24:62:AB:F1:E9:99</p>
+</div>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-4">
+<div class="text-center">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant" data-icon="battery_alert">battery_alert</span>
+<p class="font-label-xs text-label-xs text-on-surface-variant">--%</p>
+</div>
+<div class="text-center">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant" data-icon="signal_cellular_nodata">signal_cellular_nodata</span>
+<p class="font-label-xs text-label-xs text-on-surface-variant">Offline</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="font-body-sm text-body-sm">v2.4.1</span>
+</div>
+</td>
+<td class="px-lg py-md text-right">
+<div class="flex justify-end gap-xs">
+<button class="bg-error text-on-error px-3 py-1.5 rounded text-label-xs flex items-center gap-1 hover:opacity-90"><span class="material-symbols-outlined text-[14px]" data-icon="emergency">emergency</span> Trigger Alarm</button>
+<button class="p-2 text-on-surface-variant hover:text-secondary hover:bg-surface-container rounded-lg transition-colors" title="History"><span class="material-symbols-outlined" data-icon="history">history</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Detail Grid for Selected Item -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Device Details / Metadata -->
+<div class="col-span-8 bg-surface-container-lowest border border-outline-variant rounded-lg p-lg">
+<div class="flex justify-between items-center mb-lg">
+<h4 class="font-title-md text-title-md text-on-surface">Node Technical Metadata</h4>
+<span class="font-label-xs text-label-xs text-secondary uppercase font-bold">Selected: Main Lobby Entry</span>
+</div>
+<div class="grid grid-cols-3 gap-lg">
+<div class="space-y-4">
+<div>
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase">Uptime</label>
+<p class="font-body-md text-body-md text-on-surface">14d 06h 22m 11s</p>
+</div>
+<div>
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase">Last Sync</label>
+<p class="font-body-md text-body-md text-on-surface">Today, 09:42:12 AM</p>
+</div>
+<div>
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase">Core Temp</label>
+<p class="font-body-md text-body-md text-on-surface">42.5°C</p>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase">Assigned AP Zone</label>
+<p class="font-body-md text-body-md text-on-surface">AP_NORTH_WING_02</p>
+</div>
+<div>
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase">Subnet Mask</label>
+<p class="font-body-md text-body-md text-on-surface">255.255.255.0</p>
+</div>
+<div>
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase">Gateway</label>
+<p class="font-body-md text-body-md text-on-surface">192.168.1.1</p>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase">Flash Memory</label>
+<div class="w-full bg-surface-container rounded-full h-2 mt-2">
+<div class="bg-secondary h-2 rounded-full" style="width: 65%"></div>
+</div>
+<p class="font-label-xs text-label-xs text-on-surface-variant mt-1">2.6MB / 4MB used</p>
+</div>
+<div>
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase">Heap Usage</label>
+<div class="w-full bg-surface-container rounded-full h-2 mt-2">
+<div class="bg-[#1E8E3E] h-2 rounded-full" style="width: 22%"></div>
+</div>
+<p class="font-label-xs text-label-xs text-on-surface-variant mt-1">42KB / 190KB free</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Provisioning / Quick Add Card -->
+<div class="col-span-4 bg-primary-container text-on-primary rounded-lg p-lg relative overflow-hidden">
+<div class="relative z-10">
+<h4 class="font-title-md text-title-md mb-2">Fast Provisioning</h4>
+<p class="font-body-sm text-body-sm text-on-primary-container mb-lg">Provision new nodes instantly using QR codes or Serial connection over WebUSB.</p>
+<div class="flex flex-col gap-md">
+<button class="w-full bg-surface-container-lowest text-primary py-md rounded-lg font-label-md flex items-center justify-center gap-3 hover:bg-white transition-colors">
+<span class="material-symbols-outlined" data-icon="qr_code_scanner">qr_code_scanner</span>
+                                Scan Device QR
+                            </button>
+<button class="w-full border border-on-primary-container text-on-primary py-md rounded-lg font-label-md flex items-center justify-center gap-3 hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined" data-icon="usb">usb</span>
+                                Serial Provision
+                            </button>
+</div>
+</div>
+<!-- Aesthetic Background Detail -->
+<div class="absolute -bottom-8 -right-8 opacity-10">
+<span class="material-symbols-outlined text-[160px]" data-icon="memory">memory</span>
+</div>
+</div>
+</div>
+<!-- Health Sparkline Visualization (Example Design Piece) -->
+<div class="grid grid-cols-3 gap-gutter">
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-lg">
+<div class="flex justify-between items-start mb-md">
+<p class="font-label-xs text-label-xs text-on-surface-variant uppercase">Latency Stability</p>
+<span class="text-[#1E8E3E] font-label-xs">Good</span>
+</div>
+<div class="h-16 flex items-end gap-1">
+<div class="bg-[#1E8E3E] w-full h-[40%]" style="opacity: 0.3"></div>
+<div class="bg-[#1E8E3E] w-full h-[35%]" style="opacity: 0.4"></div>
+<div class="bg-[#1E8E3E] w-full h-[50%]" style="opacity: 0.5"></div>
+<div class="bg-[#1E8E3E] w-full h-[45%]" style="opacity: 0.6"></div>
+<div class="bg-[#1E8E3E] w-full h-[60%]" style="opacity: 0.7"></div>
+<div class="bg-[#1E8E3E] w-full h-[55%]" style="opacity: 0.8"></div>
+<div class="bg-[#1E8E3E] w-full h-[65%]" style="opacity: 1.0"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-lg">
+<div class="flex justify-between items-start mb-md">
+<p class="font-label-xs text-label-xs text-on-surface-variant uppercase">Network Load</p>
+<span class="text-secondary font-label-xs">Medium</span>
+</div>
+<div class="h-16 flex items-end gap-1">
+<div class="bg-secondary w-full h-[60%]" style="opacity: 0.3"></div>
+<div class="bg-secondary w-full h-[65%]" style="opacity: 0.4"></div>
+<div class="bg-secondary w-full h-[70%]" style="opacity: 0.5"></div>
+<div class="bg-secondary w-full h-[62%]" style="opacity: 0.6"></div>
+<div class="bg-secondary w-full h-[55%]" style="opacity: 0.7"></div>
+<div class="bg-secondary w-full h-[60%]" style="opacity: 0.8"></div>
+<div class="bg-secondary w-full h-[58%]" style="opacity: 1.0"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-lg">
+<div class="flex justify-between items-start mb-md">
+<p class="font-label-xs text-label-xs text-on-surface-variant uppercase">Error Events</p>
+<span class="text-on-surface-variant font-label-xs">None</span>
+</div>
+<div class="h-16 flex items-end gap-1">
+<div class="bg-outline-variant w-full h-[10%]" style="opacity: 0.3"></div>
+<div class="bg-outline-variant w-full h-[10%]" style="opacity: 0.4"></div>
+<div class="bg-outline-variant w-full h-[12%]" style="opacity: 0.5"></div>
+<div class="bg-outline-variant w-full h-[10%]" style="opacity: 0.6"></div>
+<div class="bg-outline-variant w-full h-[10%]" style="opacity: 0.7"></div>
+<div class="bg-outline-variant w-full h-[10%]" style="opacity: 0.8"></div>
+<div class="bg-outline-variant w-full h-[10%]" style="opacity: 1.0"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

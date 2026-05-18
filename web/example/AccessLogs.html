@@ -1,0 +1,346 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#000000",
+                    "surface-bright": "#f8f9ff",
+                    "outline": "#76777d",
+                    "surface-container-high": "#dce9ff",
+                    "outline-variant": "#c6c6cd",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-container": "#fefcff",
+                    "surface-dim": "#cbdbf5",
+                    "on-background": "#0b1c30",
+                    "primary-fixed": "#dae2fd",
+                    "inverse-primary": "#bec6e0",
+                    "on-primary-fixed-variant": "#3f465c",
+                    "error-container": "#ffdad6",
+                    "inverse-surface": "#213145",
+                    "on-tertiary-fixed": "#002113",
+                    "on-surface": "#0b1c30",
+                    "on-surface-variant": "#45464d",
+                    "secondary": "#0058be",
+                    "surface-container-highest": "#d3e4fe",
+                    "on-tertiary-container": "#009668",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#eaf1ff",
+                    "tertiary-fixed": "#6ffbbe",
+                    "surface-container": "#e5eeff",
+                    "surface-container-low": "#eff4ff",
+                    "secondary-fixed": "#d8e2ff",
+                    "surface-tint": "#565e74",
+                    "background": "#f8f9ff",
+                    "tertiary-container": "#002113",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#bec6e0",
+                    "surface-variant": "#d3e4fe",
+                    "on-primary-container": "#7c839b",
+                    "secondary-container": "#2170e4",
+                    "primary-container": "#131b2e",
+                    "error": "#ba1a1a",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "on-primary-fixed": "#131b2e",
+                    "on-secondary-fixed": "#001a42",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "on-secondary-fixed-variant": "#004395",
+                    "surface": "#f8f9ff",
+                    "tertiary": "#000000"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-desktop": "32px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "margin-mobile": "16px",
+                    "base": "4px",
+                    "sm": "12px",
+                    "xs": "8px",
+                    "lg": "24px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "title-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "label-xs": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "label-xs": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface-bright text-on-surface">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full w-[280px] z-40 bg-surface-container-lowest border-r border-outline-variant flex flex-col pt-8">
+<div class="px-6 mb-10">
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary">LockGuard Admin</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">IoT Security Suite</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Overview</span>
+</a>
+<!-- Active Tab: Access Logs -->
+<a class="text-secondary font-bold border-r-4 border-secondary bg-surface-container-low flex items-center px-6 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="list_alt">list_alt</span>
+<span class="font-label-md text-label-md">Access Logs</span>
+</a>
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="group">group</span>
+<span class="font-label-md text-label-md">User Management</span>
+</a>
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="developer_board">developer_board</span>
+<span class="font-label-md text-label-md">Hardware Config</span>
+</a>
+</nav>
+<div class="mt-auto pb-8 space-y-1">
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="help">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 z-30 bg-surface border-b border-outline-variant flex justify-between items-center px-margin-desktop ml-[280px]">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="Search access records..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-on-surface-variant hover:text-secondary transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary transition-colors">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+<div class="flex items-center gap-3 pl-4 border-l border-outline-variant">
+<img alt="Administrator Portrait" class="w-8 h-8 rounded-full bg-surface-container-highest" data-alt="A professional headshot of a senior security administrator wearing a modern charcoal suit. The lighting is soft and corporate, set against a clean, high-tech office background with blurred blue and white terminal screens. The overall mood is authoritative and professional, maintaining the calm control and stability of the LockGuard brand ecosystem." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlo_Z1IbmcocguwvmjbiTkLda7T9y7HDroL3Q43CxkGDirHPvAzovJfX7eKxsg90SXizn8GNjEp4MGzFQoVte1yd6uFnWBvWosFNj3x8NDt5jOTAOYq0I_h1vDuhCzkEmYOqLYNYexmQTsXut_GCLQsnFglS2RN04oL72DhgEPB42cvAXZDoQe2YYVJ0yr8R95Y9OxLirFpstYq8etQej5g1MvcF2iIy3sfgcjejFnm-CVdCEdNaEn_2yktvSDml1CENnsN1WsGFA">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="account_circle">account_circle</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] pt-16 min-h-screen bg-surface-bright">
+<div class="p-margin-desktop">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-lg">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-background">Real-time Access Logs</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Monitoring all RFID ingress/egress activity across global hardware nodes.</p>
+</div>
+<div class="flex gap-xs">
+<button class="px-4 py-2 bg-surface-container-lowest border border-outline-variant text-on-surface-variant flex items-center gap-2 rounded-lg hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="file_download">file_download</span>
+<span class="font-label-md">Export PDF</span>
+</button>
+<button class="px-4 py-2 bg-primary text-on-primary flex items-center gap-2 rounded-lg hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-sm" data-icon="sync">sync</span>
+<span class="font-label-md">Live Refresh</span>
+</button>
+</div>
+</div>
+<!-- Bento Filter Bar -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-lg">
+<div class="bg-surface-container-lowest p-md border border-outline-variant rounded-xl flex flex-col gap-2">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Date Range</label>
+<div class="flex items-center justify-between group cursor-pointer">
+<span class="font-body-sm text-body-sm font-medium">Today: Oct 24, 2023</span>
+<span class="material-symbols-outlined text-secondary" data-icon="calendar_today">calendar_today</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-md border border-outline-variant rounded-xl flex flex-col gap-2">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Access Point</label>
+<div class="flex items-center justify-between group cursor-pointer">
+<span class="font-body-sm text-body-sm font-medium">All Locations</span>
+<span class="material-symbols-outlined text-secondary" data-icon="location_on">location_on</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-md border border-outline-variant rounded-xl flex flex-col gap-2">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Security Status</label>
+<div class="flex items-center justify-between group cursor-pointer">
+<span class="font-body-sm text-body-sm font-medium">All Activities</span>
+<span class="material-symbols-outlined text-secondary" data-icon="security">security</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-md border border-outline-variant rounded-xl flex flex-col gap-2">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Quick Search</label>
+<div class="flex items-center justify-between group cursor-pointer">
+<span class="font-body-sm text-body-sm font-medium">UID / User Name</span>
+<span class="material-symbols-outlined text-secondary" data-icon="filter_list">filter_list</span>
+</div>
+</div>
+</div>
+<!-- Data Table Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="px-6 py-4 font-label-xs text-label-xs text-on-surface-variant uppercase">Timestamp</th>
+<th class="px-6 py-4 font-label-xs text-label-xs text-on-surface-variant uppercase">User</th>
+<th class="px-6 py-4 font-label-xs text-label-xs text-on-surface-variant uppercase">RFID UID</th>
+<th class="px-6 py-4 font-label-xs text-label-xs text-on-surface-variant uppercase">Access Point</th>
+<th class="px-6 py-4 font-label-xs text-label-xs text-on-surface-variant uppercase">Status</th>
+<th class="px-6 py-4 font-label-xs text-label-xs text-on-surface-variant uppercase text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1: Success -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4 font-body-sm text-body-sm font-medium">2023-10-24 14:22:01</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A close-up portrait of a corporate professional with a friendly but neutral expression. The image is captured with high-fidelity studio lighting against a clean white backdrop, fitting the modern light-mode interface. The color scheme is dominated by soft grays and deep blues, reflecting the authoritative yet calm security brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHPUdf8yyEm4_VQVskO7Jgldq5x2rn-YtW4q0YGguPpbXwRGdFJV0UI3XmLnO42vVkqOj8_yx7WPTacAoDZ7QGIM99ON9_X_GZLUOJRBUI6KP3uWse0_A048FhOhDQi1upECNZG2p3i4YCuDxChwB_GBvl-XfcrNeJ0QaYWIF7Gmber_Lz5_Cucgy2OrqamBsOOIjRne5EXvmsgMTLxZZRuEYPmM6oUJRI0NajF839lQZ0vFaDRs7LLFkIGsLb446rNN2qi-KNCrw">
+</div>
+<span class="font-body-sm text-body-sm font-semibold">Jane Dawson</span>
+</div>
+</td>
+<td class="px-6 py-4 font-label-md text-label-md font-mono text-on-surface-variant">8E:B2:71:04</td>
+<td class="px-6 py-4 font-body-sm text-body-sm">Main Lobby North</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-xs text-label-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container"></span>
+                                    Success
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant hover:text-secondary transition-colors"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 2: Denied (Highlighted) -->
+<tr class="bg-error-container/20 hover:bg-error-container/40 transition-colors group border-l-4 border-error">
+<td class="px-6 py-4 font-body-sm text-body-sm font-medium">2023-10-24 14:20:55</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-error">
+<span class="material-symbols-outlined text-error text-lg" data-icon="no_accounts">no_accounts</span>
+</div>
+<span class="font-body-sm text-body-sm font-semibold text-error">Unregistered Tag</span>
+</div>
+</td>
+<td class="px-6 py-4 font-label-md text-label-md font-mono text-error">02:A1:CC:99</td>
+<td class="px-6 py-4 font-body-sm text-body-sm">Vault Room 01</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-error-container text-on-error-container font-label-xs text-label-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                    Denied
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-error hover:text-primary transition-colors"><span class="material-symbols-outlined" data-icon="report">report</span></button>
+</td>
+</tr>
+<!-- Row 3: Unauthorized -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4 font-body-sm text-body-sm font-medium">2023-10-24 14:18:12</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A portrait of a male technical worker wearing a high-visibility security badge. The lighting is sharp and industrial, echoing the reliability of a high-stakes corporate environment. The background shows a modern hardware-focused workspace with a palette of cool grays and deep black, perfectly aligning with the systematic design of LockGuard Systems." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCf29ioCKWqw-UMseicsVh9gfPHhF3gZ5EKEMjjPs6IhZYTlgiSNSyTm2zUQsOmpprUY8Ofk-v3Mcro5osfmjttZuAubIlnwQXzi5XAoN6go1vVf6MwDVf7px1GMjnqFU7SzY0x3yJ6Lk7Zt_wjQk52ZZJR9CTZiTUHKdmwVcdLN5VF_7EcUCoUuEkoromRtUFTPHFbBXHzYeH_FAZYUfJvMd5WE8nxbNcWsSUws2vd5aM-1BW0PDOcmYk6fKhAxzfCWAOAfxLqW2g">
+</div>
+<span class="font-body-sm text-body-sm font-semibold">Mark R.</span>
+</div>
+</td>
+<td class="px-6 py-4 font-label-md text-label-md font-mono text-on-surface-variant">FC:33:41:BB</td>
+<td class="px-6 py-4 font-body-sm text-body-sm">Server Hall C</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-dim text-on-surface-variant font-label-xs text-label-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                                    Unauthorized
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant hover:text-secondary transition-colors"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 4: Success -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4 font-body-sm text-body-sm font-medium">2023-10-24 14:15:30</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate manager in a bright, modern glass-walled office. The image has a clean, airy feel with a focus on high-clarity and mathematical precision. The color palette features whites and soft blues, creating a sense of calm and unshakable stability, consistent with the Modern Corporate design language." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBw4CaBO9OZNe0tNQ7o-7jEsSvoDUTy1PFVUP_SMYshYvgFNxSizdVVLq4-NK3EMnycQgpi2FLqHHB7yl5K91yTkxz4vel6tMNYcTUbM802QGjCJPBMlbDqakzb3upObXTAp5-QvhwePOEqfwPDOH8B4LrEvABwXOz9c4x4EpGHFVgclmR3UpHuzYdQwbePdeckHxng4s7jZqPnz5BMNbfONg7Iddacv8WTUoOc1EIM8LcbgaYLRpR0GW43hrIxdp2EIERU1WAV2Sc">
+</div>
+<span class="font-body-sm text-body-sm font-semibold">Alice Wong</span>
+</div>
+</td>
+<td class="px-6 py-4 font-label-md text-label-md font-mono text-on-surface-variant">11:09:A4:77</td>
+<td class="px-6 py-4 font-body-sm text-body-sm">Exec. Lounge</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-xs text-label-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container"></span>
+                                    Success
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant hover:text-secondary transition-colors"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination Footer -->
+<div class="px-6 py-4 flex justify-between items-center bg-surface-container-low">
+<span class="font-label-md text-label-md text-on-surface-variant">Showing 4 of 2,492 entries</span>
+<div class="flex gap-2">
+<button class="w-10 h-10 flex items-center justify-center border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center border border-secondary bg-surface-container-high rounded-lg font-bold text-secondary">1</button>
+<button class="w-10 h-10 flex items-center justify-center border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors">2</button>
+<button class="w-10 h-10 flex items-center justify-center border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors">3</button>
+<button class="w-10 h-10 flex items-center justify-center border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

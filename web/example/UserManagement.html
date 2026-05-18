@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User and RFID Management | LockGuard Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#000000",
+                        "surface-bright": "#f8f9ff",
+                        "outline": "#76777d",
+                        "surface-container-high": "#dce9ff",
+                        "outline-variant": "#c6c6cd",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#fefcff",
+                        "surface-dim": "#cbdbf5",
+                        "on-background": "#0b1c30",
+                        "primary-fixed": "#dae2fd",
+                        "inverse-primary": "#bec6e0",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#213145",
+                        "on-tertiary-fixed": "#002113",
+                        "on-surface": "#0b1c30",
+                        "on-surface-variant": "#45464d",
+                        "secondary": "#0058be",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-tertiary-container": "#009668",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-container": "#e5eeff",
+                        "surface-container-low": "#eff4ff",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-tint": "#565e74",
+                        "background": "#f8f9ff",
+                        "tertiary-container": "#002113",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#bec6e0",
+                        "surface-variant": "#d3e4fe",
+                        "on-primary-container": "#7c839b",
+                        "secondary-container": "#2170e4",
+                        "primary-container": "#131b2e",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "on-primary-fixed": "#131b2e",
+                        "on-secondary-fixed": "#001a42",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-secondary-fixed-variant": "#004395",
+                        "surface": "#f8f9ff",
+                        "tertiary": "#000000"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "32px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "margin-mobile": "16px",
+                        "base": "4px",
+                        "sm": "12px",
+                        "xs": "8px",
+                        "lg": "24px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "title-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-xs": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "title-md": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "label-xs": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md overflow-x-hidden">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-full w-[280px] z-40 bg-surface-container-lowest border-r border-outline-variant flex flex-col pt-8">
+<div class="px-6 mb-10 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-surface-bright" data-icon="security" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div>
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary">LockGuard Admin</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">IoT Security Suite</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Overview</span>
+</a>
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="list_alt">list_alt</span>
+<span class="font-label-md text-label-md">Access Logs</span>
+</a>
+<a class="text-secondary font-bold border-r-4 border-secondary bg-surface-container-low flex items-center px-6 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="group">group</span>
+<span class="font-label-md text-label-md">User Management</span>
+</a>
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="developer_board">developer_board</span>
+<span class="font-label-md text-label-md">Hardware Config</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-outline-variant pt-4 pb-8">
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="help">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 z-30 bg-surface border-b border-outline-variant flex justify-between items-center px-margin-desktop">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 font-body-sm focus:ring-2 focus:ring-secondary focus:outline-none transition-all" placeholder="Search authorized users..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4">
+<button class="text-on-surface-variant hover:text-secondary transition-colors"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="text-on-surface-variant hover:text-secondary transition-colors"><span class="material-symbols-outlined" data-icon="history">history</span></button>
+</div>
+<div class="flex items-center gap-3 pl-6 border-l border-outline-variant">
+<div class="text-right">
+<p class="font-label-xs text-label-xs font-bold text-primary">ADMIN_ROOT</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">System Overseer</p>
+</div>
+<img alt="Administrator Portrait" class="w-8 h-8 rounded-full object-cover grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIh6gZssjWTN2HJDWjYNLJ3RbpfueQcsx7ZNzBCEo_WsoR1v8ZiKmLHM_jyCAEoXRS-6R-wb1Jq7h4AKjxAg4-oMbclnS_beZgciYLpwIC7cAsUky7coWdBq4Ga5zI1CGDTjc6ldcsZefLsGiSD5xYStqIdKR0qDGyMA_50ggeX1Lv_tDwGyaN0Bd4lSZ5yYxMYianZR9-mfjLc68_EqwkxU652TNQL661t3-l8rtbrWIr7unbalaOuy6DZOIObZfnYtn6H8BhP9s"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-[280px] pt-24 px-margin-desktop pb-12">
+<!-- Header Actions -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-1">User &amp; RFID Access</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manage identity tokens and permission levels for the secure facility.</p>
+</div>
+<button class="bg-primary text-on-primary flex items-center gap-2 px-6 py-3 rounded-xl font-label-md hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+                Add User
+            </button>
+</div>
+<!-- Metrics Bento Row -->
+<div class="grid grid-cols-4 gap-gutter mb-8">
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl flex flex-col justify-between">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Total Users</span>
+<div class="flex items-end justify-between mt-2">
+<span class="font-display-lg text-display-lg text-primary">1,248</span>
+<span class="text-on-tertiary-container bg-tertiary-container/10 px-2 py-1 rounded text-label-xs">+12%</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl flex flex-col justify-between">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Active Tags</span>
+<div class="flex items-end justify-between mt-2">
+<span class="font-display-lg text-display-lg text-primary">1,192</span>
+<span class="text-on-surface-variant font-label-xs">95.5% active</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl flex flex-col justify-between">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Failed Attempts</span>
+<div class="flex items-end justify-between mt-2">
+<span class="font-display-lg text-display-lg text-error">24</span>
+<span class="text-error bg-error-container px-2 py-1 rounded text-label-xs">Alert</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl flex flex-col justify-between">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">System Health</span>
+<div class="flex items-end justify-between mt-2">
+<span class="font-display-lg text-display-lg text-on-tertiary-container">Optimal</span>
+<span class="material-symbols-outlined text-on-tertiary-container" data-icon="check_circle">check_circle</span>
+</div>
+</div>
+</div>
+<!-- User Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="px-6 py-4 font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Authorized User</th>
+<th class="px-6 py-4 font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Role</th>
+<th class="px-6 py-4 font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">RFID Token ID</th>
+<th class="px-6 py-4 font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Access Points</th>
+<th class="px-6 py-4 font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Last Activity</th>
+<th class="px-6 py-4 font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- User Row 1 -->
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="User Avatar" class="w-10 h-10 rounded-full object-cover grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDck9775LQXfUWfYO5xBmaMmQqGNZxPVphEVSTorGRJ20vI9cR-gD0waBLQUqoJFJrOjFJ82dTC7Ny0ImoocRfsrTp_oROsY0u86uZqCmurCn6zDjisllcsqdQQdRoAZV5LmbLoSWdZf-YY9SyL0Fsn00hyoTyDyqGClRcTaaaa_HnI8dl75hfbXAqoBLW5NLG9sY0X8kz-0t1iXvQitMBlvgNT2fiZjdkNJ7ZtEKfPfUmAWEpY8xT8NU1zvqLOYuFMyv4B5hPoBr4"/>
+<div>
+<p class="font-title-md text-title-md text-primary">Sarah Connor</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">s.connor@lockguard.systems</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-primary-container text-surface-bright font-label-xs text-label-xs px-2 py-1 rounded">Admin</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="nfc">nfc</span>
+<code class="font-mono text-label-md text-secondary">8F-2A-3C-91-E0</code>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-label-md text-label-md text-on-surface-variant">Main Lobby, Server Room 01</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-on-tertiary-container"></div>
+<span class="font-label-md text-label-md">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-md">Just now</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button>
+</td>
+</tr>
+<!-- User Row 2 -->
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="User Avatar" class="w-10 h-10 rounded-full object-cover grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8sVPcTNEfWyB0fvIhtjypjP1fKIZkv0qndDhBUvnVy0b109r-EBiF6Pz6tAEWHYdWDOw_muFWwKGy0I41BXPGNw84IO0zDV3uPuP1RHnYlcOWqPxRYYXM2vPecXk8CfokkySPekfCM5CRepU69Dd27BHGAtQ5k9NPsNk7lwsK2EeNFtA9XjP3SxSHl3xbctephrU7PhceZe6rrz2bZT3y-y9TdLaKU6GS6XhUmM98ejN0Bi4jrqgRA3FL4N5ZdOoVE_BTyxLoM3U"/>
+<div>
+<p class="font-title-md text-title-md text-primary">Marcus Wright</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">m.wright@lockguard.systems</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="border border-outline text-on-surface-variant font-label-xs text-label-xs px-2 py-1 rounded">User</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="nfc">nfc</span>
+<code class="font-mono text-label-md text-secondary">03-9B-7D-2F-AA</code>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="font-label-md text-label-md text-secondary font-medium">All Areas</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-on-tertiary-container"></div>
+<span class="font-label-md text-label-md">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-md">2h ago</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button>
+</td>
+</tr>
+<!-- User Row 3 -->
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="User Avatar" class="w-10 h-10 rounded-full object-cover grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBj0krXT9zy73RR426BxUWOMrAI_6e7nmsa3HWynRCRw-CuT9fxmu9f4-wZ31ttdgkWcMQH9UZ-BKF2kQljvks3NfaQdF1EgjRFuejkCSlmbEbzNmaELTwXITHstwM6cMgcxwG5R1_IbKgV_yVLTdptqfBrQR8b8FsqlFyKvQeBClUUcphJOM5YHHvfHbN8YJ2_Sq8-RDx3iacD8Dqhl2KB4iXDyozH6oQVA-81LWpylzsN7N8-K3jrn87vHz2VS_lKbl-cphR4iZM"/>
+<div>
+<p class="font-title-md text-title-md text-primary">Kyle Reese</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">k.reese@lockguard.systems</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="border border-outline text-on-surface-variant font-label-xs text-label-xs px-2 py-1 rounded">User</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="nfc">nfc</span>
+<code class="font-mono text-label-md text-secondary">15-F4-EE-88-01</code>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-label-md text-label-md text-on-surface-variant">Main Lobby</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-outline"></div>
+<span class="font-label-md text-label-md text-outline">Standby</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-md">3 days ago</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 bg-surface-container-low flex items-center justify-between border-t border-outline-variant">
+<span class="font-label-xs text-label-xs text-on-surface-variant">Showing 3 of 1,248 users</span>
+<div class="flex gap-2">
+<button class="px-4 py-2 border border-outline-variant rounded font-label-md text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors">Previous</button>
+<button class="px-4 py-2 bg-primary text-on-primary rounded font-label-md hover:opacity-90 transition-opacity">Next</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Modal Backdrop -->
+<div class="fixed inset-0 bg-primary/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+<div class="bg-surface-container-lowest w-full max-w-lg rounded-xl shadow-2xl overflow-hidden border border-outline-variant">
+<div class="px-lg py-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h3 class="font-headline-lg text-headline-lg text-primary">Register New User</h3>
+<button class="text-on-surface-variant hover:text-error transition-colors"><span class="material-symbols-outlined" data-icon="close">close</span></button>
+</div>
+<form class="p-lg space-y-6 max-h-[85vh] overflow-y-auto">
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase">First Name</label>
+<input class="w-full border border-outline-variant rounded-lg p-3 font-body-sm focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. Sarah" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase">Last Name</label>
+<input class="w-full border border-outline-variant rounded-lg p-3 font-body-sm focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. Connor" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase">Corporate Email</label>
+<input class="w-full border border-outline-variant rounded-lg p-3 font-body-sm focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="s.connor@lockguard.systems" type="email"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase">Security Role</label>
+<select class="w-full border border-outline-variant rounded-lg p-3 font-body-sm focus:ring-2 focus:ring-secondary focus:outline-none bg-surface-container-lowest">
+<option>User (Standard)</option>
+<option>Admin (Full Access)</option>
+<option>Security (Restricted)</option>
+<option>Maintenance</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase">Department</label>
+<input class="w-full border border-outline-variant rounded-lg p-3 font-body-sm focus:ring-2 focus:ring-secondary focus:outline-none" placeholder="e.g. Operations" type="text"/>
+</div>
+</div>
+<!-- AUTHORIZED ACCESS POINTS -->
+<div class="space-y-3">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Authorized Access Points</label>
+<div class="grid grid-cols-2 gap-3 p-4 bg-surface-container-low rounded-xl border border-outline-variant">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-4 h-4 rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/>
+<span class="font-body-sm text-on-surface group-hover:text-primary transition-colors">Main Lobby</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-4 h-4 rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/>
+<span class="font-body-sm text-on-surface group-hover:text-primary transition-colors">Server Room 01</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-4 h-4 rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/>
+<span class="font-body-sm text-on-surface group-hover:text-primary transition-colors">Vault Room 01</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-4 h-4 rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/>
+<span class="font-body-sm text-on-surface group-hover:text-primary transition-colors">Exec. Lounge</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-4 h-4 rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/>
+<span class="font-body-sm text-on-surface group-hover:text-primary transition-colors">West Lab Access</span>
+</label>
+</div>
+</div>
+<div class="p-lg bg-surface-container border border-dashed border-outline rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-surface-container-highest rounded-full flex items-center justify-center animate-pulse">
+<span class="material-symbols-outlined text-secondary" data-icon="nfc">nfc</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-primary">RFID Tag Detection</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">Awaiting physical tag scan at Reader #01...</p>
+</div>
+</div>
+<button class="text-secondary font-label-md border-b border-secondary" type="button">Skip Scan</button>
+</div>
+<div class="pt-4 flex gap-4">
+<button class="flex-1 px-6 py-3 border border-outline text-on-surface-variant font-label-md rounded-xl hover:bg-surface-container transition-colors" type="button">Cancel</button>
+<button class="flex-1 px-6 py-3 bg-primary text-on-primary font-label-md rounded-xl hover:opacity-90 transition-opacity" type="submit">Complete Registration</button>
+</div>
+</form>
+</div>
+</div>
+</body></html>

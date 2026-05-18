@@ -1,0 +1,482 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>LockGuard Admin - Overview Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#000000",
+                        "surface-bright": "#f8f9ff",
+                        "outline": "#76777d",
+                        "surface-container-high": "#dce9ff",
+                        "outline-variant": "#c6c6cd",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#fefcff",
+                        "surface-dim": "#cbdbf5",
+                        "on-background": "#0b1c30",
+                        "primary-fixed": "#dae2fd",
+                        "inverse-primary": "#bec6e0",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#213145",
+                        "on-tertiary-fixed": "#002113",
+                        "on-surface": "#0b1c30",
+                        "on-surface-variant": "#45464d",
+                        "secondary": "#0058be",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-tertiary-container": "#009668",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-container": "#e5eeff",
+                        "surface-container-low": "#eff4ff",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-tint": "#565e74",
+                        "background": "#f8f9ff",
+                        "tertiary-container": "#002113",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#bec6e0",
+                        "surface-variant": "#d3e4fe",
+                        "on-primary-container": "#7c839b",
+                        "secondary-container": "#2170e4",
+                        "primary-container": "#131b2e",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "on-primary-fixed": "#131b2e",
+                        "on-secondary-fixed": "#001a42",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-secondary-fixed-variant": "#004395",
+                        "surface": "#f8f9ff",
+                        "tertiary": "#000000"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "32px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "margin-mobile": "16px",
+                        "base": "4px",
+                        "sm": "12px",
+                        "xs": "8px",
+                        "lg": "24px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "title-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-xs": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "label-xs": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] z-40 bg-surface-container-lowest border-r border-outline-variant flex flex-col pt-8">
+<div class="px-6 mb-10">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary flex items-center justify-center rounded">
+<span class="material-symbols-outlined text-white" data-icon="lock">lock</span>
+</div>
+<div>
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary">LockGuard Admin</h1>
+<p class="font-body-md text-label-md text-on-surface-variant">IoT Security Suite</p>
+</div>
+</div>
+</div>
+<nav class="flex-grow flex flex-col space-y-1">
+<!-- Overview (Active) -->
+<a class="text-secondary font-bold border-r-4 border-secondary bg-surface-container-low flex items-center px-6 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Overview</span>
+</a>
+<!-- Access Logs -->
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="list_alt">list_alt</span>
+<span class="font-label-md text-label-md">Access Logs</span>
+</a>
+<!-- User Management -->
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="group">group</span>
+<span class="font-label-md text-label-md">User Management</span>
+</a>
+<!-- Hardware Config -->
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="developer_board">developer_board</span>
+<span class="font-label-md text-label-md">Hardware Config</span>
+</a>
+</nav>
+<div class="mt-auto pb-8 border-t border-outline-variant pt-6">
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="text-on-surface-variant flex items-center px-6 py-3 transition-colors hover:bg-surface-container-high hover:text-primary" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="help">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 z-30 bg-surface border-b border-outline-variant flex justify-between items-center px-margin-desktop">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-label-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all" placeholder="Search systems, logs, or users..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-6 ml-6">
+<div class="flex gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-secondary transition-colors" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-secondary transition-colors" data-icon="history">history</button>
+</div>
+<div class="flex items-center gap-3 border-l border-outline-variant pl-6">
+<div class="text-right">
+<p class="font-label-md text-label-md font-bold text-primary">Admin System</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">Global Access</p>
+</div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover" data-alt="A professional headshot of a corporate administrator in a high-tech security environment. The man is wearing a sharp, dark suit against a blurred background of a modern office with blue and white lighting accents. The overall aesthetic is professional, clean, and authoritative, matching the corporate security brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuARbXHrxDWCm4GZttipvXRu6vWe2OYcvUBVx7NxNP5NhrzzY2Exv6v6YuZIkNJSBodNP8O2iWs9pu8HdSEhL3XrtiQ4uu_Un4IvnkTRQLgDqIqdXS98Rxkp-_GMM_pS52Jf7Pd9HqtDlcZyFIOxXGImEazHlFFYBi8939Fi1I85aW8zJyBLnU5mBXRd-niFWM0fkI1A_pP1LTJ8HGRHUaF09YJnb5BTukz-qI7C_XsFcw1v1iDx1ePddihLeKKt1QD_nuQsysPYXws">
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] pt-16 min-h-screen">
+<div class="p-margin-desktop space-y-gutter">
+<!-- Page Header -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary">System Overview</h2>
+<p class="font-body-md text-on-surface-variant">Real-time status of the IoT security infrastructure.</p>
+</div>
+<button class="bg-primary text-white font-label-md text-label-md px-6 py-2.5 rounded-lg flex items-center gap-2 hover:bg-opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[18px]" data-icon="add_circle">add_circle</span>
+                    Register New Device
+                </button>
+</div>
+<!-- Summary Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Card: Active Locks -->
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-secondary bg-surface-container-high p-2 rounded-lg" data-icon="lock_open">lock_open</span>
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-on-tertiary-container/10 border border-on-tertiary-container/20">
+<span class="w-1.5 h-1.5 bg-on-tertiary-container rounded-full"></span>
+<span class="font-label-xs text-label-xs text-on-tertiary-container">ACTIVE</span>
+</div>
+</div>
+<div class="mt-4">
+<h3 class="font-label-md text-label-md text-on-surface-variant">Active Locks</h3>
+<p class="font-display-lg text-display-lg text-primary">1,284</p>
+</div>
+<div class="mt-2 h-12 w-full">
+<!-- Mini Sparkline Placeholder -->
+<div class="flex items-end gap-1 h-full w-full">
+<div class="w-full bg-secondary/10 h-[40%] rounded-sm"></div>
+<div class="w-full bg-secondary/10 h-[60%] rounded-sm"></div>
+<div class="w-full bg-secondary/10 h-[50%] rounded-sm"></div>
+<div class="w-full bg-secondary/20 h-[80%] rounded-sm"></div>
+<div class="w-full bg-secondary h-[90%] rounded-sm"></div>
+</div>
+</div>
+</div>
+<!-- Card: Users -->
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-secondary bg-surface-container-high p-2 rounded-lg" data-icon="person">person</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">+12% this month</span>
+</div>
+<div class="mt-4">
+<h3 class="font-label-md text-label-md text-on-surface-variant">Provisioned Users</h3>
+<p class="font-display-lg text-display-lg text-primary">8,422</p>
+</div>
+<div class="mt-2 h-12 w-full flex items-center">
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="Close up portrait of a young professional woman in a bright office space. High-key lighting, corporate minimalist style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjyvBx0Raa4y0SOiPJ4v5oq0YpQMndFtzVzwBb3jYOR8v01UeUqDFBNwOoC-HAm39tyNzU0O6SBJkmp4i0oiPnabbWIwm068ZfudRKu8pqzpQB3MvU-AJDL5VOvHi9sthXzInZhiSNBoiA0Wc6XhjXXsjaQmED553av4YoomRn2b6qeCm_3N5LnY-gEVtBZxsk6MLcJgBDzV-PeJTotyfw4e_r1jo1iohpW3r80JtuIe0IBfXRMmAeWM49xEoLfBT5H8jppldSL7Y">
+<img class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="Headshot of a middle-aged male executive in a sleek modern office. Professional aesthetic, neutral tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfwWjy_Iy68RYlwoGyfOAVYl9LLsnuOfeSx8gUVNEKL-ogJTnSHSZAjaIpjC5txRodfRWGQay1VrBlZryemMuvgiyrdwysxkiwCvzLNJDE8X9yzljZts2i1tQ01PTEGWJcmxPemK28GQRmE0qXmB_vSBeY9nfkXVwN8FwPktZ6bx3apZaqJ9Pg3cBEeMOXzScAumllCgI8xM-a93xdcxpvyUtKOkR6mo4-qOqAApp0D4JruhvaG1tDEkMmQi_-S26abEZTec57pNg">
+<img class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="Portrait of a young diverse professional. Clean lighting, modern high-density corporate environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJ1ty7dm6m9ccz884S39iBq-eQuvvHpXU6bMPTO05VBidKtUFSn9leGUdY9Ojhl2OQGTaKiYvfI9Hbvy4OVV0JjGNXPPjrMon2IckIIljPs90Jl82JrDOeK3oZ04-_CZZI3xNQjxzmY0Vqx2J5AXgz-VPwGiKRM4DYAIZZJg9Fyfw6MjB8cnM7qAKfHQM1ej2-WV_6pMr2hx8hJndILDFpleocZ7Ele2r5k2Qo8W3PWr5X1HmKmwhuCQ2SGcHh_3z5Z_JM8FIMYKk">
+<div class="w-8 h-8 rounded-full border-2 border-white bg-surface-container-highest flex items-center justify-center font-label-xs text-label-xs text-on-surface-variant">+4k</div>
+</div>
+</div>
+</div>
+<!-- Card: Success Rate -->
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-secondary bg-surface-container-high p-2 rounded-lg" data-icon="verified_user">verified_user</span>
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-on-tertiary-container/10">
+<span class="font-label-xs text-label-xs text-on-tertiary-container font-bold">Stable</span>
+</div>
+</div>
+<div class="mt-4">
+<h3 class="font-label-md text-label-md text-on-surface-variant">Auth Success Rate</h3>
+<p class="font-display-lg text-display-lg text-primary">99.98%</p>
+</div>
+<div class="mt-2 h-1 bg-surface-container-high w-full rounded-full overflow-hidden">
+<div class="h-full bg-on-tertiary-container w-[99.98%]"></div>
+</div>
+</div>
+<!-- Card: Alerts -->
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-error bg-error-container p-2 rounded-lg" data-icon="warning">warning</span>
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-error-container">
+<span class="w-1.5 h-1.5 bg-error rounded-full"></span>
+<span class="font-label-xs text-label-xs text-error font-bold">CRITICAL</span>
+</div>
+</div>
+<div class="mt-4">
+<h3 class="font-label-md text-label-md text-on-surface-variant">Unresolved Alerts</h3>
+<p class="font-display-lg text-display-lg text-error">03</p>
+</div>
+<div class="mt-2 flex items-center gap-2">
+<span class="font-label-xs text-label-xs text-on-surface-variant underline cursor-pointer hover:text-primary">Review Hardware Logs</span>
+</div>
+</div>
+</div>
+<!-- Middle Section: Analytics & Activity -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Access Trends Chart -->
+<div class="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h3 class="font-title-md text-title-md text-primary">Access Trends</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Requests processed over the last 24 hours.</p>
+</div>
+<select class="bg-surface-container-low border border-outline-variant rounded-lg font-label-md text-label-md px-3 py-1.5 focus:ring-0 outline-none">
+<option>Last 24 Hours</option>
+<option>Last 7 Days</option>
+<option>Last 30 Days</option>
+</select>
+</div>
+<div class="h-[320px] relative flex items-end justify-between px-2">
+<!-- Chart Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
+<div class="border-t border-outline-variant/30 w-full"></div>
+<div class="border-t border-outline-variant/30 w-full"></div>
+<div class="border-t border-outline-variant/30 w-full"></div>
+<div class="border-t border-outline-variant/30 w-full"></div>
+<div class="border-t border-outline-variant/30 w-full"></div>
+</div>
+<!-- Chart Bars (Visual Representation) -->
+<div class="z-10 w-6 bg-secondary/10 rounded-t h-[40%]"></div>
+<div class="z-10 w-6 bg-secondary/10 rounded-t h-[35%]"></div>
+<div class="z-10 w-6 bg-secondary/10 rounded-t h-[45%]"></div>
+<div class="z-10 w-6 bg-secondary/20 rounded-t h-[70%]"></div>
+<div class="z-10 w-6 bg-secondary/30 rounded-t h-[85%]"></div>
+<div class="z-10 w-6 bg-secondary rounded-t h-[95%]"></div>
+<div class="z-10 w-6 bg-secondary/80 rounded-t h-[90%]"></div>
+<div class="z-10 w-6 bg-secondary/40 rounded-t h-[60%]"></div>
+<div class="z-10 w-6 bg-secondary/20 rounded-t h-[40%]"></div>
+<div class="z-10 w-6 bg-secondary/10 rounded-t h-[30%]"></div>
+<div class="z-10 w-6 bg-secondary/10 rounded-t h-[35%]"></div>
+<div class="z-10 w-6 bg-secondary/10 rounded-t h-[42%]"></div>
+</div>
+<div class="flex justify-between mt-4 px-2 font-label-xs text-label-xs text-on-surface-variant">
+<span>00:00</span>
+<span>04:00</span>
+<span>08:00</span>
+<span>12:00</span>
+<span>16:00</span>
+<span>20:00</span>
+<span>23:59</span>
+</div>
+</div>
+<!-- Recent Activity Feed -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-md text-title-md text-primary">Recent Activity</h3>
+<button class="font-label-xs text-label-xs text-secondary font-bold uppercase tracking-wider">View All</button>
+</div>
+<div class="flex-grow space-y-lg overflow-y-auto custom-scrollbar pr-2">
+<!-- Activity Item 1 -->
+<div class="flex gap-4">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-on-tertiary-container" data-icon="key">key</span>
+</div>
+<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center">
+<div class="w-2.5 h-2.5 bg-on-tertiary-container rounded-full"></div>
+</div>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-primary font-bold">Main Entry Unlocked</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">User: David Miller (Engineering)</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant mt-1">2 mins ago</p>
+</div>
+</div>
+<!-- Activity Item 2 -->
+<div class="flex gap-4">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-error" data-icon="block">block</span>
+</div>
+<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center">
+<div class="w-2.5 h-2.5 bg-error rounded-full"></div>
+</div>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-primary font-bold">Access Denied</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Server Room 4 - Invalid Token</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant mt-1">14 mins ago</p>
+</div>
+</div>
+<!-- Activity Item 3 -->
+<div class="flex gap-4">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="sync">sync</span>
+</div>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-primary font-bold">Firmware Update</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Parking Gate Controller (V2.4.1)</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant mt-1">45 mins ago</p>
+</div>
+</div>
+<!-- Activity Item 4 -->
+<div class="flex gap-4">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-on-tertiary-container" data-icon="person_add">person_add</span>
+</div>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-primary font-bold">New User Invited</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Sarah Chen (Executive Guest)</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant mt-1">1 hour ago</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Section: Device Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+<div class="p-lg border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-title-md text-title-md text-primary">High-Risk Hardware Monitoring</h3>
+<div class="flex gap-2">
+<button class="border border-outline-variant px-3 py-1.5 rounded-lg font-label-md text-label-md hover:bg-surface-container-low">Filter</button>
+<button class="border border-outline-variant px-3 py-1.5 rounded-lg font-label-md text-label-md hover:bg-surface-container-low">Export CSV</button>
+</div>
+</div>
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="px-lg py-4 font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Device ID</th>
+<th class="px-lg py-4 font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Location</th>
+<th class="px-lg py-4 font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-lg py-4 font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Battery</th>
+<th class="px-lg py-4 font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Signal</th>
+<th class="px-lg py-4 font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Last Sync</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-4 font-label-md text-label-md font-bold text-primary">LG-7742-SV</td>
+<td class="px-lg py-4 font-body-sm text-body-sm text-on-surface-variant">North Wing - Server Room</td>
+<td class="px-lg py-4">
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-on-tertiary-container/10 w-fit">
+<span class="w-1.5 h-1.5 bg-on-tertiary-container rounded-full"></span>
+<span class="font-label-xs text-label-xs text-on-tertiary-container font-bold">ONLINE</span>
+</div>
+</td>
+<td class="px-lg py-4 font-label-md text-label-md">88%</td>
+<td class="px-lg py-4">
+<span class="material-symbols-outlined text-on-tertiary-container text-[18px]" data-icon="signal_cellular_4_bar">signal_cellular_4_bar</span>
+</td>
+<td class="px-lg py-4 font-body-sm text-body-sm text-on-surface-variant">Just Now</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-4 font-label-md text-label-md font-bold text-primary">LG-1289-MN</td>
+<td class="px-lg py-4 font-body-sm text-body-sm text-on-surface-variant">Main Entrance Gate</td>
+<td class="px-lg py-4">
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-on-tertiary-container/10 w-fit">
+<span class="w-1.5 h-1.5 bg-on-tertiary-container rounded-full"></span>
+<span class="font-label-xs text-label-xs text-on-tertiary-container font-bold">ONLINE</span>
+</div>
+</td>
+<td class="px-lg py-4 font-label-md text-label-md">100% (AC)</td>
+<td class="px-lg py-4">
+<span class="material-symbols-outlined text-on-tertiary-container text-[18px]" data-icon="signal_cellular_4_bar">signal_cellular_4_bar</span>
+</td>
+<td class="px-lg py-4 font-body-sm text-body-sm text-on-surface-variant">4 mins ago</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-4 font-label-md text-label-md font-bold text-primary">LG-4401-LB</td>
+<td class="px-lg py-4 font-body-sm text-body-sm text-on-surface-variant">West Lab Access</td>
+<td class="px-lg py-4">
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-error-container w-fit">
+<span class="w-1.5 h-1.5 bg-error rounded-full"></span>
+<span class="font-label-xs text-label-xs text-error font-bold">TAMPERED</span>
+</div>
+</td>
+<td class="px-lg py-4 font-label-md text-label-md text-error">12%</td>
+<td class="px-lg py-4">
+<span class="material-symbols-outlined text-error text-[18px]" data-icon="signal_cellular_connected_no_internet_0_bar">signal_cellular_connected_no_internet_0_bar</span>
+</td>
+<td class="px-lg py-4 font-body-sm text-body-sm text-error">Disconnected</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-4 font-label-md text-label-md font-bold text-primary">LG-0021-OF</td>
+<td class="px-lg py-4 font-body-sm text-body-sm text-on-surface-variant">Executive Office 302</td>
+<td class="px-lg py-4">
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-on-tertiary-container/10 w-fit">
+<span class="w-1.5 h-1.5 bg-on-tertiary-container rounded-full"></span>
+<span class="font-label-xs text-label-xs text-on-tertiary-container font-bold">ONLINE</span>
+</div>
+</td>
+<td class="px-lg py-4 font-label-md text-label-md">54%</td>
+<td class="px-lg py-4">
+<span class="material-symbols-outlined text-on-tertiary-container text-[18px]" data-icon="signal_cellular_3_bar">signal_cellular_3_bar</span>
+</td>
+<td class="px-lg py-4 font-body-sm text-body-sm text-on-surface-variant">12 mins ago</td>
+</tr>
+</tbody>
+</table>
+<div class="p-lg bg-surface-container-low flex justify-center">
+<button class="font-label-md text-label-md text-secondary font-bold hover:underline">Show 148 additional devices</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

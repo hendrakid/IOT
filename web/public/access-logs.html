@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Lock Admin — Access Logs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif'] } } } }</script>
+</head>
+
+<body class="bg-gray-50 font-sans">
+
+  <!-- ── Sidebar ───────────────────────────────────────────────────────────── -->
+  <aside class="fixed left-0 top-0 bottom-0 w-[280px] bg-slate-950 flex flex-col z-40 border-r border-slate-800">
+    <div class="p-6 border-b border-slate-800">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-white text-xl">lock</span>
+        </div>
+        <div>
+          <div class="font-semibold text-white text-sm">Smart Lock Admin</div>
+          <div class="text-xs text-slate-500">Access Control System</div>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+      <a href="/dashboard" data-nav="/dashboard"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+        <span class="material-symbols-outlined text-xl">dashboard</span>Overview
+      </a>
+      <a href="/access-logs" data-nav="/access-logs"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+        <span class="material-symbols-outlined text-xl">history</span>Access Logs
+      </a>
+      <a href="/user-management" data-nav="/user-management"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+        <span class="material-symbols-outlined text-xl">people</span>User Management
+      </a>
+      <a href="/hardware" data-nav="/hardware"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+        <span class="material-symbols-outlined text-xl">developer_board</span>Hardware Config
+      </a>
+    </nav>
+    <div class="p-4 border-t border-slate-800">
+      <button id="btn-logout"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-red-400 transition-colors w-full text-left">
+        <span class="material-symbols-outlined text-xl">logout</span>Keluar
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main ───────────────────────────────────────────────────────────────── -->
+  <div class="ml-[280px] min-h-screen flex flex-col">
+
+    <!-- Top header -->
+    <header class="sticky top-0 z-30 bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-lg font-semibold text-gray-900">Real-time Access Logs</h1>
+        <p class="text-xs text-gray-400 mt-0.5">Riwayat semua aktivitas tap kartu RFID</p>
+      </div>
+      <button id="btn-refresh"
+        class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition-colors">
+        <span class="material-symbols-outlined text-base">refresh</span>Refresh
+      </button>
+    </header>
+
+    <main class="flex-1 p-8 space-y-6" id="main-content">
+
+      <!-- Filter bar -->
+      <div class="bg-white rounded-2xl border border-gray-100 p-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1.5">Dari Tanggal</label>
+            <input id="filter-from" type="date"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1.5">Sampai Tanggal</label>
+            <input id="filter-to" type="date"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1.5">Access Point</label>
+            <select id="filter-access-point"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="">Semua Access Point</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1.5">Status</label>
+            <select id="filter-action"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="">Semua Status</option>
+              <option value="access_granted">Akses Diberikan</option>
+              <option value="access_denied">Akses Ditolak</option>
+              <option value="tap">Tap (Belum Diproses)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1.5">Cari UID / Pengguna</label>
+            <div class="relative">
+              <span
+                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base">search</span>
+              <input id="filter-search" type="text" placeholder="Ketik UID atau nama..."
+                class="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <button id="btn-apply-filter"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors">
+            Terapkan Filter
+          </button>
+          <button id="btn-reset-filter"
+            class="px-4 py-2 border border-gray-200 hover:bg-gray-50 text-gray-600 text-sm font-medium rounded-lg transition-colors">
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="bg-white rounded-2xl border border-gray-100">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-gray-800">Log Aktivitas</h2>
+          <span id="total-count" class="text-xs text-gray-400">Memuat...</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Waktu</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Pengguna</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">RFID UID</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Access Point
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
+              </tr>
+            </thead>
+            <tbody id="log-body" class="divide-y divide-gray-100">
+              <tr>
+                <td colspan="5" class="px-6 py-10 text-center text-gray-400">Memuat...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Pagination -->
+        <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+          <span id="page-info">—</span>
+          <div class="flex items-center gap-2">
+            <button id="btn-prev" disabled
+              class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              ← Prev
+            </button>
+            <span id="page-current" class="px-2">—</span>
+            <button id="btn-next"
+              class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              Next →
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    // SSE for real-time log update
+    let sseConnected = false;
+    let _eventSource = null;
+    function connectSSELogs() {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      const es = new EventSource(`/api/scan/stream?token=${encodeURIComponent(token)}`);
+      _eventSource = es;
+      es.onopen = () => { sseConnected = true; };
+      es.onmessage = (event) => {
+        // On any scan event, reload logs (could be optimized to only add row)
+        loadLogs();
+      };
+      es.onerror = () => {
+        sseConnected = false;
+        es.close();
+        setTimeout(connectSSELogs, 5000);
+      };
+    }
+    let page = 1;
+    const limit = 20;
+    let totalItems = 0;
+
+    function getFilters() {
+      return {
+        from: document.getElementById("filter-from").value,
+        to: document.getElementById("filter-to").value,
+        accessPointId: document.getElementById("filter-access-point").value,
+        action: document.getElementById("filter-action").value,
+        search: document.getElementById("filter-search").value.trim(),
+      };
+    }
+
+    function buildQuery(extra = {}) {
+      const f = { ...getFilters(), ...extra };
+      const params = new URLSearchParams({ page, limit });
+      if (f.from) params.set("from", f.from);
+      if (f.to) {
+        // Include full day: set time to end of day
+        params.set("to", f.to + "T23:59:59");
+      }
+      if (f.accessPointId) params.set("access_point_id", f.accessPointId);
+      if (f.action) params.set("action", f.action);
+      if (f.search) params.set("search", f.search);
+      return params.toString();
+    }
+
+    async function loadLogs() {
+      const tbody = document.getElementById("log-body");
+      tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400">Memuat...</td></tr>';
+
+      const json = await apiFetch(`/api/attendance?${buildQuery()}`);
+      if (!json?.success) {
+        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-red-400">Gagal memuat data</td></tr>';
+        return;
+      }
+
+      totalItems = json.meta.total;
+      updatePagination(json.data.length);
+
+      if (json.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400">Tidak ada log yang ditemukan</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = json.data.map(row => {
+        const isGranted = row.action === "access_granted";
+        const isDenied = row.action === "access_denied";
+
+        const rowClass = isDenied ? "bg-red-50 border-l-2 border-red-400" : "";
+        const statusBg = isGranted
+          ? "bg-green-100 text-green-700"
+          : isDenied
+            ? "bg-red-100 text-red-700"
+            : "bg-gray-100 text-gray-600";
+        const statusLabel = isGranted ? "Diberikan" : isDenied ? "Ditolak" : "Tap";
+        const statusIcon = isGranted ? "check_circle" : isDenied ? "cancel" : "tap_and_play";
+
+        return `
+        <tr class="hover:bg-gray-50 ${rowClass}">
+          <td class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">${escapeHtml(formatDate(row.timestamp))}</td>
+          <td class="px-6 py-4">
+            <div class="text-sm font-medium text-gray-800">${escapeHtml(row.user_name ?? "(Tidak Dikenal)")}</div>
+          </td>
+          <td class="px-6 py-4 font-mono text-xs text-gray-600">${escapeHtml(row.card_uid)}</td>
+          <td class="px-6 py-4 text-xs text-gray-600">${escapeHtml(row.access_point_name ?? "—")}</td>
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${statusBg}">
+              <span class="material-symbols-outlined text-xs">${statusIcon}</span>${statusLabel}
+            </span>
+          </td>
+        </tr>`;
+      }).join("");
+    }
+
+    function updatePagination(rowCount) {
+      document.getElementById("total-count").textContent =
+        `${totalItems.toLocaleString("id-ID")} total log`;
+      document.getElementById("page-info").textContent =
+        `Menampilkan ${((page - 1) * limit) + 1}–${((page - 1) * limit) + rowCount} dari ${totalItems}`;
+      document.getElementById("page-current").textContent = `Hal. ${page}`;
+      document.getElementById("btn-prev").disabled = page <= 1;
+      document.getElementById("btn-next").disabled = rowCount < limit;
+    }
+
+    function applyFilters() { page = 1; loadLogs(); }
+    function clearFilters() {
+      document.getElementById("filter-from").value = "";
+      document.getElementById("filter-to").value = "";
+      document.getElementById("filter-access-point").value = "";
+      document.getElementById("filter-action").value = "";
+      document.getElementById("filter-search").value = "";
+      page = 1;
+      loadLogs();
+    }
+    function prevPage() { if (page > 1) { page--; loadLogs(); } }
+    function nextPage() { page++; loadLogs(); }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, c =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+      );
+    }
+
+    // Enter key on search applies filter
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("filter-search").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") applyFilters();
+      });
+
+      // Tombol Terapkan Filter
+      document.getElementById("btn-apply-filter").addEventListener("click", applyFilters);
+      // Tombol Reset
+      document.getElementById("btn-reset-filter").addEventListener("click", clearFilters);
+      // Tombol Refresh
+      document.getElementById("btn-refresh").addEventListener("click", loadLogs);
+      // Tombol pagination
+      document.getElementById("btn-prev").addEventListener("click", prevPage);
+      document.getElementById("btn-next").addEventListener("click", nextPage);
+      // Logout
+      document.getElementById("btn-logout").addEventListener("click", logout);
+
+      loadAccessPointsFilter();
+      connectSSELogs(); // Start SSE connection for real-time logs
+    });
+
+    async function loadAccessPointsFilter() {
+      const select = document.getElementById("filter-access-point");
+      const json = await apiFetch("/api/access-points");
+      if (!json?.accessPoints) return;
+      const options = json.accessPoints
+        .map((ap) => `<option value="${ap.id}">${escapeHtml(ap.name)}</option>`)
+        .join("");
+      select.innerHTML = '<option value="">Semua Access Point</option>' + options;
+    }
+
+    loadLogs();
+  </script>
+</body>
+
+</html>

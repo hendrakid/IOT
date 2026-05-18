@@ -11,17 +11,67 @@ export async function listAttendance(
     const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? "20"), 10)));
     const offset = (page - 1) * limit;
 
+    const { from, to, action, search, access_point_id } = req.query as {
+      from?: string;
+      to?: string;
+      action?: string;
+      search?: string;
+      access_point_id?: string;
+    };
+
+    const conditions: string[] = [];
+    const values: unknown[] = [];
+    let idx = 1;
+
+    if (from) {
+      conditions.push(`a.timestamp >= $${idx++}`);
+      values.push(from);
+    }
+    if (to) {
+      conditions.push(`a.timestamp <= $${idx++}`);
+      values.push(to);
+    }
+    if (action && ["access_granted", "access_denied", "tap"].includes(action)) {
+      conditions.push(`a.action = $${idx++}`);
+      values.push(action);
+    }
+    if (access_point_id) {
+      const apId = parseInt(access_point_id, 10);
+      if (!Number.isNaN(apId) && apId > 0) {
+        conditions.push(`a.access_point_id = $${idx++}`);
+        values.push(apId);
+      }
+    }
+    if (search) {
+      conditions.push(`(a.card_uid ILIKE $${idx} OR u.name ILIKE $${idx})`);
+      values.push(`%${search}%`);
+      idx++;
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
     const { rows } = await pool.query(
       `SELECT a.id, a.card_uid, a.action, a.timestamp,
-              u.id AS user_id, u.name AS user_name
+              a.access_point_id,
+              u.id AS user_id, u.name AS user_name,
+              ap.name AS access_point_name
        FROM attendance a
        LEFT JOIN users u ON u.id = a.user_id
+       LEFT JOIN access_points ap ON ap.id = a.access_point_id
+       ${where}
        ORDER BY a.timestamp DESC
-       LIMIT $1 OFFSET $2`,
-      [limit, offset]
+       LIMIT $${idx++} OFFSET $${idx}`,
+      [...values, limit, offset]
     );
 
-    const { rows: countRows } = await pool.query("SELECT COUNT(*) FROM attendance");
+    const { rows: countRows } = await pool.query(
+      `SELECT COUNT(*)
+       FROM attendance a
+       LEFT JOIN users u ON u.id = a.user_id
+       LEFT JOIN access_points ap ON ap.id = a.access_point_id
+       ${where}`,
+      values
+    );
     const total = parseInt((countRows[0] as { count: string }).count, 10);
 
     res.json({ success: true, data: rows, meta: { page, limit, total } });
@@ -36,7 +86,11 @@ export async function createAttendance(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { card_uid, action } = req.body as { card_uid: string; action: string };
+    const { card_uid, action, access_point_id } = req.body as {
+      card_uid: string;
+      action: string;
+      access_point_id?: number;
+    };
 
     // Look up user by card_uid
     const { rows: cardRows } = await pool.query(
@@ -50,10 +104,10 @@ export async function createAttendance(
       action !== "tap" ? action : cardRows.length > 0 ? "access_granted" : "access_denied";
 
     const { rows } = await pool.query(
-      `INSERT INTO attendance (card_uid, user_id, action)
-       VALUES ($1, $2, $3)
-       RETURNING id, card_uid, user_id, action, timestamp`,
-      [card_uid, user_id, resolvedAction]
+      `INSERT INTO attendance (card_uid, user_id, action, access_point_id)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, card_uid, user_id, action, access_point_id, timestamp`,
+      [card_uid, user_id, resolvedAction, access_point_id ?? null]
     );
 
     res.status(201).json({

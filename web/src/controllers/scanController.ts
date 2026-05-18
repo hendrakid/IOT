@@ -30,7 +30,7 @@ export async function handleScan(
 
     let access = false;
     let checked = false;
-    if (registered && access_point_id) {
+    if (registered && access_point_id && user_id !== null) {
       access = await userHasAccess(user_id, access_point_id);
       checked = true;
     }
@@ -38,9 +38,14 @@ export async function handleScan(
 
     // Record attendance regardless of access result
     await pool.query(
-      `INSERT INTO attendance (card_uid, user_id, action)
-       VALUES ($1, $2, $3)`,
-      [uid, user_id, checked ? (access ? "access_granted" : "access_denied") : "tap"]
+      `INSERT INTO attendance (card_uid, user_id, action, access_point_id)
+       VALUES ($1, $2, $3, $4)`,
+      [
+        uid,
+        user_id,
+        checked ? (access ? "access_granted" : "access_denied") : "tap",
+        access_point_id ?? null,
+      ]
     );
 
     // Notify dashboard via SSE

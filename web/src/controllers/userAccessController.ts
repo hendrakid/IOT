@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { pool } from "../models/db";
-import { getAllAccessPointsByUser, userHasAccess, UserAccessPoint } from "../models/userAccessPoints";
+import { getAccessPointsByUser, userHasAccess, UserAccessPoint } from "../models/userAccessPoints";
 
 export async function listUserAccessPoints(
   req: Request,
@@ -13,7 +13,7 @@ export async function listUserAccessPoints(
       res.status(400).json({ success: false, error: "Invalid user ID" });
       return;
     }
-    const accessPoints = await getAllAccessPointsByUser(user_id);
+    const accessPoints = await getAccessPointsByUser(user_id);
     res.json({ success: true, data: accessPoints });
   } catch (err) {
     next(err);

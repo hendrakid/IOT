@@ -28,6 +28,7 @@ export const scanSchema = z.object({
     .min(1)
     .max(50)
     .transform((v) => v.toUpperCase().replace(/\s/g, "")),
+  access_point_id: z.number().int().positive().optional(),
 });
 
 export const createAttendanceSchema = z.object({
@@ -37,4 +38,5 @@ export const createAttendanceSchema = z.object({
     .max(50)
     .transform((v) => v.toUpperCase().replace(/\s/g, "")),
   action: z.enum(["tap", "access_granted", "access_denied"]).optional().default("tap"),
+  access_point_id: z.number().int().positive().optional(),
 });

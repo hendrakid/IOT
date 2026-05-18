@@ -35,5 +35,5 @@ export async function userHasAccess(userId: number, accessPointId: number): Prom
     `SELECT 1 FROM user_access_points WHERE user_id = $1 AND access_point_id = $2`,
     [userId, accessPointId]
   );
-  return res.rowCount > 0;
+  return (res.rowCount ?? 0) > 0;
 }

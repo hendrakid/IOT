@@ -3,357 +3,281 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smart Lock Admin — Dashboard</title>
+  <title>Smart Lock Admin — Overview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif'] } } } }</script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>[x-cloak]{display:none!important}</style>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 font-sans">
 
-<!-- ── Navbar ─────────────────────────────────────────────────────────────── -->
-<nav class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
-  <div class="flex items-center gap-2">
-    <span class="text-xl">🔒</span>
-    <span class="font-bold text-gray-800 text-lg">Smart Lock Admin</span>
+<!-- ── Sidebar ───────────────────────────────────────────────────────────── -->
+<aside class="fixed left-0 top-0 bottom-0 w-[280px] bg-slate-950 flex flex-col z-40 border-r border-slate-800">
+  <div class="p-6 border-b border-slate-800">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+        <span class="material-symbols-outlined text-white text-xl">lock</span>
+      </div>
+      <div>
+        <div class="font-semibold text-white text-sm">Smart Lock Admin</div>
+        <div class="text-xs text-slate-500">Access Control System</div>
+      </div>
+    </div>
   </div>
-  <button
-    onclick="logout()"
-    class="text-sm text-gray-500 hover:text-red-600 transition-colors"
-  >Keluar</button>
-</nav>
+  <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+    <a href="/dashboard" data-nav="/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+      <span class="material-symbols-outlined text-xl">dashboard</span>Overview
+    </a>
+    <a href="/access-logs" data-nav="/access-logs" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+      <span class="material-symbols-outlined text-xl">history</span>Access Logs
+    </a>
+    <a href="/user-management" data-nav="/user-management" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+      <span class="material-symbols-outlined text-xl">people</span>User Management
+    </a>
+    <a href="/hardware" data-nav="/hardware" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+      <span class="material-symbols-outlined text-xl">developer_board</span>Hardware Config
+    </a>
+  </nav>
+  <div class="p-4 border-t border-slate-800">
+    <button onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-red-400 transition-colors w-full text-left">
+      <span class="material-symbols-outlined text-xl">logout</span>Keluar
+    </button>
+  </div>
+</aside>
 
 <!-- ── Main ───────────────────────────────────────────────────────────────── -->
-<main class="max-w-5xl mx-auto px-4 py-8 space-y-8">
+<div class="ml-[280px] min-h-screen flex flex-col">
 
-  <!-- Tabs -->
-  <div x-data="dashboard()" x-cloak class="space-y-8">
-
-    <div class="flex gap-2 border-b border-gray-200">
-      <button
-        @click="tab = 'cards'; loadCards()"
-        :class="tab === 'cards' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'"
-        class="px-4 py-2 text-sm font-medium transition-colors"
-      >Kartu RFID</button>
-      <button
-        @click="tab = 'users'; loadUsers()"
-        :class="tab === 'users' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'"
-        class="px-4 py-2 text-sm font-medium transition-colors"
-      >Pengguna</button>
-      <button
-        @click="tab = 'attendance'; loadAttendance()"
-        :class="tab === 'attendance' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'"
-        class="px-4 py-2 text-sm font-medium transition-colors"
-      >Log Absensi</button>
-      <button
-        @click="tab = 'access-check'; loadAccessPoints()"
-        :class="tab === 'access-check' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'"
-        class="px-4 py-2 text-sm font-medium transition-colors"
-      >Cek Akses Kartu</button>
+  <!-- Top header -->
+  <header class="sticky top-0 z-30 bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-lg font-semibold text-gray-900">System Overview</h1>
+      <p class="text-xs text-gray-400 mt-0.5">Real-time access control monitoring</p>
     </div>
-    <!-- ── ACCESS CHECKER tab ─────────────────────────────────────────────── -->
-    <div x-show="tab === 'access-check'" class="space-y-6">
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h2 class="text-base font-semibold text-gray-800 mb-4">Cek Akses Kartu</h2>
-        <form @submit.prevent="checkCardAccess" class="flex gap-2 mb-6">
-          <input
-            x-model="accessCheck.card_uid"
-            type="text" required placeholder="Tap kartu atau ketik UID"
-            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono uppercase"
-            @input="accessCheck.card_uid = accessCheck.card_uid.toUpperCase()"
-          />
-          <button type="submit"
-            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg text-sm transition-colors"
-          >Cek Akses</button>
-        </form>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-          <template x-for="ap in accessCheck.accessPoints" :key="ap.id">
-            <div
-              class="rounded-xl p-4 text-center border-2 font-semibold text-sm transition-colors"
-              :class="accessCheck.allowedIds.includes(ap.id) ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-400 bg-red-50 text-red-700'"
-            >
-              <div class="mb-1 text-lg font-bold" x-text="ap.name"></div>
-              <div class="text-xs text-gray-500" x-text="ap.type"></div>
-            </div>
-          </template>
+    <div class="flex items-center gap-3">
+      <div id="sse-indicator" class="flex items-center gap-1.5 text-xs text-gray-400">
+        <span id="sse-dot" class="w-2 h-2 rounded-full bg-yellow-400"></span>
+        <span id="sse-label">Menghubungkan...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="flex-1 p-8 space-y-8">
+
+    <!-- Stats bento -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="bg-white rounded-2xl border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Pengguna</span>
+          <span class="material-symbols-outlined text-blue-500 text-xl">people</span>
         </div>
-        <div x-show="accessCheck.error" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700" x-text="accessCheck.error"></div>
+        <div id="stat-users" class="text-3xl font-bold text-gray-900">—</div>
+        <div class="text-xs text-gray-400 mt-1">pengguna terdaftar</div>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Kartu RFID</span>
+          <span class="material-symbols-outlined text-green-500 text-xl">nfc</span>
+        </div>
+        <div id="stat-cards" class="text-3xl font-bold text-gray-900">—</div>
+        <div class="text-xs text-gray-400 mt-1">kartu aktif</div>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Tingkat Berhasil</span>
+          <span class="material-symbols-outlined text-purple-500 text-xl">verified</span>
+        </div>
+        <div id="stat-rate" class="text-3xl font-bold text-gray-900">—</div>
+        <div class="text-xs text-gray-400 mt-1">7 hari terakhir</div>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Kartu Asing</span>
+          <span class="material-symbols-outlined text-red-500 text-xl">warning</span>
+        </div>
+        <div id="stat-unregistered" class="text-3xl font-bold text-gray-900">—</div>
+        <div class="text-xs text-gray-400 mt-1">scan tidak dikenal (24j)</div>
       </div>
     </div>
 
-    <!-- ── Toast notification ─────────────────────────────────────────────── -->
-    <div x-show="sseToast" x-transition
-         class="fixed top-4 right-4 z-50 max-w-sm px-4 py-3 rounded-xl shadow-lg text-sm font-medium"
-         :class="sseToastType === 'success' ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'"
-         x-text="sseToast">
-    </div>
+    <!-- Middle: chart + recent activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-    <!-- ── KARTU tab ───────────────────────────────────────────────────────── -->
-    <div x-show="tab === 'cards'" class="space-y-6">
-
-      <!-- SSE status + Register Form -->
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h2 class="text-base font-semibold text-gray-800 mb-4">Daftarkan Kartu Baru</h2>
-
-        <!-- SSE indicator -->
-        <div class="flex items-center gap-2 mb-4 p-3 rounded-lg"
-             :class="sseConnected ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'">
-          <span class="inline-block w-2 h-2 rounded-full"
-                :class="sseConnected ? 'bg-green-500 animate-pulse' : 'bg-yellow-400'"></span>
-          <span class="text-xs" x-text="sseConnected ? 'Menunggu tap kartu ke ESP32...' : 'Tidak terhubung ke scan stream'"></span>
-        </div>
-
-        <form @submit.prevent="registerCard" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">UID Kartu</label>
-            <div class="flex gap-2">
-              <input
-                x-model="form.card_uid"
-                type="text" required placeholder="Tap kartu atau ketik UID (contoh: ABCD1234)"
-                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono uppercase"
-                @input="form.card_uid = form.card_uid.toUpperCase()"
-              />
-              <button type="button" @click="form.card_uid = ''"
-                class="px-3 py-2 text-xs text-gray-500 border border-gray-300 rounded-lg hover:bg-gray-50">Hapus</button>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Label</label>
-            <input
-              x-model="form.label"
-              type="text" placeholder="contoh: Kartu Pintu Utama"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Pengguna</label>
-            <select
-              x-model="form.user_id"
-              required
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            >
-              <option value="">-- Pilih pengguna --</option>
-              <template x-for="u in users" :key="u.id">
-                <option :value="u.id" x-text="`${u.name} (${u.email})`"></option>
-              </template>
-            </select>
-          </div>
-
-          <div x-show="cardError" class="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700" x-text="cardError"></div>
-          <div x-show="cardSuccess" class="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700" x-text="cardSuccess"></div>
-
-          <button
-            type="submit"
-            :disabled="cardLoading"
-            class="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium py-2 px-6 rounded-lg text-sm transition-colors"
-          >
-            <span x-text="cardLoading ? 'Menyimpan...' : 'Daftarkan Kartu'"></span>
+      <!-- Access Trends chart (2/3 width) -->
+      <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-sm font-semibold text-gray-800">Access Trends (24 jam terakhir)</h2>
+          <button onclick="loadStats()" class="text-xs text-blue-600 hover:underline flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">refresh</span>Refresh
           </button>
-        </form>
+        </div>
+        <canvas id="trendsChart" height="120"></canvas>
       </div>
 
-      <!-- Card list -->
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 class="text-base font-semibold text-gray-800">Kartu Terdaftar</h2>
-          <button @click="loadCards()" class="text-xs text-blue-600 hover:underline">Refresh</button>
+      <!-- Recent Activity (1/3 width) -->
+      <div class="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col">
+        <h2 class="text-sm font-semibold text-gray-800 mb-4">Aktivitas Terbaru</h2>
+        <div id="activity-feed" class="flex-1 space-y-3 overflow-y-auto max-h-64">
+          <div class="text-xs text-gray-400 text-center py-4">Memuat...</div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
-              <tr>
-                <th class="px-4 py-3 text-left">UID</th>
-                <th class="px-4 py-3 text-left">Label</th>
-                <th class="px-4 py-3 text-left">Pengguna</th>
-                <th class="px-4 py-3 text-left">Didaftarkan</th>
-                <th class="px-4 py-3 text-left">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              <template x-if="cards.length === 0">
-                <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">Belum ada kartu terdaftar</td></tr>
-              </template>
-              <template x-for="c in cards" :key="c.id">
-                <tr class="hover:bg-gray-50">
-                  <td class="px-4 py-3 font-mono text-xs" x-text="c.card_uid"></td>
-                  <td class="px-4 py-3 text-gray-600" x-text="c.label || '—'"></td>
-                  <td class="px-4 py-3">
-                    <div x-text="c.user_name" class="font-medium text-gray-800"></div>
-                    <div x-text="c.user_email" class="text-xs text-gray-400"></div>
-                  </td>
-                  <td class="px-4 py-3 text-gray-500 text-xs" x-text="formatDate(c.created_at)"></td>
-                  <td class="px-4 py-3">
-                    <button @click="deleteCard(c.id, c.card_uid)"
-                      class="text-red-500 hover:text-red-700 text-xs font-medium transition-colors">Hapus</button>
-                  </td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
-        <!-- Pagination -->
-        <div class="px-6 py-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-          <span x-text="`Total: ${cardsMeta.total} kartu`"></span>
-          <div class="flex gap-2">
-            <button @click="cardsPage--; loadCards()" :disabled="cardsPage <= 1"
-              class="px-2 py-1 border rounded disabled:opacity-40">← Prev</button>
-            <span x-text="`Hal. ${cardsPage}`"></span>
-            <button @click="cardsPage++; loadCards()" :disabled="cards.length < cardsLimit"
-              class="px-2 py-1 border rounded disabled:opacity-40">Next →</button>
-          </div>
-        </div>
+        <a href="/access-logs" class="mt-4 text-xs text-blue-600 hover:underline text-center block">
+          Lihat semua log →
+        </a>
       </div>
     </div>
 
-    <!-- ── PENGGUNA tab ────────────────────────────────────────────────────── -->
-    <div x-show="tab === 'users'" class="space-y-6">
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h2 class="text-base font-semibold text-gray-800 mb-4">Tambah Pengguna</h2>
-        <form @submit.prevent="createUser" class="space-y-4">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Nama</label>
-              <input x-model="userForm.name" type="text" required placeholder="Budi Santoso"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input x-model="userForm.email" type="email" required placeholder="budi@example.com"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-              <select x-model="userForm.role"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
+    <!-- SSE live feed toast area -->
+    <div id="toast" class="hidden fixed top-4 right-4 z-50 max-w-sm px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white"></div>
+
+  </main>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+  let trendsChart = null;
+
+  async function loadStats() {
+    const json = await apiFetch("/api/stats");
+    if (!json?.success) return;
+
+    const { totalUsers, totalCards, successRate, unregisteredScans, recentActivity } = json.data;
+
+    document.getElementById("stat-users").textContent = totalUsers.toLocaleString("id-ID");
+    document.getElementById("stat-cards").textContent = totalCards.toLocaleString("id-ID");
+    document.getElementById("stat-rate").textContent = successRate + "%";
+    document.getElementById("stat-unregistered").textContent = unregisteredScans;
+
+    renderActivity(recentActivity);
+  }
+
+  function renderActivity(items) {
+    const feed = document.getElementById("activity-feed");
+    if (!items || items.length === 0) {
+      feed.innerHTML = '<div class="text-xs text-gray-400 text-center py-4">Belum ada aktivitas</div>';
+      return;
+    }
+    feed.innerHTML = items.map(item => {
+      const isGranted = item.action === "access_granted";
+      const isDenied = item.action === "access_denied";
+      const iconColor = isGranted ? "text-green-500" : isDenied ? "text-red-500" : "text-gray-400";
+      const icon = isGranted ? "check_circle" : isDenied ? "cancel" : "tap_and_play";
+      const label = isGranted ? "Akses Diberikan" : isDenied ? "Akses Ditolak" : "Tap";
+      const who = item.user_name || item.card_uid;
+      return `
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined ${iconColor} text-base mt-0.5">${icon}</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-medium text-gray-800 truncate">${escapeHtml(who)}</div>
+            <div class="text-xs text-gray-400">${label} · ${formatDate(item.timestamp)}</div>
           </div>
-          <!-- Access Point Selection -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Akses ke Access Point</label>
-            <div class="flex items-center mb-2 gap-2">
-              <input type="checkbox" id="selectAllAccessPoints" @change="toggleSelectAllAccessPoints($event)" :checked="allAccessPointsSelected" />
-              <label for="selectAllAccessPoints" class="text-xs font-medium text-gray-600 cursor-pointer">Pilih Semua</label>
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-              <template x-for="ap in accessPoints" :key="ap.id">
-                <div
-                  @click="toggleAccessPoint(ap.id)"
-                  class="rounded-xl p-4 text-center border-2 font-semibold text-sm transition-colors cursor-pointer select-none"
-                  :class="userForm.access_point_ids.includes(ap.id) ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-400 bg-red-50 text-red-700'"
-                >
-                  <div class="mb-1 text-lg font-bold" x-text="ap.name"></div>
-                  <div class="text-xs text-gray-500" x-text="ap.type"></div>
-                </div>
-              </template>
-            </div>
-          </div>
-          <div x-show="userError" class="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700" x-text="userError"></div>
-          <div x-show="userSuccess" class="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700" x-text="userSuccess"></div>
-          <button type="submit" :disabled="userLoading"
-            class="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium py-2 px-6 rounded-lg text-sm transition-colors">
-            <span x-text="userLoading ? 'Menyimpan...' : 'Tambah Pengguna'"></span>
-          </button>
-        </form>
-      </div>
+        </div>`;
+    }).join("");
+  }
 
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
-        <div class="px-6 py-4 border-b border-gray-100">
-          <h2 class="text-base font-semibold text-gray-800">Daftar Pengguna</h2>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
-              <tr>
-                <th class="px-4 py-3 text-left">ID</th>
-                <th class="px-4 py-3 text-left">Nama</th>
-                <th class="px-4 py-3 text-left">Email</th>
-                <th class="px-4 py-3 text-left">Role</th>
-                <th class="px-4 py-3 text-left">Terdaftar</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              <template x-if="users.length === 0">
-                <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">Belum ada pengguna</td></tr>
-              </template>
-              <template x-for="u in users" :key="u.id">
-                <tr class="hover:bg-gray-50">
-                  <td class="px-4 py-3 text-gray-400" x-text="u.id"></td>
-                  <td class="px-4 py-3 font-medium text-gray-800" x-text="u.name"></td>
-                  <td class="px-4 py-3 text-gray-600" x-text="u.email"></td>
-                  <td class="px-4 py-3">
-                    <span class="px-2 py-0.5 rounded-full text-xs font-medium"
-                      :class="u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'"
-                      x-text="u.role"></span>
-                  </td>
-                  <td class="px-4 py-3 text-gray-500 text-xs" x-text="formatDate(u.created_at)"></td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+    );
+  }
 
-    <!-- ── ABSENSI tab ─────────────────────────────────────────────────────── -->
-    <div x-show="tab === 'attendance'" class="space-y-4">
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 class="text-base font-semibold text-gray-800">Log Absensi</h2>
-          <button @click="loadAttendance()" class="text-xs text-blue-600 hover:underline">Refresh</button>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
-              <tr>
-                <th class="px-4 py-3 text-left">UID</th>
-                <th class="px-4 py-3 text-left">Pengguna</th>
-                <th class="px-4 py-3 text-left">Status</th>
-                <th class="px-4 py-3 text-left">Waktu</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              <template x-if="attendance.length === 0">
-                <tr><td colspan="4" class="px-4 py-8 text-center text-gray-400">Belum ada log absensi</td></tr>
-              </template>
-              <template x-for="a in attendance" :key="a.id">
-                <tr class="hover:bg-gray-50">
-                  <td class="px-4 py-3 font-mono text-xs" x-text="a.card_uid"></td>
-                  <td class="px-4 py-3 text-gray-700" x-text="a.user_name ?? '(tidak dikenal)'"></td>
-                  <td class="px-4 py-3">
-                    <span class="px-2 py-0.5 rounded-full text-xs font-medium"
-                      :class="{
-                        'bg-green-100 text-green-700': a.action === 'access_granted',
-                        'bg-red-100 text-red-700': a.action === 'access_denied',
-                        'bg-gray-100 text-gray-600': a.action === 'tap'
-                      }"
-                      x-text="a.action"></span>
-                  </td>
-                  <td class="px-4 py-3 text-gray-500 text-xs" x-text="formatDate(a.timestamp)"></td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
-        <div class="px-6 py-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-          <span x-text="`Total: ${attendanceMeta.total} log`"></span>
-          <div class="flex gap-2">
-            <button @click="attendancePage--; loadAttendance()" :disabled="attendancePage <= 1"
-              class="px-2 py-1 border rounded disabled:opacity-40">← Prev</button>
-            <span x-text="`Hal. ${attendancePage}`"></span>
-            <button @click="attendancePage++; loadAttendance()" :disabled="attendance.length < 20"
-              class="px-2 py-1 border rounded disabled:opacity-40">Next →</button>
-          </div>
-        </div>
-      </div>
-    </div>
+  // Access Trends chart — rebuild from recent activity buckets by hour
+  async function loadTrends() {
+    const json = await apiFetch("/api/attendance?limit=100&page=1");
+    if (!json?.success) return;
 
-  </div>
-</main>
+    const hours = Array.from({ length: 24 }, (_, i) => i);
+    const granted = new Array(24).fill(0);
+    const denied = new Array(24).fill(0);
 
-<script src="/js/dashboard.js"></script>
+    const now = new Date();
+    json.data.forEach(row => {
+      const ts = new Date(row.timestamp);
+      const diffH = (now - ts) / 3600000;
+      if (diffH > 24) return;
+      const bucket = 23 - Math.floor(diffH);
+      if (bucket < 0 || bucket > 23) return;
+      if (row.action === "access_granted") granted[bucket]++;
+      else if (row.action === "access_denied") denied[bucket]++;
+    });
+
+    const labels = hours.map(h => {
+      const d = new Date(now);
+      d.setHours(d.getHours() - (23 - h), 0, 0, 0);
+      return d.getHours().toString().padStart(2, "0") + ":00";
+    });
+
+    const ctx = document.getElementById("trendsChart").getContext("2d");
+    if (trendsChart) trendsChart.destroy();
+    trendsChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          { label: "Diberikan", data: granted, backgroundColor: "#22c55e", borderRadius: 4 },
+          { label: "Ditolak", data: denied, backgroundColor: "#ef4444", borderRadius: 4 },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: "top", labels: { font: { family: "Inter", size: 11 } } } },
+        scales: {
+          x: { ticks: { maxTicksLimit: 12, font: { family: "Inter", size: 10 } } },
+          y: { beginAtZero: true, ticks: { precision: 0, font: { family: "Inter", size: 11 } } },
+        },
+      },
+    });
+  }
+
+  // SSE for live activity
+  function connectSSE() {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    const es = new EventSource(`/api/scan/stream?token=${encodeURIComponent(token)}`);
+    const dot = document.getElementById("sse-dot");
+    const label = document.getElementById("sse-label");
+
+    es.onopen = () => {
+      dot.className = "w-2 h-2 rounded-full bg-green-400 animate-pulse";
+      label.textContent = "Live";
+    };
+    es.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (!data.uid) return;
+        const msg = data.registered
+          ? `Kartu dikenali${data.user_name ? " — " + data.user_name : ""} (${data.uid})`
+          : `Kartu asing terdeteksi (${data.uid})`;
+        showToast(msg, data.registered ? "success" : "warning");
+        loadStats();
+      } catch (_) {}
+    };
+    es.onerror = () => {
+      dot.className = "w-2 h-2 rounded-full bg-yellow-400";
+      label.textContent = "Terputus";
+      es.close();
+      setTimeout(connectSSE, 5000);
+    };
+  }
+
+  let _toastTimer = null;
+  function showToast(msg, type = "info") {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = `fixed top-4 right-4 z-50 max-w-sm px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white ${
+      type === "success" ? "bg-green-600" : type === "warning" ? "bg-amber-600" : "bg-blue-600"
+    }`;
+    if (_toastTimer) clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => { t.className = t.className + " hidden"; }, 5000);
+  }
+
+  loadStats();
+  loadTrends();
+  connectSSE();
+</script>
 </body>
 </html>

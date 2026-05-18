@@ -1,15 +1,13 @@
 import { Router } from "express";
 import { listUserAccessPoints, grantUserAccess, revokeUserAccess } from "../controllers/userAccessController";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
-// GET /users/:user_id/access-points
-router.get("/:user_id/access-points", listUserAccessPoints);
+// Mounted at /users/:user_id/access-points
+router.get("/", listUserAccessPoints);
 
-// POST /users/:user_id/access-points
-router.post("/:user_id/access-points", grantUserAccess);
+router.post("/", grantUserAccess);
 
-// DELETE /users/:user_id/access-points
-router.delete("/:user_id/access-points", revokeUserAccess);
+router.delete("/", revokeUserAccess);
 
 export default router;
