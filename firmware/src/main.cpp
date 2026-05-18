@@ -10,11 +10,12 @@
 static const uint32_t UID_DISPLAY_DURATION_MS = 3000;
 
 static uint32_t g_uidShownAt = 0;
-static bool     g_showingUID = false;
+static bool g_showingUID = false;
 
 // ── WiFi ─────────────────────────────────────────────────────────────────────
 
-static void connectWiFi() {
+static void connectWiFi()
+{
     showMessage("Smart Lock", "Connecting WiFi...");
     Serial.print(F("[WiFi] Connecting to "));
     Serial.println(WIFI_SSID);
@@ -23,12 +24,14 @@ static void connectWiFi() {
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
     const uint32_t deadline = millis() + WIFI_CONNECT_TIMEOUT_MS;
-    while (WiFi.status() != WL_CONNECTED && millis() < deadline) {
+    while (WiFi.status() != WL_CONNECTED && millis() < deadline)
+    {
         delay(500);
         Serial.print('.');
     }
 
-    if (WiFi.status() == WL_CONNECTED) {
+    if (WiFi.status() == WL_CONNECTED)
+    {
         Serial.print(F("\n[WiFi] Connected. IP: "));
         Serial.println(WiFi.localIP());
         // Line 1: "Connected!" — Line 2: SSID
@@ -37,7 +40,9 @@ static void connectWiFi() {
         // Line 1: "IP:" — Line 2: ESP32's IP address
         showMessage("IP:", WiFi.localIP().toString());
         delay(1500);
-    } else {
+    }
+    else
+    {
         Serial.println(F("\n[WiFi] Connection FAILED"));
         showMessage("WiFi Error", "Check config.h");
     }
@@ -45,10 +50,11 @@ static void connectWiFi() {
 
 // ── HTTP scan ────────────────────────────────────────────────────────────────
 
-struct ScanResult {
-    bool   access;
-    bool   registered;
-    bool   serverError;
+struct ScanResult
+{
+    bool access;
+    bool registered;
+    bool serverError;
     String userName;
 };
 
@@ -56,13 +62,16 @@ struct ScanResult {
  * POST {"uid": "<uid>"} to API_SCAN_ENDPOINT.
  * On any network/parse error returns access=false (fail-safe: deny access).
  */
-static ScanResult postScan(const String &uid) {
-    ScanResult result = { false, false, false, "" };
+static ScanResult postScan(const String &uid)
+{
+    ScanResult result = {false, false, false, ""};
 
-    if (WiFi.status() != WL_CONNECTED) {
+    if (WiFi.status() != WL_CONNECTED)
+    {
         Serial.println(F("[HTTP] WiFi not connected — reconnecting"));
         connectWiFi();
-        if (WiFi.status() != WL_CONNECTED) {
+        if (WiFi.status() != WL_CONNECTED)
+        {
             result.serverError = true;
             return result;
         }
@@ -75,6 +84,7 @@ static ScanResult postScan(const String &uid) {
 
     JsonDocument reqDoc;
     reqDoc["uid"] = uid;
+    reqDoc["access_point_id"] = ACCESS_POINT_ID;
     String body;
     serializeJson(reqDoc, body);
 
@@ -85,7 +95,8 @@ static ScanResult postScan(const String &uid) {
 
     int httpCode = http.POST(body);
 
-    if (httpCode != 200 && httpCode != 201) {
+    if (httpCode != 200 && httpCode != 201)
+    {
         Serial.print(F("[HTTP] Error code: "));
         Serial.println(httpCode);
         http.end();
@@ -97,17 +108,19 @@ static ScanResult postScan(const String &uid) {
     DeserializationError err = deserializeJson(resDoc, http.getString());
     http.end();
 
-    if (err) {
+    if (err)
+    {
         Serial.print(F("[HTTP] JSON parse error: "));
         Serial.println(err.c_str());
         result.serverError = true;
         return result;
     }
 
-    result.access     = resDoc["data"]["access"]     | false;
+    result.access = resDoc["data"]["access"] | false;
     result.registered = resDoc["data"]["registered"] | false;
-    const char *name  = resDoc["data"]["user_name"];
-    if (name) result.userName = String(name);
+    const char *name = resDoc["data"]["user_name"];
+    if (name)
+        result.userName = String(name);
 
     Serial.print(F("[HTTP] access="));
     Serial.print(result.access ? F("true") : F("false"));
@@ -121,13 +134,18 @@ static ScanResult postScan(const String &uid) {
 
 // ── Arduino lifecycle ─────────────────────────────────────────────────────────
 
-void setup() {
+void setup()
+{
     Serial.begin(115200);
     Serial.println(F("[BOOT] Smart Lock starting..."));
 
-    if (!initDisplay()) {
+    if (!initDisplay())
+    {
         Serial.println(F("[BOOT] OLED init failed. Halting."));
-        while (true) { delay(1000); }
+        while (true)
+        {
+            delay(1000);
+        }
     }
 
     showMessage("Smart Lock", "Initializing...");
@@ -142,12 +160,15 @@ void setup() {
     Serial.println(F("[BOOT] Ready."));
 }
 
-void loop() {
+void loop()
+{
     const uint32_t now = millis();
 
     // If result is being shown, wait then return to idle
-    if (g_showingUID) {
-        if (now - g_uidShownAt >= UID_DISPLAY_DURATION_MS) {
+    if (g_showingUID)
+    {
+        if (now - g_uidShownAt >= UID_DISPLAY_DURATION_MS)
+        {
             g_showingUID = false;
             showMessage("Smart Lock", "Tap your card...");
         }
@@ -156,7 +177,8 @@ void loop() {
 
     // Try to read a card
     String uid = readCardUID();
-    if (uid.length() == 0) {
+    if (uid.length() == 0)
+    {
         return;
     }
 
@@ -167,10 +189,13 @@ void loop() {
 
     ScanResult result = postScan(uid);
 
-    if (result.serverError) {
+    if (result.serverError)
+    {
         Serial.println(F("[RFID] Server error — access denied"));
         showMessage("Server Error", "Cek IP / koneksi");
-    } else {
+    }
+    else
+    {
         Serial.print(F("[RFID] Access: "));
         Serial.println(result.access ? F("GRANTED") : F("DENIED"));
         showScanResult(result.access, result.registered, result.userName, uid);
