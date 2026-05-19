@@ -74,12 +74,29 @@ function dashboard() {
       _lastUid: ""
     },
 
+
     // SSE
     sseConnected: false,
     _eventSource: null,
     sseToast: "",
     sseToastType: "info", // "info" | "success"
     _toastTimer: null,
+    // SSE filter state
+    sseInclude: [1], // e.g. [1,2,3] for User Management
+    sseExclude: [1], // e.g. [1,2,3] for Access Logs
+
+    getSseAccessPointId() {
+      const pickValidId = (items) => {
+        if (!Array.isArray(items)) return null;
+        for (const item of items) {
+          const id = Number(item);
+          if (Number.isInteger(id) && id > 0) return id;
+        }
+        return null;
+      };
+
+      return pickValidId(this.sseInclude) ?? pickValidId(this.sseExclude);
+    },
 
     async init() {
       const token = localStorage.getItem("token");
@@ -139,12 +156,32 @@ function dashboard() {
       }, 2000);
     },
 
+
     connectSSE() {
+      // Always close previous SSE connection if exists
+      if (this._eventSource) {
+        this._eventSource.close();
+        this._eventSource = null;
+      }
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      // SSE doesn't support custom headers; pass token as query param
-      const es = new EventSource(`/api/scan/stream?token=${encodeURIComponent(token)}`);
+      // Build SSE URL with location filter from sseInclude/sseExclude
+      let params = [`token=${encodeURIComponent(token)}`];
+      const accessPointId = this.getSseAccessPointId();
+      if (!accessPointId) {
+        this.sseConnected = false;
+        return;
+      }
+      params.push(`access_point_id=${accessPointId}`);
+      if (this.tab === "cards") {
+        params.push(`include=${accessPointId}`);
+      }
+      if (this.tab === "access-logs") {
+        params.push(`exclude=${accessPointId}`);
+      }
+      const url = `/api/scan/stream?${params.join("&")}`;
+      const es = new EventSource(url);
       this._eventSource = es;
 
       es.onopen = () => { this.sseConnected = true; };
@@ -162,12 +199,10 @@ function dashboard() {
           }
 
           if (data.registered === false) {
-            // Unregistered card: pre-fill registration form and switch to cards tab
             this.form.card_uid = data.uid;
             this.tab = "cards";
             this.showToast(`Kartu baru terdeteksi (${data.uid}) — lengkapi data registrasi`, "info");
           } else if (data.registered === true) {
-            // Known card: show attendance notification
             const who = data.user_name ? ` — ${data.user_name}` : "";
             this.showToast(`Kehadiran tercatat${who} (${data.uid})`, "success");
           }
@@ -180,6 +215,11 @@ function dashboard() {
         // Reconnect after 5 seconds
         setTimeout(() => this.connectSSE(), 5000);
       };
+    },
+    // Watch for tab changes and reconnect SSE
+    setTab(tabName) {
+      this.tab = tabName;
+      this.connectSSE();
     },
 
     showToast(message, type = "info") {

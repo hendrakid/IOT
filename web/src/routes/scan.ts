@@ -59,7 +59,20 @@ router.get(
     // Send a heartbeat immediately so the browser knows the connection is open
     res.write(": connected\n\n");
 
-    const client = { res, adminId: req.adminId! };
+    // Parse include/exclude access_point_id from query string
+    const include = req.query.include
+      ? String(req.query.include).split(',').map(Number).filter(n => !isNaN(n))
+      : undefined;
+    const exclude = req.query.exclude
+      ? String(req.query.exclude).split(',').map(Number).filter(n => !isNaN(n))
+      : undefined;
+    const accessPointIdRaw = req.query.access_point_id;
+    const parsedAccessPointId = accessPointIdRaw !== undefined ? Number(accessPointIdRaw) : NaN;
+    const access_point_id = Number.isInteger(parsedAccessPointId) && parsedAccessPointId > 0
+      ? parsedAccessPointId
+      : undefined;
+
+    const client = { res, adminId: req.adminId!, include, exclude, access_point_id };
     addClient(client);
 
     // Heartbeat every 30 s to keep the connection alive through proxies

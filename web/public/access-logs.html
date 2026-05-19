@@ -175,9 +175,16 @@
     let sseConnected = false;
     let _eventSource = null;
     function connectSSELogs() {
+      if (_eventSource) {
+        _eventSource.close();
+        _eventSource = null;
+      }
       const token = localStorage.getItem("token");
       if (!token) return;
-      const es = new EventSource(`/api/scan/stream?token=${encodeURIComponent(token)}`);
+      const adminOfficeAccessPointId = 1;
+      const es = new EventSource(
+        `/api/scan/stream?token=${encodeURIComponent(token)}&access_point_id=${adminOfficeAccessPointId}&exclude=${adminOfficeAccessPointId}`
+      );
       _eventSource = es;
       es.onopen = () => { sseConnected = true; };
       es.onmessage = (event) => {

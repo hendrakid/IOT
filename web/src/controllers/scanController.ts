@@ -48,8 +48,8 @@ export async function handleScan(
       ]
     );
 
-    // Notify dashboard via SSE
-    broadcastScan({ uid, registered, user_name });
+    // Notify dashboard via SSE (always include access_point_id)
+    broadcastScan({ uid, registered, user_name, access_point_id });
 
     res.json({
       success: true,
