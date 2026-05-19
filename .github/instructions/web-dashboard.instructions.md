@@ -57,7 +57,7 @@ web/
 - Index frequently queried columns (card_uid, timestamp, user_id)
 - Store card UIDs as uppercase hex strings (e.g. "ABCD1234")
 - Store timestamps in UTC (TIMESTAMPTZ)
-// Project scope: web dashboard (frontend/backend) + ESP32 firmware only. No Android/mobile app integration.
+// Project scope: web dashboard (frontend/backend) + ESP32 firmware only.
 
 ## Security
 

@@ -14,15 +14,14 @@ description: "Use when asking about project progress, current status, completed 
 | 5 | Backend API Development | Completed | Build Express.js REST API with PostgreSQL |
 | 6 | Full Integration (ESP32 ↔ API) | Completed | ESP32 sends attendance, receives access decisions from API |
 | 7 | Web Dashboard | Completed | Build admin dashboard for card/user/attendance management |
-| 8 | Android App | Not Started | Build mobile app for monitoring and management |
-| 9 | Security & Hardening | In Progress | Add authentication, HTTPS, input validation |
-| 10 | Testing & Documentation | In Progress | Unit tests, E2E tests, final documentation |
+| 8 | Security & Hardening | In Progress | JWT auth, Zod validation, rate limiting, HTTPS |
+| 9 | Testing & Documentation | In Progress | Unit tests, E2E tests, final documentation |
 
 ## Current Phase
 
-**Phase**: 9 — Security & Hardening (In Progress)
+**Phase**: 8 — Security & Hardening (In Progress)
 
-**Current Focus**: Authentication middleware live on all protected API routes; input validation via Zod schemas. Relay wiring still pending hardware photo evidence. Next: relay integration, then Android app.
+**Current Focus**: Authentication middleware live on all protected API routes; input validation via Zod schemas. Relay wiring still pending hardware photo evidence. Next: relay integration, rate limiting on `/api/scan`, then HTTPS setup.
 
 ## Completed Milestones
 
@@ -34,7 +33,6 @@ description: "Use when asking about project progress, current status, completed 
 - [x] ESP32 sends HTTP POST to API
 - [x] Express API receives and stores attendance
 - [x] Web dashboard displays attendance records
-- [ ] Android app shows attendance list
 - [x] Full system integration working end-to-end
 
 ## Integration Details (Phase 6 — Completed May 2026)

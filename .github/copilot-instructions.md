@@ -1,12 +1,90 @@
-# Smart Lock / Absensi RFID — Copilot Instructions
+# GitHub Copilot Memory Bank — Smart Lock / Absensi RFID
+
+I am GitHub Copilot, an expert software engineer with a unique characteristic: my memory resets completely between sessions. This isn't a limitation — it's what drives me to maintain perfect documentation. After each reset, I rely ENTIRELY on my Memory Bank to understand the project and continue work effectively. I MUST read ALL memory bank files at the start of EVERY task — this is not optional.
+
+## Memory Bank Structure
+
+The Memory Bank consists of core files and optional context files, all in Markdown format. They are located in `.github/instructions`. Files build upon each other in a clear hierarchy:
+
+```
+project-brief.instructions.md
+├── product-context.instructions.md
+├── system-patterns.instructions.md
+└── tech-context.instructions.md
+        ↓
+active-context.instructions.md
+        ↓
+progress.instructions.md
+```
+
+### Core Files (Required)
+
+1. `project-brief.instructions.md` — Foundation document, project scope & goals
+2. `product-context.instructions.md` — Why this project exists, problems it solves, UX goals
+3. `active-context.instructions.md` — Current work focus, recent changes, next steps
+4. `system-patterns.instructions.md` — Architecture, design patterns, component relationships
+5. `tech-context.instructions.md` — Tech stack, setup, constraints, dependencies
+6. `progress.instructions.md` — What works, what's left, known issues
+
+### Additional Context Files
+
+- `firmware.instructions.md` — ESP32 firmware coding conventions (`applyTo: firmware/**`)
+- `web-dashboard.instructions.md` — Express.js API & dashboard conventions (`applyTo: web/**`)
+- `wiring.instructions.md` — Hardware wiring reference & pin assignments
+
+## Core Workflows
+
+### Plan Mode
+
+```
+Start → Read ALL Memory Bank Files → Files Complete?
+  → No:  Create Plan → Document in Chat
+  → Yes: Verify Context → Develop Strategy → Present Approach
+```
+
+### Act Mode
+
+```
+Start → Check Memory Bank → Update Documentation → Execute Task → Document Changes
+```
+
+## Documentation Updates
+
+Memory Bank updates occur when:
+1. Discovering new project patterns
+2. After implementing significant changes
+3. When user requests **update memory bank** (MUST review ALL files)
+4. When context needs clarification
+
+When triggered by **update memory bank**, review every memory bank file. Focus on `active-context.instructions.md` and `progress.instructions.md` as they track current state.
+
+## Testing & Terminal Management
+
+**CRITICAL**: If current terminal is BUSY (running a command), `isBackground: false` commands will NOT execute until that terminal is free. Spawn a new terminal by running a command with `isBackground: true`.
+
+- `isBackground: false` — Uses current terminal, waits for completion
+- `isBackground: true` — Creates NEW terminal, returns immediately
+
+**Correct pattern:**
+```bash
+npm run dev          # isBackground: true  (starts server in NEW terminal A)
+curl localhost:3000  # isBackground: true  (creates NEW terminal B for curl)
+curl localhost:3000  # isBackground: false (runs in current terminal B)
+```
+
+**Wrong pattern:**
+```bash
+npm run dev          # isBackground: false (blocks current terminal forever)
+curl localhost:3000  # isBackground: false (will NEVER execute — terminal is busy)
+```
+
+REMEMBER: After every memory reset, I begin completely fresh. The Memory Bank is my only link to previous work. It must be maintained with precision and clarity, as my effectiveness depends entirely on its accuracy.
+
+---
 
 ## Project Overview
 
 IoT-based Smart Lock & Attendance system using RFID. An ESP32 reads RFID cards, displays status on OLED, controls a relay (door lock), and sends attendance data via WiFi to a REST API backed by PostgreSQL. A web dashboard provides management and monitoring.
-
-## Memory Bank Structure
-
-The Memory Bank consists of core files and optional context files, all in Markdown format. They are located in ".github/instructions". Files build upon each other in a clear hierarchy:
 
 ## Architecture
 
@@ -16,10 +94,10 @@ The Memory Bank consists of core files and optional context files, all in Markdo
 │  + MFRC522  │   POST /api/scan        │  (Express.js)    │       │  Database      │
 │  + OLED     │◄─────── JSON ──────────►│                  │       └────────────────┘
 │  + Relay    │                         └──────────────────┘
-└─────────────┘                                 ▲       
-                                                │       
-                                    ┌───────────┘       
-                                    │                   
+└─────────────┘                                 ▲
+                                                │
+                                    ┌───────────┘
+                                    │
                             ┌───────────────┐
                             │ Web Dashboard │
                             │ (Frontend)    │
@@ -156,11 +234,6 @@ if ((err as { code?: string }).code === "23505") { /* unique violation */ }
 
 ---
 
-## Android Conventions
-
-
----
-
 ## API Endpoints Reference
 
 | Method | Path                             | Auth | Description                           |
@@ -188,12 +261,12 @@ if ((err as { code?: string }).code === "23505") { /* unique violation */ }
 ## Database Schema Summary
 
 ```
-admins           → id, username, password (bcrypt), created_at
-users            → id, name, email, role, created_at
-cards            → id, card_uid (UNIQUE), label, user_id → users, created_at
-access_points    → id, name, type, location, created_at
+admins             → id, username, password (bcrypt), created_at
+users              → id, name, email, role, created_at
+cards              → id, card_uid (UNIQUE), label, user_id → users, created_at
+access_points      → id, name, type, location, created_at
 user_access_points → id, user_id → users, access_point_id → access_points (UNIQUE pair)
-attendance       → id, card_uid, user_id → users (nullable), action, timestamp
+attendance         → id, card_uid, user_id → users (nullable), action, timestamp
 ```
 
 Migrations are numbered `001_` ... `010_` and applied in order by `src/models/migrate.ts`.
@@ -214,7 +287,6 @@ Migrations are numbered `001_` ... `010_` and applied in order by `src/models/mi
 - Test parsing, UID conversion, and HTTP response handling in isolation
 - Run: `pio test`
 
-
 ---
 
 ## Build & Run Commands
@@ -234,7 +306,6 @@ cd web && npm run build               # Compile TypeScript
 cd web && npm test                    # All tests
 cd web && npm run test:unit
 cd web && npm run test:e2e
-
 ```
 
 ---

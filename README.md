@@ -1,24 +1,24 @@
 # Smart Lock / Absensi RFID — IoT Project
 
 ## Overview
-This project is an IoT-based Smart Lock and Attendance system using RFID. It features an ESP32 microcontroller that reads RFID cards, displays status on an OLED, controls a relay (door lock), and sends attendance data via WiFi to a REST API backed by PostgreSQL. A web dashboard and Android app provide management and monitoring.
+This project is an IoT-based Smart Lock and Attendance system using RFID. It features an ESP32 microcontroller that reads RFID cards, displays status on an OLED, controls a relay (door lock), and sends attendance data via WiFi to a REST API backed by PostgreSQL. A web dashboard provides management and monitoring.
 
 ## Architecture
 
 ```
-┌─────────────┐       WiFi/HTTP        ┌──────────────────┐       ┌────────────────┐
+┌─────────────┐       WiFi/HTTP         ┌──────────────────┐       ┌────────────────┐
 │   ESP32     │ ───────────────────────►│  REST API        │◄─────►│  PostgreSQL    │
-│  + MFRC522  │   POST /attendance      │  (Express.js)    │       │  Database      │
+│  + MFRC522  │   POST /api/scan        │  (Express.js)    │       │  Database      │
 │  + OLED     │◄─────── JSON ──────────►│                  │       └────────────────┘
 │  + Relay    │                         └──────────────────┘
-└─────────────┘                                 ▲       ▲
-                                                │       │
-                                    ┌───────────┘       └───────────┐
-                                    │                               │
-                            ┌───────────────┐             ┌─────────────────┐
-                            │ Web Dashboard │             │  Android App    │
-                            │ (Frontend)    │             │  (Kotlin)       │
-                            └───────────────┘             └─────────────────┘
+└─────────────┘                                 ▲
+                                                │
+                                    ┌───────────┘
+                                    │
+                            ┌───────────────┐
+                            │ Web Dashboard │
+                            │ (Frontend)    │
+                            └───────────────┘
 ```
 
 ## Folder Structure
@@ -27,7 +27,6 @@ This project is an IoT-based Smart Lock and Attendance system using RFID. It fea
 /
 ├── firmware/          # ESP32 PlatformIO project
 ├── web/               # Express.js backend + web dashboard
-├── android/           # Android Kotlin app
 ├── docs/              # Documentation, schematics
 └── .github/           # Copilot instructions, CI/CD
 ```
@@ -42,8 +41,7 @@ This project is an IoT-based Smart Lock and Attendance system using RFID. It fea
 | Actuator       | 5V Relay Module                             |
 | Backend API    | Node.js + Express.js                        |
 | Database       | PostgreSQL                                  |
-| Web Dashboard  | HTML/CSS/JS (or framework TBD)              |
-| Mobile App     | Android (Kotlin)                            |
+| Web Dashboard  | HTML/CSS/JS (Alpine.js + Tailwind CSS)      |
 
 ## Key Features
 - RFID-based attendance and access control
@@ -51,7 +49,6 @@ This project is an IoT-based Smart Lock and Attendance system using RFID. It fea
 - Secure relay control for door lock
 - RESTful API for attendance and user management
 - Web dashboard for monitoring and admin
-- Android app for mobile management
 
 ## Getting Started
 
@@ -67,10 +64,7 @@ This project is an IoT-based Smart Lock and Attendance system using RFID. It fea
 - Run: `cd web && npm run dev`
 - Test: `cd web && npm test`
 
-### Android
-- See `android/` for the mobile app
-- Build: `cd android && ./gradlew build`
-- Test: `cd android && ./gradlew test`
+
 
 ## Security
 - Follows OWASP Top 10 practices
@@ -81,8 +75,7 @@ This project is an IoT-based Smart Lock and Attendance system using RFID. It fea
 
 ## Testing
 - Firmware: PlatformIO Unity test framework
-- Backend: Jest or Vitest
-- Android: JUnit + Espresso
+- Backend: Jest + Supertest
 
 ## Documentation
 - See `docs/` for wiring diagrams, schematics, and further guides.
