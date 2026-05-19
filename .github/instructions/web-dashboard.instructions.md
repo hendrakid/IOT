@@ -9,7 +9,7 @@ applyTo: "web/**"
 - Runtime: Node.js with Express.js
 - Language: TypeScript preferred (use type hints everywhere)
 - Database: PostgreSQL with parameterized queries (never string concatenation)
-- ORM: Prisma or Sequelize (with typed models)
+// ORM: Prisma or Sequelize (with typed models) (not used in this project; direct SQL and parameterized queries preferred)
 - Testing: Jest or Vitest
 
 ## Project Structure
@@ -20,7 +20,7 @@ web/
 │   ├── index.ts          # Express app entry point
 │   ├── routes/           # Route definitions (one file per resource)
 │   ├── controllers/      # Request handlers (business logic)
-│   ├── models/           # Database models / Prisma schema
+│   ├── models/           # Database models, migrations, SQL
 │   ├── middleware/       # Auth, validation, error handling
 │   └── utils/            # Shared utilities
 ├── tests/
@@ -36,13 +36,13 @@ web/
 - Use plural nouns for resources: `/api/cards`, `/api/attendance`, `/api/users`
 - Return consistent JSON response shape: `{ "success": boolean, "data": ..., "error": ... }`
 - Use HTTP status codes correctly: 200 (OK), 201 (Created), 400 (Bad Request), 401 (Unauthorized), 404 (Not Found), 500 (Internal Error)
-- Paginate list endpoints: `?page=1&limit=20`
+- Paginate list endpoints: `?page=1&limit=20`; respond with `meta: { page, limit, total }`
 
 ## Core API Endpoints
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| POST | `/api/attendance` | Log attendance from ESP32 |
+| POST | `/api/scan` | Log attendance from ESP32 |
 | GET | `/api/attendance` | List attendance records |
 | GET | `/api/cards` | List registered RFID cards |
 | POST | `/api/cards` | Register new card |
@@ -54,9 +54,10 @@ web/
 
 - Use migrations for all schema changes (never manual DDL)
 - All queries must use parameterized statements
-- Index frequently queried columns (card_uid, timestamp)
-- Store card UIDs as uppercase hex strings
-- Store timestamps in UTC (ISO 8601)
+- Index frequently queried columns (card_uid, timestamp, user_id)
+- Store card UIDs as uppercase hex strings (e.g. "ABCD1234")
+- Store timestamps in UTC (TIMESTAMPTZ)
+// Project scope: web dashboard (frontend/backend) + ESP32 firmware only. No Android/mobile app integration.
 
 ## Security
 
