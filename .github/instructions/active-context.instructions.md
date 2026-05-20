@@ -13,9 +13,12 @@ Active work items:
 - Authentication middleware live on all protected API routes
 - Input validation via Zod schemas implemented on all endpoints
 - Multi-page dashboard including `hardware.html` (live node status via MQTT → SSE)
-- Rate limiting on `POST /api/scan` **NOT YET implemented** — still pending
+- Rate limiting on `POST /api/scan` — implemented (`express-rate-limit`, `SCAN_RATE_LIMIT_*` env)
 - Relay hardware photo not yet available — relay firmware integration blocked
 - OTA firmware management — planned, not implemented
+- CI/CD pipeline — not yet created (`.github/workflows/` missing)
+- Hardware docs (`docs/`) — folder empty, schematics not yet added
+- Firmware unit tests — `firmware/test/` empty
 
 ## Recent Changes (May 2026)
 
@@ -29,6 +32,11 @@ Active work items:
 - **Scripts**: `npm run mqtt:test`, `node scripts/verify-mqtt-status.mjs`
 - **Docs**: README architecture diagram, `web/docs/api.md` MQTT section updated
 
+### Prioritas tinggi (May 2026 — complete)
+- **Rate limit**: `web/src/middleware/scanRateLimit.ts` on `POST /api/scan` only
+- **E2E**: `web/tests/e2e/scan.e2e.ts`, `web/tests/e2e/mqttHardware.e2e.ts`; `startBackgroundServices()` exported from `index.ts`; `processMqttMessage()` exported from `mqttSubscriber.ts`; `runStaleStatusTick()` exported from `staleStatusJob.ts`
+- **Firmware deploy**: `firmware/include/config.h.example` + README checklist
+
 ### Prior integration (unchanged)
 - `POST /api/scan` is the single ESP32 entry point for RFID (HTTP, no JWT)
 - SSE scan stream with `?include=`, `?exclude=`, `?access_point_id=` filters
@@ -36,12 +44,18 @@ Active work items:
 
 ## Next Steps
 
-1. **Rate limiting** on `POST /api/scan` — highest security priority
-2. **Firmware deploy** — set `MQTT_BROKER_HOST` in `config.h` to LAN IP of broker (not `localhost` from ESP32); upload with PlatformIO
-3. **Relay integration** — blocked until relay module photo in `.github/hardware pics/`
-4. **E2E test coverage** — add tests for scan, MQTT/stale-status, hardware SSE (only `cards.e2e.ts` exists today)
-5. **OTA firmware** — planned endpoints in `api.md`, not built
-6. **HTTPS** — production reverse proxy
+### Prioritas menengah
+
+1. **Relay integration** — blocked until relay module photo in `.github/hardware pics/`
+2. **Unit tests (web)** — `hardwareBroadcast`, `staleStatusJob`
+
+### Prioritas rendah
+
+3. **OTA firmware** — planned endpoints in `api.md`, not built
+4. **HTTPS** — production reverse proxy
+5. **CI/CD** — GitHub Actions (build, test, lint); `.github/workflows/` not yet created
+6. **Hardware docs** — populate repo `docs/` with wiring diagrams and schematics
+7. **Firmware unit tests** — PlatformIO Unity tests in `firmware/test/`
 
 ## Active Decisions & Considerations
 

@@ -129,12 +129,22 @@ export function startMqttSubscriber(): MqttClient | null {
     );
   });
 
-  client.on("message", async (topic, message) => {
-    const parsed = safeJsonParse(message);
-    const normalized = normalizePayload(topic, parsed);
-    if (!normalized) return;
+  client.on("message", (topic, message) => {
+    processMqttMessage(topic, message).catch((err) => {
+      console.error("[mqtt] Message handler error:", formatMqttError(err));
+    });
+  });
 
-    try {
+  return client;
+}
+
+/** Handle one MQTT telemetry/status message (exported for tests). */
+export async function processMqttMessage(topic: string, message: Buffer): Promise<void> {
+  const parsed = safeJsonParse(message);
+  const normalized = normalizePayload(topic, parsed);
+  if (!normalized) return;
+
+  try {
     const nowIso = new Date().toISOString();
     const status = await upsertAccessPointStatus({
       access_point_id: normalized.access_point_id,
@@ -148,20 +158,22 @@ export function startMqttSubscriber(): MqttClient | null {
           ? Math.max(0, Math.min(100, Math.round(normalized.battery_percent)))
           : normalized.battery_percent ?? null,
       signal_dbm:
-        typeof normalized.signal_dbm === "number" ? Math.round(normalized.signal_dbm) : normalized.signal_dbm ?? null,
+        typeof normalized.signal_dbm === "number"
+          ? Math.round(normalized.signal_dbm)
+          : normalized.signal_dbm ?? null,
       core_temp_c:
-        typeof normalized.core_temp_c === "number" ? normalized.core_temp_c : normalized.core_temp_c ?? null,
+        typeof normalized.core_temp_c === "number"
+          ? normalized.core_temp_c
+          : normalized.core_temp_c ?? null,
     });
 
     broadcastHardwareEvent({
       type: "status",
       data: status,
     });
-    } catch (err) {
-      console.error("[mqtt] Failed to persist status:", formatMqttError(err));
-    }
-  });
-
-  return client;
+  } catch (err) {
+    console.error("[mqtt] Failed to persist status:", formatMqttError(err));
+    throw err;
+  }
 }
 

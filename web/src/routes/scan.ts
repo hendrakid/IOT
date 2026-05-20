@@ -5,6 +5,7 @@ import { AuthenticatedRequest } from "../middleware/auth";
 import { scanSchema } from "../utils/schemas";
 import { addClient, removeClient } from "../utils/scanBroadcast";
 import { handleScan } from "../controllers/scanController";
+import { scanRateLimiter } from "../middleware/scanRateLimit";
 
 const router = Router();
 
@@ -12,9 +13,9 @@ const router = Router();
  * POST /api/scan
  * Called by ESP32 after reading a card. No auth — ESP32 doesn't hold a JWT.
  * Checks if card is registered, records attendance, and broadcasts to dashboard.
- * Rate-limited at the app level (see index.ts).
+ * Rate-limited via scanRateLimiter middleware.
  */
-router.post("/", validate(scanSchema), handleScan);
+router.post("/", scanRateLimiter, validate(scanSchema), handleScan);
 
 /**
  * GET /api/scan/stream

@@ -17,21 +17,7 @@ export function startStaleStatusJob(): NodeJS.Timeout | null {
     10
   );
 
-  const tick = async () => {
-    try {
-      const updated = await markStaleAccessPointsOffline(thresholdSec);
-      for (const status of updated) {
-        broadcastHardwareEvent({ type: "status", data: status });
-      }
-      if (updated.length > 0) {
-        console.log(
-          `[stale-status] Marked ${updated.length} access point(s) offline (>${thresholdSec}s)`
-        );
-      }
-    } catch (err) {
-      console.error("[stale-status] Job error:", err);
-    }
-  };
+  const tick = () => runStaleStatusTick(thresholdSec);
 
   const timer = setInterval(() => void tick(), intervalMs);
   void tick();
@@ -39,4 +25,26 @@ export function startStaleStatusJob(): NodeJS.Timeout | null {
     `[stale-status] Started (every ${intervalMs}ms, threshold ${thresholdSec}s)`
   );
   return timer;
+}
+
+/** Run one stale-offline pass (exported for tests). */
+export async function runStaleStatusTick(
+  thresholdSec = parseInt(
+    process.env.STALE_STATUS_THRESHOLD_SEC ?? String(DEFAULT_THRESHOLD_SEC),
+    10
+  )
+): Promise<void> {
+  try {
+    const updated = await markStaleAccessPointsOffline(thresholdSec);
+    for (const status of updated) {
+      broadcastHardwareEvent({ type: "status", data: status });
+    }
+    if (updated.length > 0) {
+      console.log(
+        `[stale-status] Marked ${updated.length} access point(s) offline (>${thresholdSec}s)`
+      );
+    }
+  } catch (err) {
+    console.error("[stale-status] Job error:", err);
+  }
 }

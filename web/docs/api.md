@@ -234,7 +234,9 @@ Success response (201):
 
 ### POST `/api/scan`
 - Auth: Not required (used by ESP32)
+- Rate limit: Yes — per client IP (default 30 requests / 60s; env `SCAN_RATE_LIMIT_MAX`, `SCAN_RATE_LIMIT_WINDOW_MS`)
 - Description: Handle card tap, optional access check by access point, write attendance log, and broadcast SSE event.
+- Errors: `429` — `{ "success": false, "error": "Too many requests" }` when rate limit exceeded
 - Body:
 ```json
 {

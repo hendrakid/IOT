@@ -22,7 +22,7 @@ description: "Use when asking about project progress, current status, completed 
 
 **Phase**: 9 — Security & Hardening (In Progress)
 
-**Current Focus**: MQTT stack complete (broker, subscriber, firmware publisher, `hardware.html`). Next priorities: rate limiting on `/api/scan`, relay integration (blocked on hardware photo), E2E tests for scan/MQTT/hardware, HTTPS for production.
+**Current Focus**: Prioritas tinggi selesai (rate limit, E2E scan/MQTT/hardware, firmware deploy docs). Next: relay (blocked), unit tests `hardwareBroadcast`/`staleStatusJob`, OTA, HTTPS, CI/CD, hardware docs.
 
 ## Completed Milestones
 
@@ -53,12 +53,34 @@ description: "Use when asking about project progress, current status, completed 
 - Dev broker: `docker compose up -d`; test: `cd web && npm run mqtt:test`
 - Firmware: `mqtt.h` (PubSubClient), heartbeat every 60s, config in `config.h`
 
+## TODO
+
+### Prioritas tinggi (security & stabilitas)
+
+- [x] **Rate limiting** on `POST /api/scan` — `scanRateLimiter` middleware; env `SCAN_RATE_LIMIT_*`; unit test `scanRateLimit.test.ts`
+- [x] **Firmware deploy** — `firmware/include/config.h.example` + checklist di README; manual: set LAN IP di `config.h`, PlatformIO upload
+- [x] **E2E tests** — `scan.e2e.ts`, `mqttHardware.e2e.ts`; unit `mqttSubscriber.test.ts`; scripts `test:e2e`, `test:e2e:mqtt`
+
+### Prioritas menengah (fitur inti belum lengkap)
+
+- [ ] **Relay integration** — blocked until relay module photo in `.github/hardware pics/`; planned GPIO 26, `include/relay.h`, unlock N seconds on access granted, fail-to-locked on error
+- [ ] **Unit tests (web)** — `hardwareBroadcast`, `staleStatusJob` (done: `scanController`, `schemas`, `scanBroadcast`, `sseEnv`, `scanRateLimit`, `mqttSubscriber`)
+
+### Prioritas rendah (production & polish)
+
+- [ ] **OTA firmware** — planned endpoints in `web/docs/api.md` (assign version, poll, progress); not built
+- [ ] **HTTPS** — production reverse proxy (Nginx/Caddy)
+- [ ] **CI/CD** — GitHub Actions workflow (build, test, lint); `.github/workflows/` not yet created
+- [ ] **Hardware docs** — populate repo `docs/` with wiring diagrams and schematics (folder currently empty; README references it)
+- [ ] **Firmware unit tests** — PlatformIO Unity tests in `firmware/test/` (framework configured in `tech-context`, no tests written yet)
+
 ## Known Issues / Blockers
 
 - Relay module photo not in `.github/hardware pics/` — relay wiring and GPIO logic not implemented
-- Rate limiting on `POST /api/scan` not implemented
-- No E2E tests for MQTT subscriber or hardware SSE
 - OTA firmware endpoints planned only (see `web/docs/api.md`)
+- No CI/CD pipeline (`.github/workflows/` missing)
+- Repo `docs/` folder empty — hardware schematics not yet added
+- No firmware unit tests (`firmware/test/` empty)
 
 ## Notes
 

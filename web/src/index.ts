@@ -98,14 +98,18 @@ app.use((_req, res) => {
 // ── Error handler ──────────────────────────────────────────────────────────────
 app.use(errorHandler);
 
+/** Start MQTT subscriber and stale-status job (not auto-started when app is imported for tests). */
+export function startBackgroundServices(): void {
+  startMqttSubscriber();
+  startStaleStatusJob();
+}
+
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`[server] Running at http://localhost:${PORT}`);
   });
 
-  // Start MQTT subscriber only for the actual server process (not during tests/imports)
-  startMqttSubscriber();
-  startStaleStatusJob();
+  startBackgroundServices();
 }
 
 export default app;

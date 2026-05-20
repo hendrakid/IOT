@@ -28,6 +28,9 @@ Build an IoT-based Smart Lock & RFID Attendance system as a learning project. Th
 | Mosquitto broker (Docker dev) | OTA firmware (planned) |
 | Admin JWT authentication | Third-party SSO |
 | Relay control | — (blocked on hardware photo) |
+| | CI/CD pipeline (planned) |
+| | Hardware docs / schematics (planned) |
+| | Firmware unit tests (planned) |
 
 ## Success Criteria
 

@@ -55,9 +55,25 @@ This project is an IoT-based Smart Lock and Attendance system using RFID. It fea
 
 ### Firmware
 - See `firmware/` for ESP32 code (PlatformIO)
+- Copy `firmware/include/config.h.example` → `firmware/include/config.h` and set your values
 - Build: `cd firmware && pio run`
 - Upload: `cd firmware && pio run -t upload`
 - Test: `cd firmware && pio test`
+
+#### Firmware deploy checklist
+1. Find your PC **LAN IP** (`ipconfig` on Windows) — ESP32 cannot use `localhost`.
+2. Start backend stack:
+   - `docker compose up -d` (Mosquitto on port 1883)
+   - `cd web && npm install && npm run migrate && npm run dev`
+   - `web/.env`: `MQTT_URL=mqtt://localhost:1883` (server-side; broker on same PC)
+3. Edit `firmware/include/config.h`:
+   - `API_BASE_URL` → `http://<LAN_IP>:3000`
+   - `MQTT_BROKER_HOST` → `<LAN_IP>` (same machine as broker in dev)
+   - `ACCESS_POINT_ID` → `1` (default seed: "Pintu Utama") or your access point id
+   - `MQTT_CLIENT_ID` → unique per device if multiple ESP32 units
+4. Upload: `cd firmware && pio run -t upload` (or VS Code task **PlatformIO Upload**)
+5. Serial monitor (115200): WiFi connected → `[HTTP] POST` status 200 → `[MQTT] Published telemetry`
+6. Verify: tap RFID card; check `/dashboard` for scan events and `/hardware` for node online
 
 ### Backend
 - See `web/` for Express.js API and dashboard
@@ -70,11 +86,10 @@ This project is an IoT-based Smart Lock and Attendance system using RFID. It fea
 2. Set `MQTT_URL=mqtt://localhost:1883` in `web/.env` (see `web/.env.example`)
 3. Run migrations: `cd web && npm run migrate`
 4. Test publish: `cd web && npm run mqtt:test`
-5. Firmware: set `MQTT_BROKER_HOST` in `firmware/include/config.h` to your broker IP, then build/upload
-
-
+5. Firmware: see **Firmware deploy checklist** above
 
 ## Security
+- `POST /api/scan` is rate-limited per IP (default 30 req/min; see `SCAN_RATE_LIMIT_*` in `web/.env.example`)
 - Follows OWASP Top 10 practices
 - Parameterized queries for all DB operations
 - Input validation and sanitization
@@ -84,6 +99,9 @@ This project is an IoT-based Smart Lock and Attendance system using RFID. It fea
 ## Testing
 - Firmware: PlatformIO Unity test framework
 - Backend: Jest + Supertest
+  - Unit: `cd web && npm run test:unit`
+  - E2E (PostgreSQL): `cd web && npm run test:e2e`
+  - E2E MQTT (PostgreSQL + Mosquitto + `MQTT_URL`): `cd web && npm run test:e2e:mqtt`
 
 ## Documentation
 - See `docs/` for wiring diagrams, schematics, and further guides.

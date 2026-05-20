@@ -62,7 +62,7 @@ web/
 ## Security
 
 - Zod validation on inputs
-- JWT on write endpoints; scan endpoint unauthenticated (rate limit pending)
+- JWT on write endpoints; scan endpoint unauthenticated (rate limited via `scanRateLimiter`)
 - Secrets in `.env` only
 
 ## Scripts
