@@ -16,13 +16,23 @@ static bool g_showingUID = false;
 
 // ── WiFi ─────────────────────────────────────────────────────────────────────
 
-static void connectWiFi()
+static uint32_t g_lastWifiReconnectMs = 0;
+static bool g_wifiWasConnected = false;
+
+/** Attempt STA connect; returns true when WL_CONNECTED. */
+static bool connectWiFi(bool showSuccessScreens = true)
 {
-    showMessage("Smart Lock", "Connecting WiFi...");
+    if (showSuccessScreens)
+        showMessage("Smart Lock", "Connecting WiFi...");
+    else
+        showMessage("Smart Lock", "Reconnecting...");
+
     Serial.print(F("[WiFi] Connecting to "));
     Serial.println(WIFI_SSID);
 
     WiFi.mode(WIFI_STA);
+    WiFi.disconnect(true);
+    delay(100);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
     const uint32_t deadline = millis() + WIFI_CONNECT_TIMEOUT_MS;
@@ -36,17 +46,58 @@ static void connectWiFi()
     {
         Serial.print(F("\n[WiFi] Connected. IP: "));
         Serial.println(WiFi.localIP());
-        // Line 1: "Connected!" — Line 2: SSID
-        showMessage("Connected!", String(WIFI_SSID));
-        delay(1500);
-        // Line 1: "IP:" — Line 2: ESP32's IP address
-        showMessage("IP:", WiFi.localIP().toString());
-        delay(1500);
+        g_wifiWasConnected = true;
+        if (showSuccessScreens)
+        {
+            showMessage("Connected!", String(WIFI_SSID));
+            delay(1500);
+            showMessage("IP:", WiFi.localIP().toString());
+            delay(1500);
+        }
+        return true;
     }
-    else
-    {
-        Serial.println(F("\n[WiFi] Connection FAILED"));
+
+    Serial.println(F("\n[WiFi] Connection FAILED"));
+    g_wifiWasConnected = false;
+    if (showSuccessScreens)
         showMessage("WiFi Error", "Check config.h");
+    else
+        showMessage("WiFi Error", "Retrying...");
+    return false;
+}
+
+/** Periodic reconnect when link drops; does not block card-result display. */
+static void loopWiFi()
+{
+    if (WiFi.status() == WL_CONNECTED)
+    {
+        if (!g_wifiWasConnected)
+        {
+            g_wifiWasConnected = true;
+            Serial.println(F("[WiFi] Link restored"));
+            initMqtt();
+            if (!g_showingUID)
+                showMessage("Smart Lock", "Tap your card...");
+        }
+        return;
+    }
+
+    g_wifiWasConnected = false;
+
+    const uint32_t now = millis();
+    if (now - g_lastWifiReconnectMs < WIFI_RECONNECT_INTERVAL_MS)
+        return;
+
+    g_lastWifiReconnectMs = now;
+
+    if (g_showingUID)
+        return;
+
+    Serial.println(F("[WiFi] Disconnected — retrying"));
+    if (connectWiFi(false))
+    {
+        initMqtt();
+        showMessage("Smart Lock", "Tap your card...");
     }
 }
 
@@ -167,6 +218,7 @@ void setup()
 
 void loop()
 {
+    loopWiFi();
     loopMqtt();
 
     const uint32_t now = millis();

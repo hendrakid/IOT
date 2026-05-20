@@ -25,6 +25,7 @@
 // ── Timeouts ──────────────────────────────────────────────────────────────────
 #define HTTP_TIMEOUT_MS 5000          // HTTP request timeout (ms)
 #define WIFI_CONNECT_TIMEOUT_MS 15000 // Max time to wait for WiFi (ms)
+#define WIFI_RECONNECT_INTERVAL_MS 10000 // Retry interval when WiFi is down (ms)
 
 // ── Access Point ID ────────────────────────────────────────────────────────────
 // Set sesuai ID access point/pintu di backend
