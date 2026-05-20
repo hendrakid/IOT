@@ -6,20 +6,21 @@ This project is an IoT-based Smart Lock and Attendance system using RFID. It fea
 ## Architecture
 
 ```
-┌─────────────┐       WiFi/HTTP         ┌──────────────────┐       ┌────────────────┐
-│   ESP32     │ ───────────────────────►│  REST API        │◄─────►│  PostgreSQL    │
-│  + MFRC522  │   POST /api/scan        │  (Express.js)    │       │  Database      │
-│  + OLED     │◄─────── JSON ──────────►│                  │       └────────────────┘
-│  + Relay    │                         └──────────────────┘
-└─────────────┘                                 ▲
-                                                │
-                                    ┌───────────┘
-                                    │
-                            ┌───────────────┐
-                            │ Web Dashboard │
-                            │ (Frontend)    │
-                            └───────────────┘
+┌─────────────┐  WiFi/HTTP POST /api/scan   ┌──────────────────┐       ┌────────────────┐
+│   ESP32     │ ────────────────────────────►│  REST API        │◄─────►│  PostgreSQL    │
+│  + MFRC522  │◄──────── JSON ──────────────│  (Express.js)    │       └────────────────┘
+│  + OLED     │                              └────────┬─────────┘
+└──────┬──────┘                                       │
+       │ MQTT publish (telemetry / status)            │ SSE /api/hardware/stream
+       ▼                                              ▼
+┌─────────────┐                              ┌───────────────┐
+│ MQTT Broker │◄── subscriber (Node mqtt) ──│ Web Dashboard │
+│ (Mosquitto) │                              │ (Frontend)    │
+└─────────────┘                              └───────────────┘
 ```
+
+- **HTTP** — RFID tap → access decision (`POST /api/scan`)
+- **MQTT** — periodic node telemetry (`smartlock/ap/<id>/telemetry`) and LWT offline on `.../status`
 
 ## Folder Structure
 
@@ -63,6 +64,13 @@ This project is an IoT-based Smart Lock and Attendance system using RFID. It fea
 - Install: `cd web && npm install`
 - Run: `cd web && npm run dev`
 - Test: `cd web && npm test`
+
+### MQTT (hardware telemetry)
+1. Start broker: `docker compose up -d` (from repo root)
+2. Set `MQTT_URL=mqtt://localhost:1883` in `web/.env` (see `web/.env.example`)
+3. Run migrations: `cd web && npm run migrate`
+4. Test publish: `cd web && npm run mqtt:test`
+5. Firmware: set `MQTT_BROKER_HOST` in `firmware/include/config.h` to your broker IP, then build/upload
 
 
 

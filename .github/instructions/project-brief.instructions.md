@@ -13,18 +13,21 @@ Build an IoT-based Smart Lock & RFID Attendance system as a learning project. Th
 1. **RFID Access Control** — ESP32 reads RFID card UIDs via MFRC522, checks authorization against backend, controls a relay (door lock)
 2. **Attendance Logging** — Every card tap (authorized or not) is recorded to PostgreSQL with timestamp, card UID, and user identity
 3. **Real-time Dashboard** — Admin web dashboard shows live scan events via SSE, manages cards/users/attendance
-4. **REST API** — Express.js backend serves both the ESP32 firmware and the web dashboard
-5. **Admin Authentication** — Dashboard and data-modification endpoints require JWT login
+4. **Hardware Monitoring** — ESP32 publishes MQTT telemetry; server stores node status; `/hardware` dashboard shows online/offline, signal, firmware version
+5. **REST API** — Express.js backend serves ESP32 (HTTP scan) and web dashboard
+6. **Admin Authentication** — Dashboard and data-modification endpoints require JWT login
 
 ## Project Scope
 
 | In Scope | Out of Scope |
 |----------|-------------|
-| ESP32 firmware (RFID, OLED, Relay, WiFi) | Mobile app (planned Phase 8, not started) |
-| Express.js REST API (TypeScript) | Cloud deployment / HTTPS (planned) |
-| PostgreSQL database + migrations | Multi-tenant / multi-site support |
-| Web dashboard (HTML/Alpine.js/Tailwind) | BLE or other communication protocols |
+| ESP32 firmware (RFID, OLED, WiFi, MQTT) | Mobile app (not started) |
+| Express.js REST API + MQTT subscriber | Cloud deployment / HTTPS (planned) |
+| PostgreSQL + migrations (incl. `access_point_status`) | Multi-tenant / multi-site |
+| Web dashboard + hardware monitoring page | BLE |
+| Mosquitto broker (Docker dev) | OTA firmware (planned) |
 | Admin JWT authentication | Third-party SSO |
+| Relay control | — (blocked on hardware photo) |
 
 ## Success Criteria
 

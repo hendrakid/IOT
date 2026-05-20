@@ -1,79 +1,78 @@
 ---
-description: "Use when writing or modifying the web backend (Express.js API), web dashboard frontend, database models, or API routes. Covers Node.js, PostgreSQL, REST API patterns."
+description: "Use when writing or modifying the web backend (Express.js API), web dashboard frontend, database models, or API routes. Covers Node.js, PostgreSQL, REST API, MQTT, and SSE patterns."
 applyTo: "web/**"
 ---
 # Web Dashboard & API Conventions
 
 ## Tech Stack
 
-- Runtime: Node.js with Express.js
-- Language: TypeScript preferred (use type hints everywhere)
-- Database: PostgreSQL with parameterized queries (never string concatenation)
-// ORM: Prisma or Sequelize (with typed models) (not used in this project; direct SQL and parameterized queries preferred)
-- Testing: Jest or Vitest
+- Node.js + Express.js + TypeScript
+- PostgreSQL (parameterized SQL, migrations in `src/models/migrations/`)
+- MQTT subscriber (`mqtt` package) for hardware telemetry
+- Jest + Supertest for tests
 
 ## Project Structure
 
 ```
 web/
 ├── src/
-│   ├── index.ts          # Express app entry point
-│   ├── routes/           # Route definitions (one file per resource)
-│   ├── controllers/      # Request handlers (business logic)
-│   ├── models/           # Database models, migrations, SQL
-│   ├── middleware/       # Auth, validation, error handling
-│   └── utils/            # Shared utilities
-├── tests/
-│   ├── unit/             # Unit tests (core logic)
-│   └── e2e/              # End-to-end tests (API flows)
-├── package.json
-└── tsconfig.json
+│   ├── index.ts
+│   ├── routes/           # auth, scan, cards, users, hardware, access-points, ...
+│   ├── controllers/
+│   ├── models/           # includes accessPointStatus.ts
+│   ├── middleware/
+│   └── utils/
+│       ├── mqttSubscriber.ts
+│       ├── staleStatusJob.ts
+│       ├── scanBroadcast.ts
+│       └── hardwareBroadcast.ts
+├── scripts/
+│   ├── mqtt-pub-test.mjs
+│   └── verify-mqtt-status.mjs
+├── public/               # hardware.html, app.js (isNodeOnline)
+└── docs/api.md
 ```
-
-## REST API Design
-
-- Follow RESTful conventions: proper HTTP verbs, status codes, resource naming
-- Use plural nouns for resources: `/api/cards`, `/api/attendance`, `/api/users`
-- Return consistent JSON response shape: `{ "success": boolean, "data": ..., "error": ... }`
-- Use HTTP status codes correctly: 200 (OK), 201 (Created), 400 (Bad Request), 401 (Unauthorized), 404 (Not Found), 500 (Internal Error)
-- Paginate list endpoints: `?page=1&limit=20`; respond with `meta: { page, limit, total }`
 
 ## Core API Endpoints
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| POST | `/api/scan` | Log attendance from ESP32 |
-| GET | `/api/attendance` | List attendance records |
-| GET | `/api/cards` | List registered RFID cards |
-| POST | `/api/cards` | Register new card |
-| DELETE | `/api/cards/:id` | Remove card |
-| GET | `/api/users` | List users |
-| POST | `/api/users` | Create user |
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| POST | `/api/scan` | No | ESP32 RFID tap → attendance + scan SSE |
+| GET | `/api/scan/stream` | JWT* | Real-time scan events |
+| GET | `/api/hardware/stream` | JWT* | Hardware status snapshot + MQTT updates |
+| GET | `/api/access-points` | No | List access points (includes `status` when present) |
+| GET | `/api/stats` | JWT | Dashboard summary counts |
+| POST | `/api/auth/login` | No | Admin JWT |
+
+\* SSE: `?token=<jwt>` (EventSource cannot set headers)
+
+## MQTT (server-side)
+
+- Started in `index.ts`: `startMqttSubscriber()`, `startStaleStatusJob()`
+- Disabled if `MQTT_URL` unset or `MQTT_ENABLED=false`
+- Topics (env): `MQTT_TELEMETRY_TOPIC`, `MQTT_STATUS_TOPIC` (default `smartlock/ap/+/telemetry|status`)
+- Persists to `access_point_status`; broadcasts via `hardwareBroadcast`
+- Dev test: `npm run mqtt:test`
 
 ## Database
 
-- Use migrations for all schema changes (never manual DDL)
-- All queries must use parameterized statements
-- Index frequently queried columns (card_uid, timestamp, user_id)
-- Store card UIDs as uppercase hex strings (e.g. "ABCD1234")
-- Store timestamps in UTC (TIMESTAMPTZ)
-// Project scope: web dashboard (frontend/backend) + ESP32 firmware only.
+- Migrations `001` … `012` (latest: `access_point_status`)
+- `npm run migrate` — never edit applied migrations
 
 ## Security
 
-- Validate all input at the route/middleware level (use Joi, Zod, or express-validator)
-- Authenticate endpoints that modify data (JWT or session-based)
-- Sanitize all user inputs to prevent XSS
-- Never expose stack traces in production error responses
-- Use environment variables for all secrets (`.env` file, never committed)
-- Enable CORS only for known origins
+- Zod validation on inputs
+- JWT on write endpoints; scan endpoint unauthenticated (rate limit pending)
+- Secrets in `.env` only
 
-## Scripts (package.json)
+## Scripts
 
-- `npm run dev` — Start dev server with hot reload (nodemon/tsx)
-- `npm run build` — Compile TypeScript
-- `npm start` — Run production build
-- `npm test` — Run all tests
-- `npm run test:unit` — Unit tests only
-- `npm run test:e2e` — E2E tests only
-- `npm run migrate` — Run database migrations
+```bash
+npm run dev / build / migrate / test
+npm run mqtt:test    # publish test telemetry
+```
+
+## Hardware Dashboard (`hardware.html`)
+
+- Loads access points + opens `EventSource` on `/api/hardware/stream`
+- `isNodeOnline(status)` in `app.js` — offline if `last_seen_at` > 120s or `online === false`

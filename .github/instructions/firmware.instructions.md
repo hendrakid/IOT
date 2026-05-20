@@ -1,5 +1,5 @@
 ---
-description: "Use when writing or modifying ESP32 firmware code, PlatformIO configuration, Arduino sketches, or hardware driver code. Covers RFID, OLED, Relay, WiFi, and HTTP patterns."
+description: "Use when writing or modifying ESP32 firmware code, PlatformIO configuration, Arduino sketches, or hardware driver code. Covers RFID, OLED, Relay, WiFi, HTTP, and MQTT patterns."
 applyTo: "firmware/**"
 ---
 # Firmware Conventions (ESP32 + Arduino Framework)
@@ -8,56 +8,58 @@ applyTo: "firmware/**"
 
 - Use `platformio.ini` for all build configuration
 - Declare library dependencies in `lib_deps` (not manual downloads)
-- Use `pio run` to build, `pio test` for unit tests, `pio run -t upload` to flash
 - Target board: `esp32dev`
+- If `pio` not in PATH: `C:/Users/DELL/.platformio/penv/Scripts/pio.exe run`
 
 ## Code Structure
 
-- `src/main.cpp` — entry point with `setup()` and `loop()`
-- Keep `loop()` non-blocking — never use `delay()` for timing in production code; use `millis()` based timing
-- Separate concerns into modules: `rfid.h`, `display.h`, `network.h`, `relay.h`
-- Use header guards or `#pragma once`
+- `src/main.cpp` — entry point; calls `loopMqtt()` at start of every `loop()`
+- `include/config.h` — WiFi, API URL, `ACCESS_POINT_ID`, MQTT broker settings
+- `include/rfid.h` — MFRC522 read + UID formatting
+- `include/display.h` — OLED helpers
+- `include/mqtt.h` — PubSubClient connect, telemetry publish, LWT offline
+- `include/relay.h` — **not yet implemented** (blocked on hardware photo)
 
 ## RFID (MFRC522 — SPI)
 
 - Library: `miguelbalboa/MFRC522`
-- Always check `mfrc522.PICC_IsNewCardPresent()` before reading
-- Read UID as byte array, convert to hex string for API transmission
-- Call `mfrc522.PICC_HaltA()` and `mfrc522.PCD_StopCrypto1()` after each read
-- SPI pins are hardware-defined: SCK=18, MOSI=23, MISO=19. Only SS and RST are configurable
+- Always `PICC_IsNewCardPresent()` before read
+- `PICC_HaltA()` + `PCD_StopCrypto1()` after each read
+- UID as uppercase hex for API
 
-## OLED Display (SSD1306 — I2C)
+## OLED (SSD1306 — I2C)
 
-- Library: `adafruit/Adafruit SSD1306` + `adafruit/Adafruit GFX Library`
-- I2C address: `0x3C` (default for 128x64)
-- Always call `display.clearDisplay()` before writing new content
-- Call `display.display()` to push buffer to screen
-- Use small text size (`setTextSize(1)`) for status messages, larger for important info
+- `clearDisplay()` before write; `display()` to flush
 
-## Relay Control (GPIO)
+## WiFi & HTTP (card scan)
 
-- Use `digitalWrite()` for on/off control
-- Define relay as active LOW or active HIGH based on module type (document in code)
-- Implement a timeout: auto-lock after N seconds (use `millis()` timer, not `delay()`)
-- Set relay pin to safe state (locked) in `setup()`
+- `POST /api/scan` with `{ "uid": "...", "access_point_id": ACCESS_POINT_ID }`
+- Reconnect WiFi before HTTP if disconnected
+- `http.setTimeout(HTTP_TIMEOUT_MS)`
+- Fail-safe: deny access on network/parse errors
 
-## WiFi & HTTP
+## MQTT (hardware telemetry)
 
-- Library: built-in `WiFi.h` and `HTTPClient.h`
-- Implement reconnection logic — WiFi can drop; check `WiFi.status()` in loop
-- Use `ArduinoJson` for JSON serialization/deserialization
-- Set HTTP timeout to avoid blocking indefinitely
-- Always check HTTP response code before parsing response body
-- Send attendance data as POST with JSON body: `{ "card_uid": "...", "timestamp": ... }`
+- Library: `knolleary/PubSubClient`
+- Connect after WiFi in `initMqtt()`; maintain in `loopMqtt()`
+- Publish topic: `smartlock/ap/<ACCESS_POINT_ID>/telemetry`
+- LWT topic: `smartlock/ap/<ACCESS_POINT_ID>/status` with `{"online":false,"status":"offline"}`
+- Payload fields: `access_point_id`, `online`, `ip_address`, `mac_address`, `firmware_version`, `signal_dbm`, `core_temp_c` (ESP32 `temperatureRead()`)
+- Interval: `MQTT_TELEMETRY_INTERVAL_MS` (default 60s) — must stay under dashboard 120s offline threshold
+- **`MQTT_BROKER_HOST`**: LAN IP of machine running Mosquitto — never `localhost`
+
+## Relay Control (GPIO) — pending
+
+- Not implemented; blocked on relay hardware photo
+- When added: fail to locked on any error; `millis()` auto-lock timeout
 
 ## Error Handling
 
-- Display errors on OLED (network down, card read failed, etc.)
-- Use serial output (`Serial.println()`) for debugging — remove or guard with `#ifdef DEBUG` for production
-- Never leave relay in unlocked state on error — fail to locked state
+- Display errors on OLED; Serial for debug
+- MQTT disconnect does not block RFID scan path
 
 ## Naming Conventions
 
-- Constants: `UPPER_SNAKE_CASE` (e.g., `RELAY_PIN`, `SPI_SS_PIN`)
-- Functions: `camelCase` (e.g., `readRfidCard()`, `sendAttendance()`)
-- Global variables: prefix with `g_` or use a namespace
+- Constants: `UPPER_SNAKE_CASE`
+- Functions: `camelCase`
+- Globals: `g_` prefix in `mqtt.h`

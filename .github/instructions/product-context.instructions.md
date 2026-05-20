@@ -37,6 +37,12 @@ The project solves a real-world problem: managing physical access to a door and 
 5. ESP32: keeps relay locked, shows "Access Denied" on OLED
 6. Dashboard: auto-switches to Cards tab, pre-fills UID for quick registration
 
+### Hardware Monitoring Flow
+1. ESP32 publishes telemetry every 60s to MQTT (`smartlock/ap/<id>/telemetry`)
+2. Server subscriber upserts `access_point_status` and pushes SSE to `/hardware`
+3. Admin opens **Hardware** page — sees online/offline, IP, RSSI, firmware version
+4. If no telemetry for 120s, UI and server mark node offline (stale job)
+
 ### Admin Management Flow
 1. Admin logs in → receives JWT
 2. Admin registers new cards, creates users, assigns access points

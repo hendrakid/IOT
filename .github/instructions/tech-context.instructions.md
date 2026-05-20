@@ -10,47 +10,45 @@ description: "Technologies used, development environment setup, technical constr
 
 | Item | Detail |
 |------|--------|
-| Board | ESP32 DevKit V1 (CP2102, USB Type-C, 38 pins) |
-| Framework | Arduino (via PlatformIO) |
-| Build tool | PlatformIO (`pio run`, `pio test`, `pio run -t upload`, `pio device monitor`) |
-| Key libraries | `miguelbalboa/MFRC522`, `adafruit/Adafruit SSD1306`, `adafruit/Adafruit GFX Library`, `ArduinoJson`, `WiFi.h` (built-in), `HTTPClient.h` (built-in) |
-| Test framework | Unity (via PlatformIO `pio test`) |
+| Board | ESP32 DevKit V1 |
+| Framework | Arduino (PlatformIO) |
+| Build tool | PlatformIO — `C:/Users/DELL/.platformio/penv/Scripts/pio.exe` if not in PATH |
+| Key libraries | MFRC522, Adafruit SSD1306/GFX, ArduinoJson, **PubSubClient** (MQTT), WiFi.h, HTTPClient.h |
+| Test framework | Unity (`pio test`) |
 
 ### Backend (Web API)
 
 | Item | Detail |
 |------|--------|
 | Runtime | Node.js |
-| Framework | Express.js |
-| Language | TypeScript (strict mode) |
-| Database | PostgreSQL |
-| ORM/Query | Raw SQL with parameterized queries (no ORM) |
-| Auth | JWT (`jsonwebtoken`), bcrypt (`bcryptjs`) |
+| Framework | Express.js (TypeScript) |
+| Database | PostgreSQL (raw SQL, parameterized) |
+| Auth | JWT + bcryptjs |
+| MQTT client | `mqtt` npm package (subscriber only on server) |
 | Validation | Zod |
-| Security | `helmet`, `cors` |
 | Testing | Jest + Supertest |
-| Dev server | `tsx` / `ts-node` with nodemon for hot reload |
 
-### Frontend (Web Dashboard)
+### Infrastructure
 
 | Item | Detail |
 |------|--------|
-| Structure | Multi-page Static HTML (`public/*.html`) |
-| Interactivity | Alpine.js |
-| Styling | Tailwind CSS |
-| Real-time | SSE (`EventSource` API) |
-| Auth | JWT stored client-side, sent as `?token=` for SSE |
+| MQTT broker | Eclipse Mosquitto via `docker compose up -d` (port 1883) |
+| Config | `infra/mosquitto/mosquitto.conf` (anonymous dev) |
+
+### Frontend
+
+| Item | Detail |
+|------|--------|
+| Pages | `index.html`, `dashboard.html`, `access-logs.html`, `user-management.html`, `hardware.html` |
+| Stack | Alpine.js, Tailwind CSS, SSE (`EventSource`) |
 
 ## Development Setup
 
 ### Prerequisites
 
-- Node.js (LTS)
-- PostgreSQL (running locally or via Docker)
-- PlatformIO CLI or VS Code PlatformIO extension
-- `.env` file in `web/` with all required secrets
+- Node.js LTS, PostgreSQL, Docker (for MQTT broker), PlatformIO
 
-### Required `.env` Variables
+### Required `.env` Variables (web/)
 
 ```env
 DATABASE_URL=postgresql://user:pass@localhost:5432/smartlock
@@ -58,73 +56,90 @@ JWT_SECRET=your-secret-here
 PORT=3000
 NODE_ENV=development
 CORS_ORIGINS=http://localhost:3000
+
+# MQTT (optional — subscriber disabled if MQTT_URL unset)
+MQTT_URL=mqtt://localhost:1883
+MQTT_TELEMETRY_TOPIC=smartlock/ap/+/telemetry
+MQTT_STATUS_TOPIC=smartlock/ap/+/status
+# MQTT_ENABLED=false   # uncomment to disable without removing MQTT_URL
+STALE_STATUS_THRESHOLD_SEC=120
+STALE_STATUS_INTERVAL_MS=60000
 ```
 
 ### First-time Setup
 
 ```bash
-# Backend
-cd web
-npm install
-cp .env.example .env    # fill in your values
-npm run migrate          # create DB tables
-npm run dev              # start dev server
+# MQTT broker (repo root)
+docker compose up -d
 
-# Firmware
+# Backend
+cd web && npm install && cp .env.example .env
+npm run migrate && npm run dev
+
+# Test MQTT pipeline
+npm run mqtt:test
+node scripts/verify-mqtt-status.mjs 1
+
+# Firmware — set MQTT_BROKER_HOST to broker LAN IP in include/config.h
 cd firmware
-pio run                  # build
-pio run -t upload        # flash to ESP32
-pio device monitor       # view serial output
+pio run && pio run -t upload
 ```
+
+### Firmware MQTT Config (`include/config.h`)
+
+| Define | Purpose |
+|--------|---------|
+| `MQTT_BROKER_HOST` | Broker IP (LAN, not localhost from ESP32) |
+| `MQTT_BROKER_PORT` | Default 1883 |
+| `MQTT_CLIENT_ID` | Unique per device |
+| `ACCESS_POINT_ID` | Must match DB `access_points.id` |
+| `MQTT_TELEMETRY_INTERVAL_MS` | Default 60000 |
+| `FIRMWARE_VERSION` | Shown on hardware dashboard |
 
 ## Technical Constraints
 
 | Constraint | Detail |
 |------------|--------|
-| ESP32 memory | Limited RAM (~300KB) — avoid large JSON payloads |
-| MFRC522 voltage | **3.3V ONLY** — 5V will damage it |
-| GPIO 34-39 | Input-only — cannot drive relay or LEDs |
-| GPIO 6-11 | Reserved for internal flash — do not use |
-| `EventSource` | Cannot set custom headers — JWT via `?token=` query param |
-| `delay()` | Never use in firmware loop — blocks all processing |
-| Migrations | Numbered files only — never edit applied migrations |
+| ESP32 `localhost` | Cannot reach host machine's localhost — use LAN IP for API and MQTT |
+| MFRC522 | 3.3V only |
+| GPIO 34-39 | Input-only |
+| GPIO 6-11 | Flash reserved |
+| EventSource | JWT via `?token=` only |
+| MQTT buffer | PubSubClient buffer 512 bytes in `mqtt.h` |
+| Migrations | Never edit applied migration files |
 
 ## Key Dependencies
 
-### Firmware (`platformio.ini` lib_deps)
+### Firmware (`platformio.ini`)
 ```
 miguelbalboa/MFRC522
 adafruit/Adafruit SSD1306
 adafruit/Adafruit GFX Library
 bblanchon/ArduinoJson
+knolleary/PubSubClient
 ```
 
-### Backend (`web/package.json`)
+### Backend (`package.json`)
 ```
-express, typescript, ts-node, nodemon, tsx
-pg (PostgreSQL client)
-jsonwebtoken, bcryptjs
-zod
-helmet, cors
-jest, supertest (dev)
+express, pg, jsonwebtoken, bcryptjs, zod, helmet, cors, mqtt, dotenv
+jest, supertest, tsx, nodemon (dev)
 ```
 
-## Tool Usage Patterns
+## npm Scripts (web/)
 
-### PlatformIO Commands
 ```bash
-pio run                  # Compile firmware
-pio run -t upload        # Compile + flash to connected ESP32
-pio device monitor       # Open serial monitor (115200 baud)
-pio test                 # Run Unity unit tests
+npm run dev              # Dev server
+npm run build            # TypeScript compile
+npm run migrate          # DB migrations
+npm run mqtt:test        # Publish sample telemetry to broker
+npm test / test:unit / test:e2e
 ```
 
-### npm Scripts (web/)
+## PlatformIO Commands
+
 ```bash
-npm run dev              # Dev server with hot reload
-npm run build            # Compile TypeScript → dist/
-npm run migrate          # Apply pending DB migrations
-npm run test             # All tests (unit + e2e)
-npm run test:unit        # Unit tests only
-npm run test:e2e         # E2E tests only (requires live DB)
+pio run                  # Build
+pio run -t upload        # Flash
+pio device monitor       # Serial 115200
+pio test                 # Unit tests
 ```

@@ -14,46 +14,53 @@ description: "Use when asking about project progress, current status, completed 
 | 5 | Backend API Development | Completed | Build Express.js REST API with PostgreSQL |
 | 6 | Full Integration (ESP32 ↔ API) | Completed | ESP32 sends attendance, receives access decisions from API |
 | 7 | Web Dashboard | Completed | Build admin dashboard for card/user/attendance management |
-| 8 | Security & Hardening | In Progress | JWT auth, Zod validation, rate limiting, HTTPS |
-| 9 | Testing & Documentation | In Progress | Unit tests, E2E tests, final documentation |
+| 8 | MQTT Hardware Monitoring | Completed | Telemetry via Mosquitto, DB status, hardware SSE dashboard |
+| 9 | Security & Hardening | In Progress | JWT auth, Zod validation, rate limiting, HTTPS |
+| 10 | Testing & Documentation | In Progress | Unit tests, E2E tests, final documentation |
 
 ## Current Phase
 
-**Phase**: 9 — Security & Hardening + Testing (In Progress)
+**Phase**: 9 — Security & Hardening (In Progress)
 
-**Current Focus**: Authentication middleware live on all protected API routes; input validation via Zod schemas. Multi-page dashboard implemented with stats endpoint and SSE filtering. Migration `011` added `access_point_id` to attendance. Relay wiring still pending hardware photo evidence. Next: relay integration, rate limiting on `/api/scan`, complete E2E testing suite (only cards E2E currently exists), then HTTPS setup.
+**Current Focus**: MQTT stack complete (broker, subscriber, firmware publisher, `hardware.html`). Next priorities: rate limiting on `/api/scan`, relay integration (blocked on hardware photo), E2E tests for scan/MQTT/hardware, HTTPS for production.
 
 ## Completed Milestones
 
 - [x] ESP32 blinks LED (board works)
 - [x] OLED displays text (I2C works)
 - [x] MFRC522 reads card UID (SPI works)
-- [ ] Relay toggles on/off (GPIO works)
+- [ ] Relay toggles on/off (GPIO works) — blocked on hardware photo
 - [x] ESP32 connects to WiFi
-- [x] ESP32 sends HTTP POST to API
+- [x] ESP32 sends HTTP POST to API (`POST /api/scan`)
 - [x] Express API receives and stores attendance
 - [x] Web dashboard displays attendance records
-- [x] Full system integration working end-to-end
+- [x] Full system integration working end-to-end (RFID scan path)
+- [x] MQTT broker + server subscriber + `access_point_status` table
+- [x] Firmware MQTT telemetry publisher + LWT offline
+- [x] Hardware dashboard (`/hardware`) with live SSE status
 
-## Integration Details (Phase 6 — Completed May 2026)
+## Integration Details
 
-- `POST /api/scan` is the single ESP32 entry point (no JWT required)
-- Backend checks if card UID exists in `cards` table:
-  - **Registered** → records attendance (`access_granted`), returns `{access: true, registered: true, user_name}`
-  - **Unknown** → records attendance (`access_denied`), returns `{access: false, registered: false}`
-- SSE stream (`GET /api/scan/stream`) broadcasts scan events to dashboard in real-time (supports `?include=`, `?exclude=`, `?access_point_id=`)
-- Dashboard auto-switches to Kartu tab + pre-fills UID when unknown card is tapped
-- Dashboard shows kehadiran toast when known card is tapped
-- Firmware: WiFi + HTTPClient + ArduinoJson; OLED shows Connected/IP on boot, then scan result with user name per tap
-- Dashboard is a multi-page app with `dashboard.html`, `access-logs.html`, `user-management.html`, etc.
-- Stats API (`/api/stats`) provides dashboard summary counts
+### Phase 6 — RFID / HTTP (Completed)
+- `POST /api/scan` — no JWT; checks card, records attendance, returns access decision
+- SSE `GET /api/scan/stream` — real-time scan events to dashboard
+- Firmware: WiFi + HTTPClient + ArduinoJson; OLED shows scan results
+
+### Phase 8 — MQTT / Hardware (Completed May 2026)
+- Topics: `smartlock/ap/<id>/telemetry`, `smartlock/ap/<id>/status`
+- Server: `mqttSubscriber.ts` → `upsertAccessPointStatus` → `hardwareBroadcast` → `GET /api/hardware/stream`
+- Stale job: marks offline after 120s without telemetry
+- Dev broker: `docker compose up -d`; test: `cd web && npm run mqtt:test`
+- Firmware: `mqtt.h` (PubSubClient), heartbeat every 60s, config in `config.h`
 
 ## Known Issues / Blockers
 
-- Relay module photo/hardware evidence is not available yet in `.github/hardware pics`, so relay ASCII pinout/wiring cannot be finalized and relay control logic in firmware is not yet implemented.
+- Relay module photo not in `.github/hardware pics/` — relay wiring and GPIO logic not implemented
+- Rate limiting on `POST /api/scan` not implemented
+- No E2E tests for MQTT subscriber or hardware SSE
+- OTA firmware endpoints planned only (see `web/docs/api.md`)
 
 ## Notes
 
-- Update this file as you complete each milestone
-- Mark phase status: Not Started → In Progress → Completed
-- Add issues/blockers as they arise
+- Update this file as milestones complete
+- Migration count: `001` … `012` (latest: `access_point_status`)

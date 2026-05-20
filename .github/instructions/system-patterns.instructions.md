@@ -7,19 +7,17 @@ description: "System architecture, key technical decisions, design patterns, com
 ## System Architecture
 
 ```
-┌─────────────┐       WiFi/HTTP         ┌──────────────────┐       ┌────────────────┐
-│   ESP32     │ ───────────────────────►│  REST API        │◄─────►│  PostgreSQL    │
-│  + MFRC522  │   POST /api/scan        │  (Express.js)    │       │  Database      │
-│  + OLED     │◄─────── JSON ──────────►│                  │       └────────────────┘
-│  + Relay    │                         └──────────────────┘
-└─────────────┘                                 ▲
-                                                │
-                                    ┌───────────┘
-                                    │
-                            ┌───────────────┐
-                            │ Web Dashboard │
-                            │   (Frontend)  │
-                            └───────────────┘
+┌─────────────┐  HTTP POST /api/scan      ┌──────────────────┐       ┌────────────────┐
+│   ESP32     │ ─────────────────────────►│  REST API        │◄─────►│  PostgreSQL    │
+│  + MFRC522  │◄──────── JSON ────────────│  (Express.js)    │       └────────────────┘
+│  + OLED     │                           └────────┬─────────┘
+└──────┬──────┘                                    │
+       │ MQTT publish (telemetry / LWT status)     │ SSE /api/scan/stream
+       ▼                                            │ SSE /api/hardware/stream
+┌─────────────┐                                     ▼
+│ MQTT Broker │◄── mqttSubscriber (Node)    ┌───────────────┐
+│ (Mosquitto) │                             │ Web Dashboard │
+└─────────────┘                             └───────────────┘
 ```
 
 ## Key Technical Decisions
@@ -30,9 +28,11 @@ description: "System architecture, key technical decisions, design patterns, com
 | Backend language | TypeScript (Node.js) | Type safety, good ecosystem |
 | Database | PostgreSQL | Relational, reliable, TIMESTAMPTZ support |
 | Auth mechanism | JWT (HTTP header) | Stateless, easy to implement |
-| Real-time updates | SSE (Server-Sent Events) | Simpler than WebSocket for one-way push |
-| Input validation | Zod | Type-safe schemas, pairs well with TypeScript |
-| JSON on ESP32 | ArduinoJson | Best ESP32 JSON library, streaming support |
+| Card scan transport | HTTP POST | Request/response, immediate access decision |
+| Hardware telemetry | MQTT publish/subscribe | Lightweight push, many devices, no polling |
+| Real-time updates | SSE | Simpler than WebSocket for one-way push |
+| Input validation | Zod | Type-safe schemas |
+| JSON on ESP32 | ArduinoJson | Best ESP32 JSON library |
 
 ## Design Patterns
 
@@ -42,116 +42,85 @@ description: "System architecture, key technical decisions, design patterns, com
 Request → routes/*.ts → controllers/*.ts → models/*.ts → PostgreSQL
 ```
 
-### Middleware Stack Order
+### MQTT Ingestion Path
 
 ```
-helmet() → cors() → express.json() → requireAuth() → routes → errorHandler()
+ESP32 publish → Mosquitto → mqttSubscriber.on("message")
+  → normalizePayload() → upsertAccessPointStatus()
+  → broadcastHardwareEvent({ type: "status" })
+  → SSE clients on GET /api/hardware/stream
 ```
 
-### Async Error Propagation
+### Stale Status Job
 
-```typescript
-export async function handler(req, res, next): Promise<void> {
-  try { ... } catch (err) { next(err); }
-}
+```
+setInterval (60s) → markStaleAccessPointsOffline(120s)
+  → UPDATE online=false WHERE last_seen_at too old
+  → broadcastHardwareEvent per changed row
 ```
 
-### Zod Validation Middleware
+### SSE Patterns
 
-- Validate `req.body` against Zod schema before controller runs
-- Return `400` with field errors on validation failure
-
-### SSE Pattern
-
-- Client connects to `GET /api/scan/stream?token=<jwt>`
-- Server keeps connection open, writes `data: {...}\n\n` on each scan event
-- `POST /api/scan` broadcasts to all connected SSE clients after DB insert
+- **Scan**: `GET /api/scan/stream?token=` — events from `POST /api/scan`
+- **Hardware**: `GET /api/hardware/stream?token=` — snapshot on connect, then MQTT-driven `status` events
 
 ### Firmware: Non-blocking Loop
 
 ```cpp
 void loop() {
-  unsigned long now = millis();
-  if (rfid.isNewCard()) { handleCard(); }
-  if (relayUnlocked && now - relayTimer > RELAY_TIMEOUT_MS) { lockRelay(); }
-  // Never: delay(1000);
+  loopMqtt();  // always first — maintain broker connection
+  // RFID / OLED / HTTP scan handling...
 }
 ```
 
 ### Firmware: Fail-Safe Access Control
 
-```cpp
-// Default: locked. Only unlock on explicit success response.
-if (httpCode == 200 && response["access"] == true) {
-  unlockRelay();
-} else {
-  // Stay locked — includes network errors, timeouts, unknown cards
-}
-```
-
-### Firmware: WiFi Reconnect Pattern
-
-```cpp
-if (WiFi.status() != WL_CONNECTED) {
-  reconnectWiFi();
-  return; // Skip RFID read this cycle
-}
-```
+HTTP scan errors → deny access (relay not yet implemented). MQTT failures do not block scan path.
 
 ## Component Relationships
 
 ```
 firmware/src/main.cpp
-  ├── uses → include/rfid.h      (MFRC522 read + UID formatting)
-  ├── uses → include/display.h   (OLED write helpers)
-  ├── uses → include/config.h    (pins, WiFi creds, API URL, timeouts)
-  └── uses → relay logic         (inline or relay.h)
+  ├── include/rfid.h       (MFRC522)
+  ├── include/display.h    (OLED)
+  ├── include/mqtt.h       (PubSubClient telemetry + LWT)
+  └── include/config.h     (WiFi, API URL, MQTT broker, ACCESS_POINT_ID)
 
 web/src/
-  ├── index.ts                   (Express app setup, middleware, route mounting)
-  ├── routes/scan.ts          → controllers/scanController.ts  → models/attendance.ts
-  ├── routes/cards.ts         → controllers/cardController.ts  → models/card.ts
-  ├── routes/users.ts         → controllers/userController.ts  → models/user.ts
-  ├── routes/auth.ts          → controllers/authController.ts  → models/admin.ts
-  ├── middleware/requireAuth.ts  (JWT verification)
-  ├── middleware/validate.ts     (Zod schema validation)
-  └── utils/broadcast.ts        (SSE client registry + broadcast)
+  ├── index.ts
+  ├── utils/mqttSubscriber.ts    → models/accessPointStatus.ts
+  ├── utils/staleStatusJob.ts    → models/accessPointStatus.ts
+  ├── utils/hardwareBroadcast.ts → routes/hardware.ts
+  ├── utils/scanBroadcast.ts     → routes/scan.ts
+  └── routes/scan.ts → controllers/scanController.ts
 ```
 
 ## Critical Implementation Paths
 
-### Card Scan Path (most critical)
+### Card Scan Path (HTTP)
 
 ```
-ESP32 tap
-  → POST /api/scan
-  → validate body (card_uid required)
-  → query cards table for card_uid
-  → if found:  query user, record access_granted attendance
-  → if not:    record access_denied attendance
-  → broadcast SSE event to all connected dashboard clients
-  → return { access, registered, user_name? }
-  → ESP32: unlock relay OR show denied on OLED
+ESP32 tap → POST /api/scan { uid, access_point_id }
+  → validate → cards lookup → attendance insert
+  → broadcastScan SSE → return { access, registered, user_name }
+```
+
+### Hardware Telemetry Path (MQTT)
+
+```
+ESP32 (every 60s) → smartlock/ap/<id>/telemetry
+  → mqttSubscriber → access_point_status upsert
+  → hardware SSE → hardware.html UI (isNodeOnline: 120s threshold)
 ```
 
 ### Authentication Path
 
 ```
-POST /api/auth/login
-  → validate credentials → bcrypt.compare
-  → sign JWT (HS256, expires 24h) → return { token }
-
-Subsequent requests:
-  → Authorization: Bearer <token>
-  → requireAuth middleware → jwt.verify → attach user to req
+POST /api/auth/login → JWT
+Protected routes → Authorization: Bearer <token>
+SSE routes → ?token=<jwt>
 ```
 
 ### Migration Path
 
-```
-src/models/migrate.ts
-  → reads migrations/ dir
-  → applies in filename order (001_, 002_, ...)
-  → checks applied_migrations table to skip already-run migrations
-  → run: npm run migrate
-```
+Migrations `001_` … `012_` applied in order via `npm run migrate`.

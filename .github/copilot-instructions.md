@@ -89,19 +89,17 @@ IoT-based Smart Lock & Attendance system using RFID. An ESP32 reads RFID cards, 
 ## Architecture
 
 ```
-┌─────────────┐       WiFi/HTTP         ┌──────────────────┐       ┌────────────────┐
-│   ESP32     │ ───────────────────────►│  REST API        │◄─────►│  PostgreSQL    │
-│  + MFRC522  │   POST /api/scan        │  (Express.js)    │       │  Database      │
-│  + OLED     │◄─────── JSON ──────────►│                  │       └────────────────┘
-│  + Relay    │                         └──────────────────┘
-└─────────────┘                                 ▲
-                                                │
-                                    ┌───────────┘
-                                    │
-                            ┌───────────────┐
-                            │ Web Dashboard │
-                            │ (Frontend)    │
-                            └───────────────┘
+┌─────────────┐  HTTP POST /api/scan     ┌──────────────────┐       ┌────────────────┐
+│   ESP32     │ ────────────────────────►│  REST API        │◄─────►│  PostgreSQL    │
+│  + MFRC522  │◄──────── JSON ───────────│  (Express.js)    │       └────────────────┘
+│  + OLED     │                          └────────┬─────────┘
+└──────┬──────┘                                   │
+       │ MQTT telemetry/status                    │ SSE (scan + hardware)
+       ▼                                          ▼
+┌─────────────┐                            ┌───────────────┐
+│ MQTT Broker │◄── mqttSubscriber         │ Web Dashboard │
+│ (Mosquitto) │                            └───────────────┘
+└─────────────┘
 ```
 
 ## Tech Stack
@@ -115,6 +113,7 @@ IoT-based Smart Lock & Attendance system using RFID. An ESP32 reads RFID cards, 
 | Backend API     | Node.js + Express.js (TypeScript)               |
 | Database        | PostgreSQL                                      |
 | Web Dashboard   | Multi-page HTML/CSS/JS (Alpine.js + Tailwind)   |
+| MQTT Broker     | Mosquitto (Docker `docker compose up -d`)       |
 | Build System    | PlatformIO (firmware), npm (web)                |
 
 ## Folder Structure
@@ -123,7 +122,7 @@ IoT-based Smart Lock & Attendance system using RFID. An ESP32 reads RFID cards, 
 /
 ├── firmware/               # ESP32 PlatformIO project
 │   ├── src/main.cpp
-│   ├── include/            # config.h, rfid.h, display.h
+│   ├── include/            # config.h, rfid.h, display.h, mqtt.h
 │   └── platformio.ini
 ├── web/                    # Express.js backend + web dashboard
 │   ├── src/
@@ -205,7 +204,7 @@ if ((err as { code?: string }).code === "23505") { /* unique violation */ }
 ### Structure
 
 - Entry point: `src/main.cpp` with `setup()` and `loop()`
-- Separate concerns into header modules: `rfid.h`, `display.h`, `config.h`
+- Separate concerns into header modules: `rfid.h`, `display.h`, `mqtt.h`, `config.h`
 - **Never use `delay()` for production timing** — use `millis()`-based non-blocking patterns
 
 ### RFID (MFRC522 via SPI)
@@ -226,6 +225,13 @@ if ((err as { code?: string }).code === "23505") { /* unique violation */ }
 - Set `http.setTimeout(HTTP_TIMEOUT_MS)` to prevent indefinite blocking
 - **Fail-safe on error**: deny access if server unreachable, not grant
 
+### MQTT (telemetry)
+
+- Library: `knolleary/PubSubClient` in `include/mqtt.h`
+- Call `initMqtt()` after WiFi connect; `loopMqtt()` at start of `loop()`
+- Topics: `smartlock/ap/<ACCESS_POINT_ID>/telemetry` and `.../status` (LWT)
+- Set `MQTT_BROKER_HOST` to broker LAN IP (not `localhost`)
+
 ### Relay
 
 - Define relay as active LOW or HIGH — document clearly in code
@@ -240,7 +246,8 @@ if ((err as { code?: string }).code === "23505") { /* unique violation */ }
 |--------|----------------------------------|------|---------------------------------------|
 | POST   | `/api/auth/login`                | No   | Admin login → JWT token               |
 | POST   | `/api/scan`                      | No   | ESP32 card tap → attendance + SSE     |
-| GET    | `/api/scan/stream`               | JWT* | SSE stream for dashboard              |
+| GET    | `/api/scan/stream`               | JWT* | SSE stream for scan events            |
+| GET    | `/api/hardware/stream`           | JWT* | SSE stream for access point status    |
 | GET    | `/api/cards`                     | JWT  | List cards (paginated)                |
 | POST   | `/api/cards`                     | JWT  | Register new card                     |
 | DELETE | `/api/cards/:id`                 | JWT  | Delete card                           |
@@ -262,15 +269,17 @@ if ((err as { code?: string }).code === "23505") { /* unique violation */ }
 ## Database Schema Summary
 
 ```
-admins             → id, username, password (bcryptjs), created_at
-users              → id, name, email, role, created_at
-cards              → id, card_uid (UNIQUE), label, user_id → users, created_at
-access_points      → id, name, type, location, created_at
-user_access_points → id, user_id → users, access_point_id → access_points (UNIQUE pair)
-attendance         → id, card_uid, user_id → users (nullable), action, timestamp, access_point_id → access_points
+admins                → id, username, password (bcryptjs), created_at
+users                 → id, name, email, role, created_at
+cards                 → id, card_uid (UNIQUE), label, user_id → users, created_at
+access_points         → id, name, type, location, created_at
+access_point_status   → access_point_id (PK/FK), online, last_seen_at, ip_address, mac_address,
+                        firmware_version, battery_percent, signal_dbm, core_temp_c, updated_at
+user_access_points    → id, user_id → users, access_point_id → access_points (UNIQUE pair)
+attendance            → id, card_uid, user_id → users (nullable), action, timestamp, access_point_id
 ```
 
-Migrations are numbered `001_` ... `011_` and applied in order by `src/models/migrate.ts`.
+Migrations are numbered `001_` ... `012_` and applied in order by `src/models/migrate.ts`.
 
 ---
 
@@ -294,15 +303,19 @@ Migrations are numbered `001_` ... `011_` and applied in order by `src/models/mi
 
 ```bash
 # Firmware
-cd firmware && pio run                # Build
-cd firmware && pio run -t upload      # Flash to ESP32
-cd firmware && pio test               # Unit tests
-cd firmware && pio device monitor     # Serial monitor
+cd firmware && C:/Users/DELL/.platformio/penv/Scripts/pio.exe run                # Build
+cd firmware && C:/Users/DELL/.platformio/penv/Scripts/pio.exe run -t upload      # Flash to ESP32
+cd firmware && C:/Users/DELL/.platformio/penv/Scripts/pio.exe test               # Unit tests
+cd firmware && C:/Users/DELL/.platformio/penv/Scripts/pio.exe device monitor     # Serial monitor
+
+# MQTT broker (repo root)
+docker compose up -d
 
 # Backend
 cd web && npm install
 cd web && npm run migrate             # Apply DB migrations
 cd web && npm run dev                 # Dev server (hot reload)
+cd web && npm run mqtt:test           # Test MQTT publish → DB
 cd web && npm run build               # Compile TypeScript
 cd web && npm test                    # All tests
 cd web && npm run test:unit
