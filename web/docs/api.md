@@ -277,11 +277,43 @@ Sample response (without access_point_id):
 
 ### GET `/api/scan/stream?token=<jwt>`
 - Auth: JWT token via query parameter (EventSource limitation)
-- Description: SSE endpoint for real-time scan events on dashboard.
+- Description: SSE endpoint for real-time scan events on admin pages.
+- Query params:
+  - `access_point_id` (required for delivery): client anchor ID
+  - `include` (optional): comma-separated AP IDs — only events from these APs
+  - `exclude` (optional): comma-separated AP IDs — events from APs not in this list
 
 Sample SSE event payload:
 ```text
 data: {"uid":"A1B2C3D4","registered":true,"user_name":"Budi","timestamp":"2026-05-18T08:00:00.000Z"}
+```
+
+---
+
+## Config
+
+### GET `/api/config`
+- Auth: Not required
+- Description: Public SSE filter config for admin pages (derived from server environment).
+
+Environment variable:
+
+| Variable | Default | Usage |
+|----------|---------|--------|
+| `SSE_REGISTRATION_ACCESS_POINT_IDS` | `1` | Comma-separated registration scanner AP IDs. User Management uses `include`; Access Logs and Dashboard use `exclude`. |
+
+Sample response:
+```json
+{
+	"success": true,
+	"data": {
+		"registrationAccessPointIds": [1],
+		"userManagement": { "include": [1] },
+		"accessLogs": { "exclude": [1] },
+		"dashboard": { "exclude": [1] },
+		"accessPointId": 1
+	}
+}
 ```
 
 ---
@@ -383,6 +415,6 @@ Sample response:
 
 ## Notes
 - Most endpoints require JWT auth via `Authorization: Bearer <token>`.
-- Public endpoints: `POST /api/auth/login`, `POST /api/attendance`, `POST /api/scan`, `GET /api/scan/stream` (token in query), `GET /api/access-points`, `GET /api/access-points/card/:cardId`.
+- Public endpoints: `POST /api/auth/login`, `POST /api/attendance`, `POST /api/scan`, `GET /api/config`, `GET /api/scan/stream` (token in query), `GET /api/access-points`, `GET /api/access-points/card/:cardId`.
 - Validation is enforced with Zod schemas.
 - Main response pattern is `{ success: boolean, data: ... }`, with some legacy endpoints returning `accessPoints` at top level.

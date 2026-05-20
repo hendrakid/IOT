@@ -233,11 +233,22 @@
     });
   }
 
-  // SSE for live activity
-  function connectSSE() {
+  // SSE for live activity (same exclude filter as access-logs)
+  let _dashboardEventSource = null;
+  async function connectSSE() {
     const token = localStorage.getItem("token");
     if (!token) return;
-    const es = new EventSource(`/api/scan/stream?token=${encodeURIComponent(token)}`);
+    if (_dashboardEventSource) {
+      _dashboardEventSource.close();
+      _dashboardEventSource = null;
+    }
+    const cfg = await loadSseConfig();
+    const url = buildScanStreamUrl(token, {
+      accessPointId: cfg.accessPointId,
+      exclude: cfg.dashboard.exclude,
+    });
+    const es = new EventSource(url);
+    _dashboardEventSource = es;
     const dot = document.getElementById("sse-dot");
     const label = document.getElementById("sse-label");
 
@@ -275,9 +286,11 @@
     _toastTimer = setTimeout(() => { t.className = t.className + " hidden"; }, 5000);
   }
 
-  loadStats();
-  loadTrends();
-  connectSSE();
+  (async () => {
+    await loadStats();
+    await loadTrends();
+    await connectSSE();
+  })();
 </script>
 </body>
 </html>

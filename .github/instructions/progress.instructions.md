@@ -19,9 +19,9 @@ description: "Use when asking about project progress, current status, completed 
 
 ## Current Phase
 
-**Phase**: 8 — Security & Hardening (In Progress)
+**Phase**: 9 — Security & Hardening + Testing (In Progress)
 
-**Current Focus**: Authentication middleware live on all protected API routes; input validation via Zod schemas. Relay wiring still pending hardware photo evidence. Next: relay integration, rate limiting on `/api/scan`, then HTTPS setup.
+**Current Focus**: Authentication middleware live on all protected API routes; input validation via Zod schemas. Multi-page dashboard implemented with stats endpoint and SSE filtering. Migration `011` added `access_point_id` to attendance. Relay wiring still pending hardware photo evidence. Next: relay integration, rate limiting on `/api/scan`, complete E2E testing suite (only cards E2E currently exists), then HTTPS setup.
 
 ## Completed Milestones
 
@@ -41,10 +41,12 @@ description: "Use when asking about project progress, current status, completed 
 - Backend checks if card UID exists in `cards` table:
   - **Registered** → records attendance (`access_granted`), returns `{access: true, registered: true, user_name}`
   - **Unknown** → records attendance (`access_denied`), returns `{access: false, registered: false}`
-- SSE stream (`GET /api/scan/stream`) broadcasts scan events to dashboard in real-time
+- SSE stream (`GET /api/scan/stream`) broadcasts scan events to dashboard in real-time (supports `?include=`, `?exclude=`, `?access_point_id=`)
 - Dashboard auto-switches to Kartu tab + pre-fills UID when unknown card is tapped
 - Dashboard shows kehadiran toast when known card is tapped
 - Firmware: WiFi + HTTPClient + ArduinoJson; OLED shows Connected/IP on boot, then scan result with user name per tap
+- Dashboard is a multi-page app with `dashboard.html`, `access-logs.html`, `user-management.html`, etc.
+- Stats API (`/api/stats`) provides dashboard summary counts
 
 ## Known Issues / Blockers
 

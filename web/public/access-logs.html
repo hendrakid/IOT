@@ -174,17 +174,19 @@
     // SSE for real-time log update
     let sseConnected = false;
     let _eventSource = null;
-    function connectSSELogs() {
+    async function connectSSELogs() {
       if (_eventSource) {
         _eventSource.close();
         _eventSource = null;
       }
       const token = localStorage.getItem("token");
       if (!token) return;
-      const adminOfficeAccessPointId = 1;
-      const es = new EventSource(
-        `/api/scan/stream?token=${encodeURIComponent(token)}&access_point_id=${adminOfficeAccessPointId}&exclude=${adminOfficeAccessPointId}`
-      );
+      const cfg = await loadSseConfig();
+      const url = buildScanStreamUrl(token, {
+        accessPointId: cfg.accessPointId,
+        exclude: cfg.accessLogs.exclude,
+      });
+      const es = new EventSource(url);
       _eventSource = es;
       es.onopen = () => { sseConnected = true; };
       es.onmessage = (event) => {

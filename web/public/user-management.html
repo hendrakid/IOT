@@ -427,24 +427,13 @@
         // SSE
         sseConnected: false,
         _eventSource: null,
-        sseInclude: [1],
-        sseExclude: [],
-
-        getSseAccessPointId() {
-          const pickValidId = (items) => {
-            if (!Array.isArray(items)) return null;
-            for (const item of items) {
-              const id = Number(item);
-              if (Number.isInteger(id) && id > 0) return id;
-            }
-            return null;
-          };
-
-          return pickValidId(this.sseInclude) ?? pickValidId(this.sseExclude);
-        },
+        _sseConfig: null,
+        sseInclude: [],
 
         async init() {
           await Promise.all([this.loadUsers(), this.loadCards(), this.loadAccessPoints()]);
+          this._sseConfig = await loadSseConfig();
+          this.sseInclude = this._sseConfig.userManagement.include;
           this.connectSSE();
         },
 
@@ -594,19 +583,23 @@
         },
 
         // ── SSE ──────────────────────────────────────────────────────────────
-        connectSSE() {
+        async connectSSE() {
           if (this._eventSource) {
             this._eventSource.close();
             this._eventSource = null;
           }
           const token = localStorage.getItem("token");
           if (!token) return;
-          const accessPointId = this.getSseAccessPointId();
-          if (!accessPointId) {
+          const cfg = this._sseConfig ?? await loadSseConfig();
+          if (!cfg.accessPointId || !cfg.userManagement.include.length) {
             this.sseConnected = false;
             return;
           }
-          const es = new EventSource(`/api/scan/stream?token=${encodeURIComponent(token)}&access_point_id=${accessPointId}&include=${accessPointId}`);
+          const url = buildScanStreamUrl(token, {
+            accessPointId: cfg.accessPointId,
+            include: cfg.userManagement.include,
+          });
+          const es = new EventSource(url);
           this._eventSource = es;
           es.onopen = () => { this.sseConnected = true; };
           es.onmessage = async (event) => {

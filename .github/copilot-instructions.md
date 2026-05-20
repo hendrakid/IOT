@@ -114,7 +114,7 @@ IoT-based Smart Lock & Attendance system using RFID. An ESP32 reads RFID cards, 
 | Actuator        | 5V Relay Module                                 |
 | Backend API     | Node.js + Express.js (TypeScript)               |
 | Database        | PostgreSQL                                      |
-| Web Dashboard   | HTML/CSS/JS (Alpine.js + Tailwind CSS)          |
+| Web Dashboard   | Multi-page HTML/CSS/JS (Alpine.js + Tailwind)   |
 | Build System    | PlatformIO (firmware), npm (web)                |
 
 ## Folder Structure
@@ -253,6 +253,7 @@ if ((err as { code?: string }).code === "23505") { /* unique violation */ }
 | GET    | `/api/attendance`                | JWT  | List attendance logs (paginated)      |
 | GET    | `/api/access-points`             | No   | List all access points                |
 | GET    | `/api/access-points/card/:id`    | No   | Get access points for a card          |
+| GET    | `/api/stats`                     | JWT  | Summary counts for dashboard          |
 
 \* SSE uses `?token=` query param because `EventSource` cannot set headers.
 
@@ -261,15 +262,15 @@ if ((err as { code?: string }).code === "23505") { /* unique violation */ }
 ## Database Schema Summary
 
 ```
-admins             → id, username, password (bcrypt), created_at
+admins             → id, username, password (bcryptjs), created_at
 users              → id, name, email, role, created_at
 cards              → id, card_uid (UNIQUE), label, user_id → users, created_at
 access_points      → id, name, type, location, created_at
 user_access_points → id, user_id → users, access_point_id → access_points (UNIQUE pair)
-attendance         → id, card_uid, user_id → users (nullable), action, timestamp
+attendance         → id, card_uid, user_id → users (nullable), action, timestamp, access_point_id → access_points
 ```
 
-Migrations are numbered `001_` ... `010_` and applied in order by `src/models/migrate.ts`.
+Migrations are numbered `001_` ... `011_` and applied in order by `src/models/migrate.ts`.
 
 ---
 

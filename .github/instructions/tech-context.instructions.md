@@ -25,7 +25,7 @@ description: "Technologies used, development environment setup, technical constr
 | Language | TypeScript (strict mode) |
 | Database | PostgreSQL |
 | ORM/Query | Raw SQL with parameterized queries (no ORM) |
-| Auth | JWT (`jsonwebtoken`), bcrypt (`bcrypt`) |
+| Auth | JWT (`jsonwebtoken`), bcrypt (`bcryptjs`) |
 | Validation | Zod |
 | Security | `helmet`, `cors` |
 | Testing | Jest + Supertest |
@@ -35,7 +35,7 @@ description: "Technologies used, development environment setup, technical constr
 
 | Item | Detail |
 |------|--------|
-| Structure | Static HTML (`public/dashboard.html`) |
+| Structure | Multi-page Static HTML (`public/*.html`) |
 | Interactivity | Alpine.js |
 | Styling | Tailwind CSS |
 | Real-time | SSE (`EventSource` API) |
@@ -101,9 +101,9 @@ bblanchon/ArduinoJson
 
 ### Backend (`web/package.json`)
 ```
-express, typescript, ts-node, nodemon
+express, typescript, ts-node, nodemon, tsx
 pg (PostgreSQL client)
-jsonwebtoken, bcrypt
+jsonwebtoken, bcryptjs
 zod
 helmet, cors
 jest, supertest (dev)

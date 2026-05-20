@@ -13,6 +13,7 @@ import attendanceRoutes from "./routes/attendance";
 import scanRoutes from "./routes/scan";
 import accessPointsRoutes from "./routes/accessPoints";
 import statsRoutes from "./routes/stats";
+import configRoutes from "./routes/config";
 import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
@@ -70,6 +71,7 @@ app.use("/api/attendance", attendanceRoutes);
 app.use("/api/scan", scanRoutes);
 app.use("/api/access-points", accessPointsRoutes);
 app.use("/api/stats", statsRoutes);
+app.use("/api/config", configRoutes);
 
 // ── Page routes ──────────────────────────────────────────────────────────────
 const pages: Record<string, string> = {

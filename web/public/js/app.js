@@ -40,6 +40,32 @@ function requireAuth() {
   return !!token;
 }
 
+let _sseConfigCache = null;
+
+async function loadSseConfig() {
+  if (!_sseConfigCache) {
+    const res = await fetch("/api/config");
+    const json = await res.json();
+    if (!json?.success) throw new Error("Failed to load SSE config");
+    _sseConfigCache = json.data;
+  }
+  return _sseConfigCache;
+}
+
+/**
+ * Build GET /api/scan/stream URL with token and access-point filters.
+ * @param {string} token JWT
+ * @param {{ accessPointId: number, include?: number[], exclude?: number[] }} opts
+ */
+function buildScanStreamUrl(token, { accessPointId, include, exclude }) {
+  const params = new URLSearchParams();
+  params.set("token", token);
+  params.set("access_point_id", String(accessPointId));
+  if (include?.length) params.set("include", include.join(","));
+  if (exclude?.length) params.set("exclude", exclude.join(","));
+  return `/api/scan/stream?${params.toString()}`;
+}
+
 // Highlight active nav link based on current path
 document.addEventListener("DOMContentLoaded", () => {
   requireAuth();
