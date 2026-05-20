@@ -17,6 +17,7 @@ Current evidence in `.github/hardware pics`:
 - `EPS DEVKIT V1 CP2102 Type C.jpeg` (ESP32 DevKit V1)
 - `RFID RC522.jpeg` (MFRC522 module)
 - `OLED 0.96 128x64 I2C IIC.jpeg` (SSD1306 OLED, pin order visible: GND, VDD, SCK, SDA)
+- `LED Red and Blue.jpeg` (5mm status LEDs — red = denied, blue = granted)
 - Relay photo: **Not available** (Pending Hardware Evidence)
 
 ## Component Specifications
@@ -26,6 +27,8 @@ Current evidence in `.github/hardware pics`:
 | Microcontroller | ESP32 DevKit V1 (CP2102, USB Type-C) | — | 3.3V logic, 5V USB power | 38 pins, dual-core, WiFi+BT |
 | RFID Reader | RFID-RC522 (MFRC522) | **SPI** | 3.3V | 13.56 MHz, Mifare Classic/Ultralight; pins: SDA, SCK, MOSI, MISO, IRQ, GND, RST, 3.3V |
 | OLED Display | SSD1306 0.96" 128x64 | **I2C** | 3.3V–5V | Address: 0x3C; pin order on module: **GND, VDD, SCK, SDA** |
+| Status LED (blue) | 5mm through-hole | **Digital GPIO** | 3.3V via 100Ω resistor | Access granted indicator; anode (+) long leg |
+| Status LED (red) | 5mm through-hole | **Digital GPIO** | 3.3V via 100Ω resistor | Access denied / server error; anode (+) long leg |
 | Relay Module | 5V 1-Channel | **Digital GPIO** | 5V coil, 3.3V signal OK | **Pending Hardware Evidence**: do not generate ASCII wiring until relay photo is available |
 | Power Supply | 12V Adaptor | — | 12V DC | For solenoid/external loads |
 
@@ -67,6 +70,8 @@ Current evidence in `.github/hardware pics`:
 | — | MFRC522 IRQ | — | **Leave unconnected** (not used in this project) |
 | GPIO 21 | OLED SDA (pin 4 on module) | I2C | I2C data line |
 | GPIO 22 | OLED SCK/SCL (pin 3 on module) | I2C | I2C clock line — module label is "SCK" |
+| GPIO 25 | Blue LED anode (via 100Ω) | Digital | Access granted — active HIGH |
+| GPIO 27 | Red LED anode (via 100Ω) | Digital | Access denied / server error — active HIGH |
 | GPIO 26 | Relay IN (planned) | Digital | Planned pin mapping only; ASCII wiring is blocked until relay photo is available |
 | 3.3V | MFRC522 VCC, OLED VCC | Power | 3.3V rail from ESP32 |
 | 5V (VIN) | Relay VCC (planned) | Power | Planned only; verify with relay module photo first |
@@ -181,9 +186,17 @@ OLED SSD1306                     ││││
   │                 │ VDD (pin 2)  │ 3V3                                         │
   │                 │ SCK (pin 3)  │ D22 (GPIO 22) — I2C SCL                    │
   │                 │ SDA (pin 4)  │ D21 (GPIO 21) — I2C SDA                    │
+  ├─────────────────┼──────────────┼─────────────────────────────────────────────┤
+  │ Blue LED 5mm    │ Anode (+)    │ D25 (GPIO 25) via 100Ω resistor            │
+  │                 │ Cathode (-)  │ GND                                         │
+  │ Red LED 5mm     │ Anode (+)    │ D27 (GPIO 27) via 100Ω resistor            │
+  │                 │ Cathode (-)  │ GND                                         │
   └─────────────────┴──────────────┴─────────────────────────────────────────────┘
 
   All verified modules share the same GND rail on ESP32
+
+  LED path (each LED): GPIO → 100Ω resistor → anode (+) → cathode (-) → GND
+  Do NOT connect LED directly to GPIO without a current-limiting resistor.
 ```
 
 ## Pending Hardware Evidence (No ASCII Diagram Allowed)
@@ -213,5 +226,6 @@ Do NOT connect 12V to ESP32 or logic pins.
 5. **MFRC522 RST uses GPIO 4** (not GPIO 22) — GPIO 22 is already used by I2C SCL (OLED SCK)
 6. **MFRC522 IRQ pin** — leave unconnected; not needed for polling-mode reads
 7. **OLED pin order on this module: GND (1), VDD (2), SCK (3), SDA (4)** — the "SCK" label on the OLED = I2C SCL; connect to GPIO 22
-8. **Relay module**: pending hardware evidence in this repo; do not publish relay ASCII wiring until relay photo exists
-9. **12V adaptor**: only connects to solenoid through relay contacts. Never to ESP32 pins
+8. **Status LEDs**: 100Ω resistor in series with each LED; long leg = anode to resistor/GPIO side; GPIO 25 blue (granted), GPIO 27 red (denied)
+9. **Relay module**: pending hardware evidence in this repo; do not publish relay ASCII wiring until relay photo exists
+10. **12V adaptor**: only connects to solenoid through relay contacts. Never to ESP32 pins

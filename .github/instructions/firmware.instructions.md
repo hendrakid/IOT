@@ -17,6 +17,7 @@ applyTo: "firmware/**"
 - `include/config.h` — WiFi, API URL, `ACCESS_POINT_ID`, MQTT broker settings
 - `include/rfid.h` — MFRC522 read + UID formatting
 - `include/display.h` — OLED helpers
+- `include/led.h` — status LEDs (GPIO 25 blue granted, GPIO 27 red denied)
 - `include/mqtt.h` — PubSubClient connect, telemetry publish, LWT offline
 - `include/relay.h` — **not yet implemented** (blocked on hardware photo)
 
@@ -30,6 +31,13 @@ applyTo: "firmware/**"
 ## OLED (SSD1306 — I2C)
 
 - `clearDisplay()` before write; `display()` to flush
+
+## Status LEDs (GPIO)
+
+- `initLeds()` in `setup()` after RFID init — default idle: **red ON**, blue OFF
+- `setAccessLeds(granted)` after scan: granted → blue ON, red OFF; denied/error → red ON, blue OFF
+- `clearLeds()` / `setIdleLeds()` when returning to idle — red ON again (same 3s window as OLED)
+- Active HIGH; 100Ω resistor in series per LED (see `wiring.instructions.md`)
 
 ## WiFi & HTTP (card scan)
 

@@ -23,6 +23,7 @@
 // ── Timeouts ──────────────────────────────────────────────────────────────────
 #define HTTP_TIMEOUT_MS 5000
 #define WIFI_CONNECT_TIMEOUT_MS 15000
+#define WIFI_RECONNECT_INTERVAL_MS 10000
 
 // ── Access Point ID (must match a row in access_points table, default seed id=1) ─
 #define ACCESS_POINT_ID 1
