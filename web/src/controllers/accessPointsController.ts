@@ -1,11 +1,19 @@
 import { Request, Response, NextFunction } from "express";
-import { getAllAccessPoints } from "../models/accessPoints";
+import { getAccessPointStatusSnapshots } from "../models/accessPointStatus";
 import { pool } from "../models/db";
 import { getAccessPointsByUser } from "../models/userAccessPoints";
 
 export async function listAccessPoints(_req: Request, res: Response, next: NextFunction) {
   try {
-    const accessPoints = await getAllAccessPoints();
+    const snapshots = await getAccessPointStatusSnapshots();
+    const accessPoints = snapshots.map((s) => ({
+      id: s.id,
+      name: s.name,
+      type: s.type,
+      location: s.location,
+      created_at: s.created_at,
+      status: s.status,
+    }));
     res.json({ success: true, accessPoints });
   } catch (err) {
     next(err);
@@ -37,7 +45,7 @@ export async function createAccessPoint(req: Request, res: Response, next: NextF
     const { name, type, location } = req.body as {
       name: string;
       type: string;
-      location?: string;
+      location?: string | null;
     };
     const { rows } = await pool.query(
       `INSERT INTO access_points (name, type, location)
@@ -61,7 +69,7 @@ export async function updateAccessPoint(req: Request, res: Response, next: NextF
     const { name, type, location } = req.body as {
       name?: string;
       type?: string;
-      location?: string;
+      location?: string | null;
     };
 
     const fields: string[] = [];

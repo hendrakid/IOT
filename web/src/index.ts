@@ -14,7 +14,10 @@ import scanRoutes from "./routes/scan";
 import accessPointsRoutes from "./routes/accessPoints";
 import statsRoutes from "./routes/stats";
 import configRoutes from "./routes/config";
+import hardwareRoutes from "./routes/hardware";
 import { errorHandler } from "./middleware/errorHandler";
+import { startMqttSubscriber } from "./utils/mqttSubscriber";
+import { startStaleStatusJob } from "./utils/staleStatusJob";
 
 const app = express();
 const PORT = parseInt(process.env.PORT ?? "3000", 10);
@@ -72,6 +75,7 @@ app.use("/api/scan", scanRoutes);
 app.use("/api/access-points", accessPointsRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/config", configRoutes);
+app.use("/api/hardware", hardwareRoutes);
 
 // ── Page routes ──────────────────────────────────────────────────────────────
 const pages: Record<string, string> = {
@@ -98,6 +102,10 @@ if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`[server] Running at http://localhost:${PORT}`);
   });
+
+  // Start MQTT subscriber only for the actual server process (not during tests/imports)
+  startMqttSubscriber();
+  startStaleStatusJob();
 }
 
 export default app;

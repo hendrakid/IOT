@@ -66,6 +66,21 @@ function buildScanStreamUrl(token, { accessPointId, include, exclude }) {
   return `/api/scan/stream?${params.toString()}`;
 }
 
+/** Build GET /api/hardware/stream URL (token in query for EventSource). */
+function buildHardwareStreamUrl(token) {
+  const params = new URLSearchParams();
+  params.set("token", token);
+  return `/api/hardware/stream?${params.toString()}`;
+}
+
+/** Consider node offline if last_seen_at is older than thresholdMs (default 2 min). */
+function isNodeOnline(status, thresholdMs = 120_000) {
+  if (!status) return false;
+  if (!status.online) return false;
+  if (!status.last_seen_at) return false;
+  return Date.now() - new Date(status.last_seen_at).getTime() < thresholdMs;
+}
+
 // Highlight active nav link based on current path
 document.addEventListener("DOMContentLoaded", () => {
   requireAuth();

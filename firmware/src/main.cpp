@@ -5,6 +5,7 @@
 #include "config.h"
 #include "display.h"
 #include "rfid.h"
+#include "mqtt.h"
 
 // How long (ms) to show the result before returning to idle screen
 static const uint32_t UID_DISPLAY_DURATION_MS = 3000;
@@ -155,6 +156,7 @@ void setup()
     Serial.println(F("[BOOT] RFID OK"));
 
     connectWiFi();
+    initMqtt();
 
     showMessage("Smart Lock", "Tap your card...");
     Serial.println(F("[BOOT] Ready."));
@@ -162,6 +164,8 @@ void setup()
 
 void loop()
 {
+    loopMqtt();
+
     const uint32_t now = millis();
 
     // If result is being shown, wait then return to idle

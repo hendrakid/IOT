@@ -40,3 +40,43 @@ export const createAttendanceSchema = z.object({
   action: z.enum(["tap", "access_granted", "access_denied"]).optional().default("tap"),
   access_point_id: z.number().int().positive().optional(),
 });
+
+export const accessPointTypeSchema = z.enum([
+  "door",
+  "gate",
+  "lift",
+  "server_room",
+  "other",
+]);
+
+export const createAccessPointSchema = z.object({
+  name: z.string().min(1).max(100),
+  type: accessPointTypeSchema,
+  location: z
+    .string()
+    .max(150)
+    .optional()
+    .transform((v) => {
+      if (v === undefined) return undefined;
+      const trimmed = v.trim();
+      return trimmed.length ? trimmed : null;
+    }),
+});
+
+export const updateAccessPointSchema = z
+  .object({
+    name: z.string().min(1).max(100).optional(),
+    type: accessPointTypeSchema.optional(),
+    location: z
+      .string()
+      .max(150)
+      .optional()
+      .transform((v) => {
+        if (v === undefined) return undefined;
+        const trimmed = v.trim();
+        return trimmed.length ? trimmed : null;
+      }),
+  })
+  .refine((obj) => Object.keys(obj).length > 0, {
+    message: "No fields to update",
+  });
