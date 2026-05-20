@@ -285,8 +285,18 @@ Sample response (without access_point_id):
 
 Sample SSE event payload:
 ```text
-data: {"uid":"A1B2C3D4","registered":true,"user_name":"Budi","timestamp":"2026-05-18T08:00:00.000Z"}
+data: {"uid":"A1B2C3D4","registered":true,"user_name":"Budi","access_point_id":2,"access_point_name":"Main Door","action":"access_granted","timestamp":"2026-05-18T08:00:00.000Z"}
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `uid` | string | RFID card UID |
+| `registered` | boolean | Whether the card is registered |
+| `user_name` | string? | User name if registered |
+| `access_point_id` | number? | Access point where the tap occurred |
+| `access_point_name` | string? | Human-readable access point name |
+| `action` | string | `access_granted`, `access_denied`, or `tap` |
+| `timestamp` | string | ISO 8601 event time |
 
 ---
 

@@ -35,21 +35,37 @@ export async function handleScan(
       checked = true;
     }
     // If no access_point_id, just report registration status
+    const action = checked
+      ? access
+        ? "access_granted"
+        : "access_denied"
+      : "tap";
+
+    let access_point_name: string | undefined;
+    if (access_point_id) {
+      const { rows: apRows } = await pool.query<{ name: string }>(
+        "SELECT name FROM access_points WHERE id = $1",
+        [access_point_id]
+      );
+      access_point_name = apRows[0]?.name;
+    }
 
     // Record attendance regardless of access result
     await pool.query(
       `INSERT INTO attendance (card_uid, user_id, action, access_point_id)
        VALUES ($1, $2, $3, $4)`,
-      [
-        uid,
-        user_id,
-        checked ? (access ? "access_granted" : "access_denied") : "tap",
-        access_point_id ?? null,
-      ]
+      [uid, user_id, action, access_point_id ?? null]
     );
 
-    // Notify dashboard via SSE (always include access_point_id)
-    broadcastScan({ uid, registered, user_name, access_point_id });
+    // Notify admin pages via SSE (always include access_point_id)
+    broadcastScan({
+      uid,
+      registered,
+      user_name,
+      access_point_id,
+      action,
+      access_point_name,
+    });
 
     res.json({
       success: true,

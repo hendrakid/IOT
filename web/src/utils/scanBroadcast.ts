@@ -8,11 +8,15 @@ type SseClient = {
   exclude?: number[];
 };
 
+export type AttendanceAction = "access_granted" | "access_denied" | "tap";
+
 export interface ScanEvent {
   uid: string;
   registered: boolean;
   user_name?: string;
   access_point_id?: number;
+  action?: AttendanceAction;
+  access_point_name?: string;
 }
 
 const clients: Set<SseClient> = new Set();

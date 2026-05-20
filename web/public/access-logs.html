@@ -12,9 +12,42 @@
     rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif'] } } } }</script>
+  <style>
+    @keyframes rowHighlight {
+      from { background-color: rgb(219 234 254); }
+      to { background-color: transparent; }
+    }
+
+    .tr-row-new {
+      animation: rowHighlight 1.5s ease-out;
+    }
+
+    @keyframes skeletonPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+
+    .skeleton-pulse {
+      animation: skeletonPulse 1.5s ease-in-out infinite;
+    }
+
+    #fetch-progress {
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: transform 0.2s ease;
+    }
+
+    #fetch-progress.is-active {
+      transform: scaleX(1);
+    }
+  </style>
 </head>
 
 <body class="bg-gray-50 font-sans">
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-4 right-4 z-50 max-w-sm px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white hidden"
+    aria-live="polite"></div>
 
   <!-- ── Sidebar ───────────────────────────────────────────────────────────── -->
   <aside class="fixed left-0 top-0 bottom-0 w-[280px] bg-slate-950 flex flex-col z-40 border-r border-slate-800">
@@ -64,10 +97,16 @@
         <h1 class="text-lg font-semibold text-gray-900">Real-time Access Logs</h1>
         <p class="text-xs text-gray-400 mt-0.5">Riwayat semua aktivitas tap kartu RFID</p>
       </div>
-      <button id="btn-refresh"
-        class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition-colors">
-        <span class="material-symbols-outlined text-base">refresh</span>Refresh
-      </button>
+      <div class="flex items-center gap-3">
+        <div id="sse-indicator" class="flex items-center gap-1.5 text-xs text-gray-400">
+          <span id="sse-dot" class="w-2 h-2 rounded-full bg-yellow-400"></span>
+          <span id="sse-label">Menghubungkan...</span>
+        </div>
+        <button id="btn-refresh" title="Muat ulang data"
+          class="flex items-center justify-center w-9 h-9 border border-gray-200 hover:bg-gray-50 text-gray-600 rounded-xl transition-colors disabled:opacity-50">
+          <span id="btn-refresh-icon" class="material-symbols-outlined text-lg">refresh</span>
+        </button>
+      </div>
     </header>
 
     <main class="flex-1 p-8 space-y-6" id="main-content">
@@ -76,24 +115,32 @@
       <div class="bg-white rounded-2xl border border-gray-100 p-5">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1.5">Dari Tanggal</label>
+            <label class="flex items-center gap-1 text-xs font-medium text-gray-500 mb-1.5">
+              <span class="material-symbols-outlined text-sm">calendar_today</span>Dari Tanggal
+            </label>
             <input id="filter-from" type="date"
               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1.5">Sampai Tanggal</label>
+            <label class="flex items-center gap-1 text-xs font-medium text-gray-500 mb-1.5">
+              <span class="material-symbols-outlined text-sm">event</span>Sampai Tanggal
+            </label>
             <input id="filter-to" type="date"
               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1.5">Access Point</label>
+            <label class="flex items-center gap-1 text-xs font-medium text-gray-500 mb-1.5">
+              <span class="material-symbols-outlined text-sm">location_on</span>Access Point
+            </label>
             <select id="filter-access-point"
               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="">Semua Access Point</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1.5">Status</label>
+            <label class="flex items-center gap-1 text-xs font-medium text-gray-500 mb-1.5">
+              <span class="material-symbols-outlined text-sm">verified_user</span>Status
+            </label>
             <select id="filter-action"
               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="">Semua Status</option>
@@ -103,7 +150,9 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1.5">Cari UID / Pengguna</label>
+            <label class="flex items-center gap-1 text-xs font-medium text-gray-500 mb-1.5">
+              <span class="material-symbols-outlined text-sm">search</span>Cari UID / Pengguna
+            </label>
             <div class="relative">
               <span
                 class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base">search</span>
@@ -112,6 +161,7 @@
             </div>
           </div>
         </div>
+        <div id="filter-chips" class="flex flex-wrap gap-2 mt-3 empty:hidden"></div>
         <div class="flex gap-2 mt-4">
           <button id="btn-apply-filter"
             class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors">
@@ -125,27 +175,27 @@
       </div>
 
       <!-- Table -->
-      <div class="bg-white rounded-2xl border border-gray-100">
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <div id="fetch-progress" class="h-0.5 bg-blue-600 w-full"></div>
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
           <h2 class="text-sm font-semibold text-gray-800">Log Aktivitas</h2>
-          <span id="total-count" class="text-xs text-gray-400">Memuat...</span>
+          <div class="flex items-center gap-3 text-xs text-gray-400">
+            <span id="last-refreshed"></span>
+            <span id="total-count">Memuat...</span>
+          </div>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto max-h-[calc(100vh-22rem)]">
           <table class="w-full text-sm">
-            <thead class="bg-gray-50 border-b border-gray-100">
+            <thead class="bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Waktu</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Pengguna</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">RFID UID</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Access Point
-                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Access Point</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
               </tr>
             </thead>
             <tbody id="log-body" class="divide-y divide-gray-100">
-              <tr>
-                <td colspan="5" class="px-6 py-10 text-center text-gray-400">Memuat...</td>
-              </tr>
             </tbody>
           </table>
         </div>
@@ -171,37 +221,26 @@
 
   <script src="/js/app.js"></script>
   <script>
-    // SSE for real-time log update
-    let sseConnected = false;
-    let _eventSource = null;
-    async function connectSSELogs() {
-      if (_eventSource) {
-        _eventSource.close();
-        _eventSource = null;
-      }
-      const token = localStorage.getItem("token");
-      if (!token) return;
-      const cfg = await loadSseConfig();
-      const url = buildScanStreamUrl(token, {
-        accessPointId: cfg.accessPointId,
-        exclude: cfg.accessLogs.exclude,
-      });
-      const es = new EventSource(url);
-      _eventSource = es;
-      es.onopen = () => { sseConnected = true; };
-      es.onmessage = (event) => {
-        // On any scan event, reload logs (could be optimized to only add row)
-        loadLogs();
-      };
-      es.onerror = () => {
-        sseConnected = false;
-        es.close();
-        setTimeout(connectSSELogs, 5000);
-      };
-    }
     let page = 1;
     const limit = 20;
     let totalItems = 0;
+    let _eventSource = null;
+    let _sseRefreshTimer = null;
+    let _toastTimer = null;
+    let _searchDebounceTimer = null;
+    let _fetchAbort = null;
+    let _accessPointNames = {};
+    const ACTION_LABELS = {
+      access_granted: "Akses Diberikan",
+      access_denied: "Akses Ditolak",
+      tap: "Tap (Belum Diproses)",
+    };
+
+    function escapeHtml(str) {
+      return String(str ?? "").replace(/[&<>"']/g, c =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+      );
+    }
 
     function getFilters() {
       return {
@@ -217,52 +256,90 @@
       const f = { ...getFilters(), ...extra };
       const params = new URLSearchParams({ page, limit });
       if (f.from) params.set("from", f.from);
-      if (f.to) {
-        // Include full day: set time to end of day
-        params.set("to", f.to + "T23:59:59");
-      }
+      if (f.to) params.set("to", f.to + "T23:59:59");
       if (f.accessPointId) params.set("access_point_id", f.accessPointId);
       if (f.action) params.set("action", f.action);
       if (f.search) params.set("search", f.search);
       return params.toString();
     }
 
-    async function loadLogs() {
-      const tbody = document.getElementById("log-body");
-      tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400">Memuat...</td></tr>';
+    function hasActiveFilters() {
+      const f = getFilters();
+      return !!(f.from || f.to || f.accessPointId || f.action || f.search);
+    }
 
-      const json = await apiFetch(`/api/attendance?${buildQuery()}`);
-      if (!json?.success) {
-        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-red-400">Gagal memuat data</td></tr>';
-        return;
+    function canPrependFromSse(data) {
+      if (page !== 1) return false;
+      const f = getFilters();
+      if (f.from || f.to || f.search) return false;
+      if (f.accessPointId && String(data.access_point_id) !== f.accessPointId) return false;
+      if (f.action && data.action !== f.action) return false;
+      return true;
+    }
+
+    function formatRelativeTime(iso) {
+      if (!iso) return "—";
+      const diff = Date.now() - new Date(iso).getTime();
+      const sec = Math.floor(diff / 1000);
+      if (sec < 10) return "Baru saja";
+      if (sec < 60) return `${sec} detik lalu`;
+      const min = Math.floor(sec / 60);
+      if (min < 60) return `${min} menit lalu`;
+      const hr = Math.floor(min / 60);
+      if (hr < 24) return `${hr} jam lalu`;
+      return formatDate(iso);
+    }
+
+    function userInitials(name) {
+      if (!name || name === "(Tidak Dikenal)") return "?";
+      return name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase();
+    }
+
+    function avatarColor(name) {
+      let h = 0;
+      const s = String(name || "?");
+      for (let i = 0; i < s.length; i++) h = s.charCodeAt(i) + ((h << 5) - h);
+      const hues = ["bg-blue-500", "bg-violet-500", "bg-emerald-500", "bg-amber-500", "bg-rose-500", "bg-cyan-500"];
+      return hues[Math.abs(h) % hues.length];
+    }
+
+    function userAvatarHtml(name) {
+      const unknown = !name || name === "(Tidak Dikenal)";
+      if (unknown) {
+        return `<div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-gray-400 text-base">person_off</span>
+        </div>`;
       }
+      const color = avatarColor(name);
+      return `<div class="w-8 h-8 rounded-full ${color} flex items-center justify-center flex-shrink-0 text-white text-xs font-semibold">${escapeHtml(userInitials(name))}</div>`;
+    }
 
-      totalItems = json.meta.total;
-      updatePagination(json.data.length);
+    function renderLogRow(row, highlight = false) {
+      const isGranted = row.action === "access_granted";
+      const isDenied = row.action === "access_denied";
+      const userName = row.user_name ?? "(Tidak Dikenal)";
+      const rowClass = [
+        "hover:bg-gray-50 transition-colors",
+        isDenied ? "bg-red-50/80 border-l-2 border-red-400" : "",
+        highlight ? "tr-row-new" : "",
+      ].filter(Boolean).join(" ");
+      const statusBg = isGranted
+        ? "bg-green-100 text-green-700"
+        : isDenied
+          ? "bg-red-100 text-red-700"
+          : "bg-gray-100 text-gray-600";
+      const statusLabel = isGranted ? "Diberikan" : isDenied ? "Ditolak" : "Tap";
+      const statusIcon = isGranted ? "check_circle" : isDenied ? "cancel" : "tap_and_play";
+      const fullTime = formatDate(row.timestamp);
 
-      if (json.data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400">Tidak ada log yang ditemukan</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = json.data.map(row => {
-        const isGranted = row.action === "access_granted";
-        const isDenied = row.action === "access_denied";
-
-        const rowClass = isDenied ? "bg-red-50 border-l-2 border-red-400" : "";
-        const statusBg = isGranted
-          ? "bg-green-100 text-green-700"
-          : isDenied
-            ? "bg-red-100 text-red-700"
-            : "bg-gray-100 text-gray-600";
-        const statusLabel = isGranted ? "Diberikan" : isDenied ? "Ditolak" : "Tap";
-        const statusIcon = isGranted ? "check_circle" : isDenied ? "cancel" : "tap_and_play";
-
-        return `
-        <tr class="hover:bg-gray-50 ${rowClass}">
-          <td class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">${escapeHtml(formatDate(row.timestamp))}</td>
+      return `
+        <tr class="${rowClass}">
+          <td class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap" title="${escapeHtml(fullTime)}">${escapeHtml(formatRelativeTime(row.timestamp))}</td>
           <td class="px-6 py-4">
-            <div class="text-sm font-medium text-gray-800">${escapeHtml(row.user_name ?? "(Tidak Dikenal)")}</div>
+            <div class="flex items-center gap-3">
+              ${userAvatarHtml(userName)}
+              <div class="text-sm font-medium text-gray-800">${escapeHtml(userName)}</div>
+            </div>
           </td>
           <td class="px-6 py-4 font-mono text-xs text-gray-600">${escapeHtml(row.card_uid)}</td>
           <td class="px-6 py-4 text-xs text-gray-600">${escapeHtml(row.access_point_name ?? "—")}</td>
@@ -272,17 +349,262 @@
             </span>
           </td>
         </tr>`;
-      }).join("");
+    }
+
+    function renderSkeletonRows() {
+      return Array.from({ length: 5 }, () => `
+        <tr class="skeleton-pulse">
+          <td class="px-6 py-4"><div class="h-3 bg-gray-200 rounded w-20"></div></td>
+          <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-gray-200"></div><div class="h-3 bg-gray-200 rounded w-24"></div></div></td>
+          <td class="px-6 py-4"><div class="h-3 bg-gray-200 rounded w-28"></div></td>
+          <td class="px-6 py-4"><div class="h-3 bg-gray-200 rounded w-24"></div></td>
+          <td class="px-6 py-4"><div class="h-6 bg-gray-200 rounded-full w-20"></div></td>
+        </tr>`).join("");
+    }
+
+    function renderEmptyState() {
+      return `<tr>
+        <td colspan="5" class="px-6 py-14 text-center">
+          <span class="material-symbols-outlined text-4xl text-gray-300 mb-2 block">history</span>
+          <p class="text-sm font-medium text-gray-500">Tidak ada log yang ditemukan</p>
+          <p class="text-xs text-gray-400 mt-1">Coba ubah filter atau reset untuk melihat semua aktivitas</p>
+        </td>
+      </tr>`;
+    }
+
+    function renderErrorState() {
+      return `<tr>
+        <td colspan="5" class="px-6 py-14 text-center text-red-500">
+          <span class="material-symbols-outlined text-4xl mb-2 block">error</span>
+          <p class="text-sm font-medium">Gagal memuat data</p>
+        </td>
+      </tr>`;
+    }
+
+    function renderLogTable(rows, highlightFirst = false) {
+      const tbody = document.getElementById("log-body");
+      if (rows.length === 0) {
+        tbody.innerHTML = renderEmptyState();
+        return;
+      }
+      tbody.innerHTML = rows.map((row, i) => renderLogRow(row, highlightFirst && i === 0)).join("");
+    }
+
+    function setFetchProgress(active) {
+      const bar = document.getElementById("fetch-progress");
+      bar.classList.toggle("is-active", active);
+    }
+
+    function setLastRefreshed() {
+      const el = document.getElementById("last-refreshed");
+      const now = new Intl.DateTimeFormat("id-ID", { timeStyle: "medium" }).format(new Date());
+      el.textContent = `Diperbarui ${now}`;
     }
 
     function updatePagination(rowCount) {
       document.getElementById("total-count").textContent =
         `${totalItems.toLocaleString("id-ID")} total log`;
-      document.getElementById("page-info").textContent =
-        `Menampilkan ${((page - 1) * limit) + 1}–${((page - 1) * limit) + rowCount} dari ${totalItems}`;
+      if (totalItems === 0) {
+        document.getElementById("page-info").textContent = "Tidak ada data";
+      } else {
+        document.getElementById("page-info").textContent =
+          `Menampilkan ${((page - 1) * limit) + 1}–${((page - 1) * limit) + rowCount} dari ${totalItems}`;
+      }
       document.getElementById("page-current").textContent = `Hal. ${page}`;
       document.getElementById("btn-prev").disabled = page <= 1;
       document.getElementById("btn-next").disabled = rowCount < limit;
+    }
+
+    async function fetchAttendance() {
+      if (_fetchAbort) _fetchAbort.abort();
+      _fetchAbort = new AbortController();
+      const signal = _fetchAbort.signal;
+      const res = await fetch(`/api/attendance?${buildQuery()}`, {
+        headers: authHeaders(),
+        signal,
+      });
+      if (res.status === 401) {
+        logout();
+        return null;
+      }
+      return res.json();
+    }
+
+    async function loadLogs({ silent = false, highlightFirst = false } = {}) {
+      const tbody = document.getElementById("log-body");
+      const refreshBtn = document.getElementById("btn-refresh");
+      const refreshIcon = document.getElementById("btn-refresh-icon");
+
+      if (!silent) {
+        tbody.innerHTML = renderSkeletonRows();
+        refreshBtn.disabled = true;
+        refreshIcon.textContent = "progress_activity";
+        refreshIcon.classList.add("animate-spin");
+      } else {
+        setFetchProgress(true);
+      }
+
+      try {
+        const json = await fetchAttendance();
+        if (!json) return;
+        if (!json.success) {
+          if (!silent) tbody.innerHTML = renderErrorState();
+          return;
+        }
+
+        totalItems = json.meta.total;
+        updatePagination(json.data.length);
+        renderLogTable(json.data, highlightFirst);
+        setLastRefreshed();
+        renderFilterChips();
+      } catch (err) {
+        if (err.name === "AbortError") return;
+        if (!silent) tbody.innerHTML = renderErrorState();
+      } finally {
+        setFetchProgress(false);
+        refreshBtn.disabled = false;
+        refreshIcon.textContent = "refresh";
+        refreshIcon.classList.remove("animate-spin");
+      }
+    }
+
+    function prependRowFromSse(data) {
+      const tbody = document.getElementById("log-body");
+      const emptyRow = tbody.querySelector("td[colspan='5']");
+      if (emptyRow) tbody.innerHTML = "";
+
+      const row = {
+        card_uid: data.uid,
+        user_name: data.user_name ?? null,
+        action: data.action ?? (data.registered ? "tap" : "tap"),
+        timestamp: data.timestamp ?? new Date().toISOString(),
+        access_point_name: data.access_point_name ?? _accessPointNames[data.access_point_id] ?? "—",
+      };
+
+      tbody.insertAdjacentHTML("afterbegin", renderLogRow(row, true));
+
+      const rows = tbody.querySelectorAll("tr");
+      if (rows.length > limit) rows[rows.length - 1].remove();
+
+      totalItems += 1;
+      updatePagination(Math.min(limit, tbody.querySelectorAll("tr").length));
+    }
+
+    function scheduleSilentRefresh() {
+      clearTimeout(_sseRefreshTimer);
+      _sseRefreshTimer = setTimeout(() => {
+        loadLogs({ silent: true, highlightFirst: page === 1 && !hasActiveFilters() });
+      }, 400);
+    }
+
+    function sseToastMessage(data) {
+      const name = data.user_name ?? "Kartu tidak dikenal";
+      const ap = data.access_point_name ?? _accessPointNames[data.access_point_id] ?? "";
+      const apPart = ap ? ` @ ${ap}` : "";
+      if (data.action === "access_granted") return `Akses diberikan — ${name}${apPart}`;
+      if (data.action === "access_denied") return `Akses ditolak — ${name}${apPart}`;
+      if (data.registered) return `Tap terdeteksi — ${name}${apPart}`;
+      return `Kartu asing — ${data.uid}${apPart}`;
+    }
+
+    function showToast(msg, type = "info") {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.className = `fixed top-4 right-4 z-50 max-w-sm px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white ${
+        type === "success" ? "bg-green-600" : type === "warning" ? "bg-amber-600" : type === "error" ? "bg-red-600" : "bg-blue-600"
+      }`;
+      if (_toastTimer) clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => t.classList.add("hidden"), 5000);
+    }
+
+    async function connectSSELogs() {
+      if (_eventSource) {
+        _eventSource.close();
+        _eventSource = null;
+      }
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const dot = document.getElementById("sse-dot");
+      const label = document.getElementById("sse-label");
+      dot.className = "w-2 h-2 rounded-full bg-yellow-400";
+      label.textContent = "Menghubungkan...";
+
+      const cfg = await loadSseConfig();
+      const url = buildScanStreamUrl(token, {
+        accessPointId: cfg.accessPointId,
+        exclude: cfg.accessLogs.exclude,
+      });
+      const es = new EventSource(url);
+      _eventSource = es;
+
+      es.onopen = () => {
+        dot.className = "w-2 h-2 rounded-full bg-green-400 animate-pulse";
+        label.textContent = "Live";
+      };
+
+      es.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (!data.uid) return;
+
+          const toastType =
+            data.action === "access_granted" ? "success"
+              : data.action === "access_denied" ? "error"
+                : data.registered ? "info" : "warning";
+          showToast(sseToastMessage(data), toastType);
+
+          if (canPrependFromSse(data)) {
+            prependRowFromSse(data);
+          }
+          scheduleSilentRefresh();
+        } catch (_) {
+          scheduleSilentRefresh();
+        }
+      };
+
+      es.onerror = () => {
+        dot.className = "w-2 h-2 rounded-full bg-yellow-400";
+        label.textContent = "Terputus";
+        es.close();
+        setTimeout(connectSSELogs, 5000);
+      };
+    }
+
+    function renderFilterChips() {
+      const container = document.getElementById("filter-chips");
+      const f = getFilters();
+      const chips = [];
+
+      if (f.from) chips.push({ key: "from", label: `Dari: ${f.from}` });
+      if (f.to) chips.push({ key: "to", label: `Sampai: ${f.to}` });
+      if (f.accessPointId) {
+        const name = _accessPointNames[f.accessPointId] ?? `AP #${f.accessPointId}`;
+        chips.push({ key: "accessPointId", label: `AP: ${name}` });
+      }
+      if (f.action) chips.push({ key: "action", label: `Status: ${ACTION_LABELS[f.action] ?? f.action}` });
+      if (f.search) chips.push({ key: "search", label: `Cari: "${f.search}"` });
+
+      container.innerHTML = chips.map(c => `
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-medium border border-blue-100">
+          ${escapeHtml(c.label)}
+          <button type="button" data-chip="${c.key}" class="hover:text-blue-900 ml-0.5" aria-label="Hapus filter">
+            <span class="material-symbols-outlined text-sm leading-none">close</span>
+          </button>
+        </span>`).join("");
+
+      container.querySelectorAll("[data-chip]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.chip;
+          if (key === "from") document.getElementById("filter-from").value = "";
+          else if (key === "to") document.getElementById("filter-to").value = "";
+          else if (key === "accessPointId") document.getElementById("filter-access-point").value = "";
+          else if (key === "action") document.getElementById("filter-action").value = "";
+          else if (key === "search") document.getElementById("filter-search").value = "";
+          page = 1;
+          loadLogs();
+        });
+      });
     }
 
     function applyFilters() { page = 1; loadLogs(); }
@@ -298,45 +620,38 @@
     function prevPage() { if (page > 1) { page--; loadLogs(); } }
     function nextPage() { page++; loadLogs(); }
 
-    function escapeHtml(str) {
-      return String(str).replace(/[&<>"']/g, c =>
-        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
-      );
-    }
-
-    // Enter key on search applies filter
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("filter-search").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") applyFilters();
-      });
-
-      // Tombol Terapkan Filter
-      document.getElementById("btn-apply-filter").addEventListener("click", applyFilters);
-      // Tombol Reset
-      document.getElementById("btn-reset-filter").addEventListener("click", clearFilters);
-      // Tombol Refresh
-      document.getElementById("btn-refresh").addEventListener("click", loadLogs);
-      // Tombol pagination
-      document.getElementById("btn-prev").addEventListener("click", prevPage);
-      document.getElementById("btn-next").addEventListener("click", nextPage);
-      // Logout
-      document.getElementById("btn-logout").addEventListener("click", logout);
-
-      loadAccessPointsFilter();
-      connectSSELogs(); // Start SSE connection for real-time logs
-    });
-
     async function loadAccessPointsFilter() {
       const select = document.getElementById("filter-access-point");
       const json = await apiFetch("/api/access-points");
       if (!json?.accessPoints) return;
+      _accessPointNames = {};
+      json.accessPoints.forEach(ap => { _accessPointNames[ap.id] = ap.name; });
       const options = json.accessPoints
         .map((ap) => `<option value="${ap.id}">${escapeHtml(ap.name)}</option>`)
         .join("");
       select.innerHTML = '<option value="">Semua Access Point</option>' + options;
     }
 
-    loadLogs();
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("filter-search").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") applyFilters();
+      });
+      document.getElementById("filter-search").addEventListener("input", () => {
+        clearTimeout(_searchDebounceTimer);
+        _searchDebounceTimer = setTimeout(applyFilters, 400);
+      });
+
+      document.getElementById("btn-apply-filter").addEventListener("click", applyFilters);
+      document.getElementById("btn-reset-filter").addEventListener("click", clearFilters);
+      document.getElementById("btn-refresh").addEventListener("click", () => loadLogs());
+      document.getElementById("btn-prev").addEventListener("click", prevPage);
+      document.getElementById("btn-next").addEventListener("click", nextPage);
+      document.getElementById("btn-logout").addEventListener("click", logout);
+
+      loadAccessPointsFilter();
+      connectSSELogs();
+      loadLogs();
+    });
   </script>
 </body>
 
