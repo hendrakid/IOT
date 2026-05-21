@@ -14,7 +14,7 @@ Active work items:
 - Input validation via Zod schemas implemented on all endpoints
 - Multi-page dashboard including `hardware.html` (live node status via MQTT → SSE)
 - Rate limiting on `POST /api/scan` — implemented (`express-rate-limit`, `SCAN_RATE_LIMIT_*` env)
-- Relay hardware photo not yet available — relay firmware integration blocked
+- Relay control implemented — GPIO 26, `include/relay.h`, unlock on access granted
 - OTA firmware management — planned, not implemented
 - CI/CD pipeline — not yet created (`.github/workflows/` missing)
 - Hardware docs (`docs/`) — folder empty, schematics not yet added
@@ -46,8 +46,7 @@ Active work items:
 
 ### Prioritas menengah
 
-1. **Relay integration** — blocked until relay module photo in `.github/hardware pics/`
-2. **Unit tests (web)** — `hardwareBroadcast`, `staleStatusJob`
+1. **Unit tests (web)** — `hardwareBroadcast`, `staleStatusJob`
 
 ### Prioritas rendah
 
@@ -67,7 +66,7 @@ Active work items:
 | MQTT optional on server | Subscriber disabled if `MQTT_URL` unset or `MQTT_ENABLED=false` |
 | `MQTT_BROKER_HOST` on ESP32 | Must be LAN IP of broker machine — ESP32 cannot use `localhost` |
 | UI + server stale threshold | 120s — `isNodeOnline()` in `app.js` + `staleStatusJob` |
-| Relay wiring blocked until photo | Hardware Evidence Policy |
+| Relay GPIO 26, active LOW, energize-to-unlock (NO+COM) | Verified from relay hardware photo |
 | Fail-to-locked on any error | Security — unknown state must not grant access |
 | Card UIDs stored as UPPERCASE hex | ESP32 and API both normalize to uppercase |
 
@@ -81,7 +80,6 @@ Active work items:
 
 ## Known Blockers
 
-- **Relay**: No hardware photo → relay wiring and GPIO control not implemented
 - **PlatformIO PATH**: Use full path `C:/Users/DELL/.platformio/penv/Scripts/pio.exe` if `pio` not in shell PATH
 
 ## Learnings & Insights

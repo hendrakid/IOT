@@ -9,7 +9,7 @@ description: "Use when asking about project progress, current status, completed 
 |-------|-------|--------|-------------|
 | 1 | Hardware Setup & Verification | Completed | Wire all components, verify each works individually |
 | 2 | RFID Card Reading | Completed | Read card UIDs, display on Serial & OLED |
-| 3 | Relay Control | Not Started | Control relay based on card read, implement lock/unlock logic |
+| 3 | Relay Control | Completed | GPIO 26 relay unlock on access granted, auto-lock via millis() |
 | 4 | WiFi & HTTP Communication | Completed | Connect ESP32 to WiFi, send data to API |
 | 5 | Backend API Development | Completed | Build Express.js REST API with PostgreSQL |
 | 6 | Full Integration (ESP32 ↔ API) | Completed | ESP32 sends attendance, receives access decisions from API |
@@ -22,14 +22,14 @@ description: "Use when asking about project progress, current status, completed 
 
 **Phase**: 9 — Security & Hardening (In Progress)
 
-**Current Focus**: Prioritas tinggi selesai (rate limit, E2E scan/MQTT/hardware, firmware deploy docs). Next: relay (blocked), unit tests `hardwareBroadcast`/`staleStatusJob`, OTA, HTTPS, CI/CD, hardware docs.
+**Current Focus**: Relay control implemented. Next: unit tests `hardwareBroadcast`/`staleStatusJob`, OTA, HTTPS, CI/CD, hardware docs.
 
 ## Completed Milestones
 
 - [x] ESP32 blinks LED (board works)
 - [x] OLED displays text (I2C works)
 - [x] MFRC522 reads card UID (SPI works)
-- [ ] Relay toggles on/off (GPIO works) — blocked on hardware photo
+- [x] Relay toggles on/off (GPIO 26, unlock on access granted)
 - [x] ESP32 connects to WiFi
 - [x] ESP32 sends HTTP POST to API (`POST /api/scan`)
 - [x] Express API receives and stores attendance
@@ -63,7 +63,7 @@ description: "Use when asking about project progress, current status, completed 
 
 ### Prioritas menengah (fitur inti belum lengkap)
 
-- [ ] **Relay integration** — blocked until relay module photo in `.github/hardware pics/`; planned GPIO 26, `include/relay.h`, unlock N seconds on access granted, fail-to-locked on error
+- [x] **Relay integration** — `include/relay.h`, GPIO 26, unlock on access granted, fail-to-locked on error
 - [ ] **Unit tests (web)** — `hardwareBroadcast`, `staleStatusJob` (done: `scanController`, `schemas`, `scanBroadcast`, `sseEnv`, `scanRateLimit`, `mqttSubscriber`)
 
 ### Prioritas rendah (production & polish)
@@ -76,7 +76,6 @@ description: "Use when asking about project progress, current status, completed 
 
 ## Known Issues / Blockers
 
-- Relay module photo not in `.github/hardware pics/` — relay wiring and GPIO logic not implemented
 - OTA firmware endpoints planned only (see `web/docs/api.md`)
 - No CI/CD pipeline (`.github/workflows/` missing)
 - Repo `docs/` folder empty — hardware schematics not yet added

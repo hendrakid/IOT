@@ -19,7 +19,7 @@ applyTo: "firmware/**"
 - `include/display.h` — OLED helpers
 - `include/led.h` — status LEDs (GPIO 25 blue granted, GPIO 27 red denied)
 - `include/mqtt.h` — PubSubClient connect, telemetry publish, LWT offline
-- `include/relay.h` — **not yet implemented** (blocked on hardware photo)
+- `include/relay.h` — relay lock/unlock (GPIO 26, active LOW, auto-lock via `loopRelay()`)
 
 ## RFID (MFRC522 — SPI)
 
@@ -56,10 +56,13 @@ applyTo: "firmware/**"
 - Interval: `MQTT_TELEMETRY_INTERVAL_MS` (default 60s) — must stay under dashboard 120s offline threshold
 - **`MQTT_BROKER_HOST`**: LAN IP of machine running Mosquitto — never `localhost`
 
-## Relay Control (GPIO) — pending
+## Relay Control (GPIO)
 
-- Not implemented; blocked on relay hardware photo
-- When added: fail to locked on any error; `millis()` auto-lock timeout
+- `initRelay()` in `setup()` after `initLeds()` — default **locked** at boot
+- `loopRelay()` at start of `loop()` (with `loopMqtt()`) — `millis()` auto-lock after `RELAY_UNLOCK_DURATION_MS`
+- `unlockRelay(duration)` on `result.access == true`; `lockRelay()` on denied, server error, and idle return
+- GPIO 26, active LOW (`RELAY_ACTIVE_LOW` in `config.h`); energize to unlock via relay NO+COM
+- Fail to locked on any error; never `delay()` for unlock timing
 
 ## Error Handling
 

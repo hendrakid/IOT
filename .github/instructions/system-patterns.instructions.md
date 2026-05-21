@@ -75,7 +75,7 @@ void loop() {
 
 ### Firmware: Fail-Safe Access Control
 
-HTTP scan errors → deny access (relay not yet implemented). MQTT failures do not block scan path.
+HTTP scan errors → deny access + `lockRelay()`. Access granted → `unlockRelay()` then auto-lock via `loopRelay()`. MQTT failures do not block scan path.
 
 ## Component Relationships
 
@@ -83,6 +83,8 @@ HTTP scan errors → deny access (relay not yet implemented). MQTT failures do n
 firmware/src/main.cpp
   ├── include/rfid.h       (MFRC522)
   ├── include/display.h    (OLED)
+  ├── include/led.h        (status LEDs)
+  ├── include/relay.h      (door lock relay, GPIO 26)
   ├── include/mqtt.h       (PubSubClient telemetry + LWT)
   └── include/config.h     (WiFi, API URL, MQTT broker, ACCESS_POINT_ID)
 

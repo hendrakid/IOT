@@ -65,3 +65,18 @@
 
 // Reconnect attempt interval when MQTT is disconnected
 #define MQTT_RECONNECT_INTERVAL_MS 10000
+
+// ── Relay (5V 1-channel, GPIO 26) ─────────────────────────────────────────────
+#ifndef RELAY_PIN
+#define RELAY_PIN 26
+#endif
+
+// 0 = active HIGH; 1 = active LOW (verified on JQC-3FF module).
+// Requires 4.7k–10kΩ pull-up from relay IN to 5V (VIN); relay.h uses open-drain on GPIO 26.
+#ifndef RELAY_ACTIVE_LOW
+#define RELAY_ACTIVE_LOW 1
+#endif
+
+#ifndef RELAY_UNLOCK_DURATION_MS
+#define RELAY_UNLOCK_DURATION_MS 3000
+#endif

@@ -343,7 +343,9 @@ See `.github/instructions/wiring.instructions.md` for full pin assignments and A
 | OLED SSD1306 | VDD        | 3V3        |
 | OLED SSD1306 | SCK        | GPIO 22    |
 | OLED SSD1306 | SDA        | GPIO 21    |
-| Relay        | IN         | GPIO 26 *(pending photo evidence)* |
+| Relay        | VCC        | 5V (VIN)   |
+| Relay        | GND        | GND        |
+| Relay        | IN         | GPIO 26    |
 
 **Critical warnings:**
 - MFRC522 is **3.3V only** — never connect to 5V
@@ -362,7 +364,7 @@ Before providing wiring guidance or updating wiring documents:
 3. Only include ASCII wiring diagrams for components **with photo evidence**
 4. Mark unverified components as **Pending Hardware Evidence**
 
-Current status: ESP32, MFRC522, OLED verified. Relay module **not yet verified**.
+Current status: ESP32, MFRC522, OLED, Relay (5V 1-ch) verified. Solenoid 12V via COM+NO (energize to unlock).
 
 ---
 

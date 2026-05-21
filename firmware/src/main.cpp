@@ -7,6 +7,7 @@
 #include "rfid.h"
 #include "mqtt.h"
 #include "led.h"
+#include "relay.h"
 
 // How long (ms) to show the result before returning to idle screen
 static const uint32_t UID_DISPLAY_DURATION_MS = 3000;
@@ -208,6 +209,7 @@ void setup()
     Serial.println(F("[BOOT] RFID OK"));
 
     initLeds();
+    initRelay();
 
     connectWiFi();
     initMqtt();
@@ -220,6 +222,7 @@ void loop()
 {
     loopWiFi();
     loopMqtt();
+    loopRelay();
 
     const uint32_t now = millis();
 
@@ -230,6 +233,7 @@ void loop()
         {
             g_showingUID = false;
             clearLeds();
+            lockRelay();
             showMessage("Smart Lock", "Tap your card...");
         }
         return;
@@ -252,6 +256,7 @@ void loop()
     if (result.serverError)
     {
         Serial.println(F("[RFID] Server error — access denied"));
+        lockRelay();
         setAccessLeds(false);
         showMessage("Server Error", "Cek IP / koneksi");
     }
@@ -259,6 +264,10 @@ void loop()
     {
         Serial.print(F("[RFID] Access: "));
         Serial.println(result.access ? F("GRANTED") : F("DENIED"));
+        if (result.access)
+            unlockRelay(RELAY_UNLOCK_DURATION_MS);
+        else
+            lockRelay();
         setAccessLeds(result.access);
         showScanResult(result.access, result.registered, result.userName, uid);
     }
