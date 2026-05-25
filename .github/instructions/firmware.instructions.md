@@ -61,7 +61,7 @@ applyTo: "firmware/**"
 - `initRelay()` in `setup()` after `initLeds()` — default **locked** at boot
 - `loopRelay()` at start of `loop()` (with `loopMqtt()`) — `millis()` auto-lock after `RELAY_UNLOCK_DURATION_MS`
 - `unlockRelay(duration)` on `result.access == true`; `lockRelay()` on denied, server error, and idle return
-- GPIO 26, active LOW (`RELAY_ACTIVE_LOW` in `config.h`); energize to unlock via relay NO+COM
+- GPIO 26, active LOW (`RELAY_ACTIVE_LOW` in `config.h`); **4.7k–10kΩ pull-up IN→5V**; locked = `pinMode(INPUT)`, unlock = `OUTPUT` + LOW
 - Fail to locked on any error; never `delay()` for unlock timing
 
 ## Error Handling

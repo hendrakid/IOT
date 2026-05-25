@@ -72,7 +72,7 @@
 #endif
 
 // 0 = active HIGH; 1 = active LOW (verified on JQC-3FF module).
-// Requires 4.7k–10kΩ pull-up from relay IN to 5V (VIN); relay.h uses open-drain on GPIO 26.
+// Requires 4.7k–10kΩ pull-up IN→5V (VIN) AND 10kΩ series IN→GPIO26; see wiring.instructions.md.
 #ifndef RELAY_ACTIVE_LOW
 #define RELAY_ACTIVE_LOW 1
 #endif

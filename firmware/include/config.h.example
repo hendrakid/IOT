@@ -61,7 +61,7 @@
 #define RELAY_PIN 26
 #endif
 
-// Active LOW + 4.7k–10kΩ pull-up IN→5V; see relay.h (OUTPUT_OPEN_DRAIN).
+// Active LOW + 4.7k–10kΩ pull-up IN→5V; see relay.h (INPUT locked / OUTPUT unlock).
 #ifndef RELAY_ACTIVE_LOW
 #define RELAY_ACTIVE_LOW 1
 #endif
