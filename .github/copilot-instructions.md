@@ -106,7 +106,7 @@ IoT-based Smart Lock & Attendance system using RFID. An ESP32 reads RFID cards, 
 
 | Component       | Technology                                      |
 |-----------------|-------------------------------------------------|
-| Microcontroller | ESP32 DevKit V1 (Arduino framework/PlatformIO)  |
+| Microcontroller | ESP32 DevKit V1 (Arduino framework/PlatformIO); alt board ESP32-C3 Super Mini (env `esp32-c3-supermini`) |
 | RFID Module     | MFRC522 (SPI interface)                         |
 | Display         | OLED 0.96" 128x64 SSD1306 (I2C interface)       |
 | Actuator        | 5V Relay Module                                 |
@@ -302,9 +302,11 @@ Migrations are numbered `001_` ... `012_` and applied in order by `src/models/mi
 ## Build & Run Commands
 
 ```bash
-# Firmware
-cd firmware && C:/Users/DELL/.platformio/penv/Scripts/pio.exe run                # Build
-cd firmware && C:/Users/DELL/.platformio/penv/Scripts/pio.exe run -t upload      # Flash to ESP32
+# Firmware — two PlatformIO envs: esp32dev (default) and esp32-c3-supermini
+cd firmware && C:/Users/DELL/.platformio/penv/Scripts/pio.exe run                              # Build (esp32dev)
+cd firmware && C:/Users/DELL/.platformio/penv/Scripts/pio.exe run -e esp32-c3-supermini         # Build (ESP32-C3)
+cd firmware && C:/Users/DELL/.platformio/penv/Scripts/pio.exe run -t upload                     # Flash to ESP32
+cd firmware && C:/Users/DELL/.platformio/penv/Scripts/pio.exe run -e esp32-c3-supermini -t upload -t monitor  # Flash + monitor (ESP32-C3)
 cd firmware && C:/Users/DELL/.platformio/penv/Scripts/pio.exe test               # Unit tests
 cd firmware && C:/Users/DELL/.platformio/penv/Scripts/pio.exe device monitor     # Serial monitor
 
@@ -353,6 +355,8 @@ See `.github/instructions/wiring.instructions.md` for full pin assignments and A
 - GPIOs 6–11 are **reserved** for internal flash — do not use
 - All modules must share a **common GND**
 
+**Alt board (ESP32-C3 Super Mini, not yet wired):** pins auto-selected at compile time via `CONFIG_IDF_TARGET_ESP32C3` — SPI SS=7/SCK=4/MOSI=6/MISO=5, RFID RST=10, OLED I2C SDA=8/SCL=9, Relay=2, LED blue=1/red=3. GPIO8/GPIO9 are strapping pins (GPIO9 also wired to on-board BOOT button) — verify no LOW-hold at power-up. See `wiring.instructions.md` for full detail.
+
 ---
 
 ## Hardware Photo Validation Protocol
@@ -364,7 +368,7 @@ Before providing wiring guidance or updating wiring documents:
 3. Only include ASCII wiring diagrams for components **with photo evidence**
 4. Mark unverified components as **Pending Hardware Evidence**
 
-Current status: ESP32, MFRC522, OLED, Relay (5V 1-ch) verified. Solenoid 12V via COM+NO (energize to unlock).
+Current status: ESP32, ESP32-C3 Super Mini, MFRC522, OLED, Relay (5V 1-ch) verified. Solenoid 12V via COM+NO (energize to unlock).
 
 ---
 

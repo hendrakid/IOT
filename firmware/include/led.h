@@ -4,9 +4,14 @@
 
 // Status LEDs — 5mm through-hole, active HIGH
 // Default idle: red ON (locked/denied). Granted: blue ON, red OFF.
-// GPIO25/27 keep GPIO26 free for relay (planned)
+// ESP32-C3 Super Mini: GPIO1/GPIO3. ESP32 DevKit V1: GPIO25/27 (keeps GPIO26 free for relay)
+#if CONFIG_IDF_TARGET_ESP32C3
+static const uint8_t LED_BLUE_PIN = 1;
+static const uint8_t LED_RED_PIN = 3;
+#else
 static const uint8_t LED_BLUE_PIN = 25;
-static const uint8_t LED_RED_PIN  = 27;
+static const uint8_t LED_RED_PIN = 27;
+#endif
 
 inline void setIdleLeds()
 {

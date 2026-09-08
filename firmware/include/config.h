@@ -23,8 +23,8 @@
 #define API_SCAN_ENDPOINT API_BASE_URL "/api/scan"
 
 // ── Timeouts ──────────────────────────────────────────────────────────────────
-#define HTTP_TIMEOUT_MS 5000          // HTTP request timeout (ms)
-#define WIFI_CONNECT_TIMEOUT_MS 15000 // Max time to wait for WiFi (ms)
+#define HTTP_TIMEOUT_MS 5000             // HTTP request timeout (ms)
+#define WIFI_CONNECT_TIMEOUT_MS 15000    // Max time to wait for WiFi (ms)
 #define WIFI_RECONNECT_INTERVAL_MS 10000 // Retry interval when WiFi is down (ms)
 
 // ── Access Point ID ────────────────────────────────────────────────────────────
@@ -66,9 +66,14 @@
 // Reconnect attempt interval when MQTT is disconnected
 #define MQTT_RECONNECT_INTERVAL_MS 10000
 
-// ── Relay (5V 1-channel, GPIO 26) ─────────────────────────────────────────────
+// ── Relay (5V 1-channel) ──────────────────────────────────────────────────────
+// Default GPIO 2 on ESP32-C3 Super Mini, GPIO 26 on ESP32 DevKit V1.
 #ifndef RELAY_PIN
+#if CONFIG_IDF_TARGET_ESP32C3
+#define RELAY_PIN 2
+#else
 #define RELAY_PIN 26
+#endif
 #endif
 
 // 0 = active HIGH; 1 = active LOW (verified on JQC-3FF module).

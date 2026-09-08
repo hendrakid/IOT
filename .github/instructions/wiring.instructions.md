@@ -23,6 +23,7 @@ Current evidence in `.github/hardware pics`:
 - `Adaptor AC-DC 9V 1A.jpeg` (optional barrel input for shield DC jack, 6.5–16V range)
 - `Resistor 100 Ohm.jpeg` (LED current limit)
 - `Solenoid Door lock 12V DC.jpeg` (12V DC solenoid lock — red (+) / black (−) wires, 2-pin JST-style connector)
+- `ESP32-C3 Super Mini.jpg` (ESP32-C3 Super Mini — native USB-C, labeled SPI/I2C/UART pin groups)
 
 ## Component Specifications
 
@@ -37,6 +38,7 @@ Current evidence in `.github/hardware pics`:
 | Relay Module | 5V 1-Channel (JQC-3FF-S-Z) | **Digital GPIO** | 5V coil; IN needs 5V HIGH to turn off | Active LOW on IN (verified); **4.7k–10kΩ pull-up IN→5V**; GPIO 26 INPUT when locked |
 | Solenoid lock | 12V DC door lock (solenoid) | **Relay COM/NO** | 12V DC | Red = (+), black = (−); ~0.5–1A; **not** to ESP32 pins |
 | Power Supply | 12V Adaptor | — | 12V DC ≥1A | Solenoid load only (separate from USB 5V logic) |
+| Microcontroller (alt) | ESP32-C3 Super Mini | — | 3.3V logic, 5V USB-C power | Single-core RISC-V, WiFi+BLE; native USB-C (no CH340) — needs `ARDUINO_USB_CDC_ON_BOOT=1` for Serial monitor; far fewer GPIOs than DevKit V1 |
 
 ## ESP32 Pin Capabilities & Constraints
 
@@ -83,6 +85,31 @@ Current evidence in `.github/hardware pics`:
 | 5V (VIN or shield) | Relay VCC, pull-up for IN | Power | 5V coil + logic pull-up; with shield use **5V** block or D26 **V** (jumper 5V) |
 | GND | All GND pins | Power | Common ground — ALL components share GND |
 
+## Pin Assignment (ESP32-C3 Super Mini — Alternate Board)
+
+> Firmware selects these pins automatically at compile time via `CONFIG_IDF_TARGET_ESP32C3` (PlatformIO env `esp32-c3-supermini`). Physical wiring **not yet assembled** — verify before power-up, especially GPIO8/GPIO9 below.
+
+| ESP32-C3 GPIO | Connected To | Interface | Notes |
+|---------------|-------------|-----------|-------|
+| GPIO 7 | MFRC522 SDA (SS) | SPI | Chip select for RFID |
+| GPIO 4 | MFRC522 SCK | SPI | SPI clock (hardware default) |
+| GPIO 6 | MFRC522 MOSI | SPI | SPI data out (hardware default) |
+| GPIO 5 | MFRC522 MISO | SPI | SPI data in (hardware default) |
+| GPIO 10 | MFRC522 RST | Digital | Reset pin |
+| — | MFRC522 IRQ | — | **Leave unconnected** (not used in this project) |
+| GPIO 8 | OLED SDA | I2C | I2C data line — **strapping pin**, see risk note below |
+| GPIO 9 | OLED SCL | I2C | I2C clock line — **strapping pin, also wired to on-board BOOT button** |
+| GPIO 1 | Blue LED anode (via 100Ω) | Digital | Access granted — active HIGH |
+| GPIO 3 | Red LED anode (via 100Ω) | Digital | Access denied / server error — active HIGH |
+| GPIO 2 | Relay IN | Open-drain | Active LOW; same 10kΩ series + 5V pull-up design as DevKit V1 |
+| 3.3V | MFRC522 VCC, OLED VCC | Power | 3.3V rail from board |
+| 5V (USB) | Relay VCC, pull-up for IN | Power | 5V from USB-C input |
+| GND | All GND pins | Power | Common ground — ALL components share GND |
+
+**Risk — strapping pins on I2C:** GPIO8 and GPIO9 are ESP32-C3 strapping pins (boot mode selection); GPIO9 is also tied to the board's on-board BOOT button. I2C pull-ups normally idle HIGH, which matches the expected boot state, but this **must be verified physically on first power-up** — if the OLED or its pull-ups hold either line LOW during reset, the board may enter download mode instead of booting normally.
+
+**Note — native USB serial:** this board has no CH340/CP2102 bridge; `platformio.ini` sets `ARDUINO_USB_CDC_ON_BOOT=1` so `Serial` output appears over the USB-C port.
+
 ## Module Pinout Reference (ASCII)
 
 > Pin labels match physical markings on each module as seen in `.github/hardware pics`. No connection lines are drawn here — see Connection Summary for wiring info.
@@ -109,6 +136,25 @@ Current evidence in `.github/hardware pics`:
  ●│D22              VP │●
  ●│D23              EN │●
   └────────────────────┘
+```
+
+### ESP32-C3 Super Mini (Native USB-C)
+
+```
+         ESP32-C3 Super Mini
+  ┌──────────────[USB-C]───────────────┐
+  │MISO A5  5           5V             │
+  │MOSI     6           G              │
+  │SS       7           3.3V           │
+ SPI                                   │
+  │SDA      8         4 A4 SCK         │ SPI
+  │SCL      9         3 A3             │
+ I2C                  2 A2             │
+  │         10        1 A1             │
+  │RX       20        0 A0             │
+  │TX       21                         │
+ UART                                  │
+  └──────────────────────────────────┘
 ```
 
 ### RFID-RC522 (MFRC522)
@@ -228,20 +274,26 @@ Do **not** wire D26 directly to IN when using a 5V pull-up: ESP32 protection cla
 
 Firmware: `INPUT` when locked, `OUTPUT` LOW when unlock (`relay.h`).
 
-```
-5V (VIN) ──┬── Relay VCC
-           │
-          [R1 4.7kΩ]
-           │
-           ├── Relay IN (module)
-           │      │
-           │     [R2 4.7kΩ]──[R3 4.7kΩ]  ← series (~9.4kΩ), mandatory
-           │      │
-           │      └── GPIO 26 (D26)
-           │
-Relay GND ─┴── ESP32 GND
-```
+```mermaid
+flowchart LR
+    subgraph PWR["Sumber Daya"]
+        V5["5V<br/>VIN (ESP32) / USB (ESP32-C3)"]
+        GND["GND (common)"]
+    end
 
+    subgraph RELAY["Relay Module"]
+        RIN["Pin IN"]
+        RVCC["Pin VCC"]
+        RGND["Pin GND"]
+    end
+
+    GPIO["GPIO Kontrol<br/>D26 (ESP32 DevKit) / GPIO2 (ESP32-C3)"]
+
+    V5 -->|kabel langsung| RVCC
+    V5 -->|"R1 = 4.7kΩ (pull-up)"| RIN
+    RIN -->|"R2+R3 = 4.7kΩ+4.7kΩ seri (≈9.4kΩ), atau 1× 10kΩ"| GPIO
+    GND -->|kabel langsung| RGND
+```
 ---
 
 ## Relay ↔ 12V Solenoid (load side)

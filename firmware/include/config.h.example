@@ -56,9 +56,14 @@
 #define MQTT_TELEMETRY_INTERVAL_MS 60000
 #define MQTT_RECONNECT_INTERVAL_MS 10000
 
-// ── Relay (5V 1-channel, GPIO 26) ─────────────────────────────────────────────
+// ── Relay (5V 1-channel) ──────────────────────────────────────────────────────
+// Default GPIO 2 on ESP32-C3 Super Mini, GPIO 26 on ESP32 DevKit V1.
 #ifndef RELAY_PIN
+#if CONFIG_IDF_TARGET_ESP32C3
+#define RELAY_PIN 2
+#else
 #define RELAY_PIN 26
+#endif
 #endif
 
 // Active LOW + 4.7k–10kΩ pull-up IN→5V; see relay.h (INPUT locked / OUTPUT unlock).
