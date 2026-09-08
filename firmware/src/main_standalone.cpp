@@ -4,6 +4,7 @@
 #include "led.h"
 #include "relay.h"
 #include "buzzer.h"
+#include "touch_unlock.h"
 #include "whitelist.h"
 
 // How long (ms) to hold the LED result before accepting the next card tap.
@@ -11,6 +12,15 @@ static const uint32_t LED_RESULT_DISPLAY_MS = 2000;
 
 static bool g_showingResult = false;
 static uint32_t g_resultShownAt = 0;
+
+static void grantAccess()
+{
+  unlockRelay(RELAY_UNLOCK_DURATION_MS);
+  setAccessLeds(true);
+  startBuzzerPattern(2);
+  g_showingResult = true;
+  g_resultShownAt = millis();
+}
 
 void setup()
 {
@@ -22,6 +32,7 @@ void setup()
   initLeds();
   initRelay();
   initBuzzer();
+  initTouchUnlock();
   Serial.println(F("[BOOT] Ready."));
 }
 
@@ -29,6 +40,13 @@ void loop()
 {
   loopRelay();
   loopBuzzer();
+
+  if (consumeTouchUnlockPressed())
+  {
+    Serial.println(F("[TOUCH] Unlock requested"));
+    grantAccess();
+    return;
+  }
 
   if (g_showingResult)
   {
@@ -49,8 +67,7 @@ void loop()
   const bool allowed = isUidAllowed(uid);
   if (allowed)
   {
-    unlockRelay(RELAY_UNLOCK_DURATION_MS);
-    startBuzzerPattern(2);
+    grantAccess();
   }
   else
   {
@@ -61,6 +78,9 @@ void loop()
   }
   setAccessLeds(allowed);
 
-  g_showingResult = true;
-  g_resultShownAt = millis();
+  if (!allowed)
+  {
+    g_showingResult = true;
+    g_resultShownAt = millis();
+  }
 }

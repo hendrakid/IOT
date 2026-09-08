@@ -9,12 +9,24 @@
 #include "led.h"
 #include "relay.h"
 #include "buzzer.h"
+#include "touch_unlock.h"
 
 // How long (ms) to show the result before returning to idle screen
 static const uint32_t UID_DISPLAY_DURATION_MS = 3000;
 
 static uint32_t g_uidShownAt = 0;
 static bool g_showingUID = false;
+
+static void grantTouchUnlock()
+{
+    Serial.println(F("[TOUCH] Unlock requested"));
+    unlockRelay(RELAY_UNLOCK_DURATION_MS);
+    setAccessLeds(true);
+    startBuzzerPattern(2);
+    showMessage("Access Granted", "Touch unlock");
+    g_showingUID = true;
+    g_uidShownAt = millis();
+}
 
 // ── WiFi ─────────────────────────────────────────────────────────────────────
 
@@ -212,6 +224,7 @@ void setup()
     initLeds();
     initRelay();
     initBuzzer();
+    initTouchUnlock();
 
     connectWiFi();
     initMqtt();
@@ -226,6 +239,12 @@ void loop()
     loopMqtt();
     loopRelay();
     loopBuzzer();
+
+    if (consumeTouchUnlockPressed())
+    {
+        grantTouchUnlock();
+        return;
+    }
 
     const uint32_t now = millis();
 

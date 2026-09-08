@@ -95,3 +95,24 @@
 #ifndef BUZZER_BEEP_GAP_MS
 #define BUZZER_BEEP_GAP_MS 100
 #endif
+
+// ── Touch unlock sensor (TTP223-style digital OUT) ───────────────────────────
+#ifndef TOUCH_UNLOCK_PIN
+#if CONFIG_IDF_TARGET_ESP32C3
+#define TOUCH_UNLOCK_PIN 20
+#else
+#define TOUCH_UNLOCK_PIN 33
+#endif
+#endif
+
+#ifndef TOUCH_UNLOCK_ACTIVE_HIGH
+#define TOUCH_UNLOCK_ACTIVE_HIGH 1
+#endif
+
+#ifndef TOUCH_UNLOCK_DEBOUNCE_MS
+#define TOUCH_UNLOCK_DEBOUNCE_MS 50
+#endif
+
+#ifndef TOUCH_UNLOCK_COOLDOWN_MS
+#define TOUCH_UNLOCK_COOLDOWN_MS 1000
+#endif

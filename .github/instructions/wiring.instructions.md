@@ -25,6 +25,7 @@ Current evidence in `.github/hardware pics`:
 - `Solenoid Door lock 12V DC.jpeg` (12V DC solenoid lock — red (+) / black (−) wires, 2-pin JST-style connector)
 - `ESP32-C3 Super Mini.jpg` (ESP32-C3 Super Mini — native USB-C, labeled SPI/I2C/UART pin groups)
 - Active buzzer 2-pin — **Pending Hardware Evidence**
+- TTP223 touch sensor module — **Pending Hardware Evidence**
 
 ## Component Specifications
 
@@ -41,6 +42,7 @@ Current evidence in `.github/hardware pics`:
 | Power Supply | 12V Adaptor | — | 12V DC ≥1A | Solenoid load only (separate from USB 5V logic) |
 | Microcontroller (alt) | ESP32-C3 Super Mini | — | 3.3V logic, 5V USB-C power | Single-core RISC-V, WiFi+BLE; native USB-C (no CH340) — needs `ARDUINO_USB_CDC_ON_BOOT=1` for Serial monitor; far fewer GPIOs than DevKit V1 |
 | Active buzzer 2-pin | Pending photo evidence | Digital GPIO | 3.3V preferred; 5V only with transistor driver | Access feedback: 2 beeps granted, 1 beep denied |
+| Touch Sensor | TTP223-style module | Digital GPIO | 3.3V | Touch-to-unlock input; OUT is active HIGH by default |
 
 ## ESP32 Pin Capabilities & Constraints
 
@@ -84,6 +86,7 @@ Current evidence in `.github/hardware pics`:
 | GPIO 27 | Red LED anode (via 100Ω) | Digital | Access denied / server error — active HIGH |
 | GPIO 26 | Relay IN | Open-drain | Active LOW; **10kΩ IN→5V (VIN)** required — 3.3V alone cannot turn relay off |
 | GPIO 32 | Active buzzer (+) | Digital | Direct drive only for 3.3V low-current buzzer; active HIGH by default |
+| GPIO 33 | TTP223 OUT/SIG | Digital input | Touch-to-unlock; active HIGH by default |
 | 3.3V | MFRC522 VCC, OLED VCC | Power | 3.3V rail from ESP32 |
 | 5V (VIN or shield) | Relay VCC, pull-up for IN | Power | 5V coil + logic pull-up; with shield use **5V** block or D26 **V** (jumper 5V) |
 | GND | All GND pins | Power | Common ground — ALL components share GND |
@@ -106,6 +109,7 @@ Current evidence in `.github/hardware pics`:
 | GPIO 3 | Red LED anode (via 100Ω) | Digital | Access denied / server error — active HIGH |
 | GPIO 2 | Relay IN | Open-drain | Active LOW; same 10kΩ series + 5V pull-up design as DevKit V1 |
 | GPIO 21 | Active buzzer (+) | Digital | Direct drive only for 3.3V low-current buzzer; safe as GPIO because Serial monitor uses native USB CDC |
+| GPIO 20 | TTP223 OUT/SIG | Digital input | Touch-to-unlock; safe as GPIO because Serial monitor uses native USB CDC |
 | 3.3V | MFRC522 VCC, OLED VCC | Power | 3.3V rail from board |
 | 5V (USB) | Relay VCC, pull-up for IN | Power | 5V from USB-C input |
 | GND | All GND pins | Power | Common ground — ALL components share GND |
@@ -123,6 +127,23 @@ For a 2-pin active buzzer, the GPIO drives the buzzer's **+** pin directly only 
 flowchart LR
   GPIO["GPIO buzzer<br/>GPIO32 DevKit / GPIO21 C3"] --> PLUS["Buzzer +"]
   MINUS["Buzzer -"] --> GND["ESP32 GND"]
+```
+
+### TTP223 Touch Unlock Wiring (Pending Hardware Evidence)
+
+Power the touch module from 3.3V so its OUT/SIG level is safe for ESP32 GPIO. Firmware treats OUT/SIG HIGH as a touch request and unlocks the relay for `RELAY_UNLOCK_DURATION_MS`.
+
+| TTP223 Pin | ESP32 DevKit V1 | ESP32-C3 Super Mini | Notes |
+|------------|------------------|----------------------|-------|
+| VCC | 3.3V | 3.3V | Keep logic level safe for ESP32 |
+| GND | GND | GND | Common ground with ESP32 |
+| OUT / SIG | GPIO 33 | GPIO 20 | Firmware default `TOUCH_UNLOCK_PIN`; active HIGH by default |
+
+```mermaid
+flowchart LR
+  V33["ESP32 3.3V"] --> VCC["TTP223 VCC"]
+  GND["ESP32 GND"] --> TGND["TTP223 GND"]
+  OUT["TTP223 OUT / SIG"] --> GPIO["GPIO33 DevKit / GPIO20 C3"]
 ```
 
 For a 5V buzzer, use low-side switching:
@@ -170,20 +191,17 @@ flowchart LR
 ### ESP32-C3 Super Mini (Native USB-C)
 
 ```
-         ESP32-C3 Super Mini
-  ┌──────────────[USB-C]───────────────┐
-  │MISO A5  5           5V             │
-  │MOSI     6           G              │
-  │SS       7           3.3V           │
- SPI                                   │
-  │SDA      8         4 A4 SCK         │ SPI
-  │SCL      9         3 A3             │
- I2C                  2 A2             │
-  │         10        1 A1             │
-  │RX       20        0 A0             │
-  │TX       21                         │
- UART                                  │
-  └──────────────────────────────────┘
+                 ESP32-C3 Super Mini
+              ┌───────[USB-C]───────┐
+SPI  MISO A5 ●|5                 5V |●        
+     MOSI    ●|6                GND |●        
+     SS      ●|7               3.3V |●        
+I2C  SDA     ●|8                  4 |● A4 SCK SPI
+     SCL     ●|9                  3 |● A3      
+             ●|10                 2 |● A2         
+UART RX      ●|20                 1 |● A1        
+     TX      ●|21                 0 |● A0        
+              └─────────────────────┘
 ```
 
 ### RFID-RC522 (MFRC522)
