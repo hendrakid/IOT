@@ -24,6 +24,7 @@ Current evidence in `.github/hardware pics`:
 - `Resistor 100 Ohm.jpeg` (LED current limit)
 - `Solenoid Door lock 12V DC.jpeg` (12V DC solenoid lock — red (+) / black (−) wires, 2-pin JST-style connector)
 - `ESP32-C3 Super Mini.jpg` (ESP32-C3 Super Mini — native USB-C, labeled SPI/I2C/UART pin groups)
+- Active buzzer 2-pin — **Pending Hardware Evidence**
 
 ## Component Specifications
 
@@ -39,6 +40,7 @@ Current evidence in `.github/hardware pics`:
 | Solenoid lock | 12V DC door lock (solenoid) | **Relay COM/NO** | 12V DC | Red = (+), black = (−); ~0.5–1A; **not** to ESP32 pins |
 | Power Supply | 12V Adaptor | — | 12V DC ≥1A | Solenoid load only (separate from USB 5V logic) |
 | Microcontroller (alt) | ESP32-C3 Super Mini | — | 3.3V logic, 5V USB-C power | Single-core RISC-V, WiFi+BLE; native USB-C (no CH340) — needs `ARDUINO_USB_CDC_ON_BOOT=1` for Serial monitor; far fewer GPIOs than DevKit V1 |
+| Active buzzer 2-pin | Pending photo evidence | Digital GPIO | 3.3V preferred; 5V only with transistor driver | Access feedback: 2 beeps granted, 1 beep denied |
 
 ## ESP32 Pin Capabilities & Constraints
 
@@ -81,6 +83,7 @@ Current evidence in `.github/hardware pics`:
 | GPIO 25 | Blue LED anode (via 100Ω) | Digital | Access granted — active HIGH |
 | GPIO 27 | Red LED anode (via 100Ω) | Digital | Access denied / server error — active HIGH |
 | GPIO 26 | Relay IN | Open-drain | Active LOW; **10kΩ IN→5V (VIN)** required — 3.3V alone cannot turn relay off |
+| GPIO 32 | Active buzzer (+) | Digital | Direct drive only for 3.3V low-current buzzer; active HIGH by default |
 | 3.3V | MFRC522 VCC, OLED VCC | Power | 3.3V rail from ESP32 |
 | 5V (VIN or shield) | Relay VCC, pull-up for IN | Power | 5V coil + logic pull-up; with shield use **5V** block or D26 **V** (jumper 5V) |
 | GND | All GND pins | Power | Common ground — ALL components share GND |
@@ -102,9 +105,35 @@ Current evidence in `.github/hardware pics`:
 | GPIO 1 | Blue LED anode (via 100Ω) | Digital | Access granted — active HIGH |
 | GPIO 3 | Red LED anode (via 100Ω) | Digital | Access denied / server error — active HIGH |
 | GPIO 2 | Relay IN | Open-drain | Active LOW; same 10kΩ series + 5V pull-up design as DevKit V1 |
+| GPIO 21 | Active buzzer (+) | Digital | Direct drive only for 3.3V low-current buzzer; safe as GPIO because Serial monitor uses native USB CDC |
 | 3.3V | MFRC522 VCC, OLED VCC | Power | 3.3V rail from board |
 | 5V (USB) | Relay VCC, pull-up for IN | Power | 5V from USB-C input |
 | GND | All GND pins | Power | Common ground — ALL components share GND |
+
+### Active Buzzer 2-Pin Wiring (Pending Hardware Evidence)
+
+For a 2-pin active buzzer, the GPIO drives the buzzer's **+** pin directly only when the buzzer is 3.3V-compatible and low-current. If the buzzer is 5V-only or current draw is unknown, use a transistor driver.
+
+| Buzzer Pin | ESP32 DevKit V1 | ESP32-C3 Super Mini | Notes |
+|------------|------------------|----------------------|-------|
+| + | GPIO 32 | GPIO 21 | Firmware default `BUZZER_PIN`; HIGH = beep by default |
+| − | GND | GND | Common ground with ESP32 |
+
+```mermaid
+flowchart LR
+  GPIO["GPIO buzzer<br/>GPIO32 DevKit / GPIO21 C3"] --> PLUS["Buzzer +"]
+  MINUS["Buzzer -"] --> GND["ESP32 GND"]
+```
+
+For a 5V buzzer, use low-side switching:
+
+```mermaid
+flowchart LR
+  V5["5V"] --> PLUS["Buzzer +"]
+  MINUS["Buzzer -"] --> C["NPN collector / MOSFET drain"]
+  E["Emitter / source"] --> GND["GND"]
+  GPIO["GPIO buzzer"] --> R["1kΩ-4.7kΩ"] --> B["Base / gate"]
+```
 
 **Risk — strapping pins on I2C:** GPIO8 and GPIO9 are ESP32-C3 strapping pins (boot mode selection); GPIO9 is also tied to the board's on-board BOOT button. I2C pull-ups normally idle HIGH, which matches the expected boot state, but this **must be verified physically on first power-up** — if the OLED or its pull-ups hold either line LOW during reset, the board may enter download mode instead of booting normally.
 

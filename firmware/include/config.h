@@ -85,3 +85,24 @@
 #ifndef RELAY_UNLOCK_DURATION_MS
 #define RELAY_UNLOCK_DURATION_MS 3000
 #endif
+
+// ── Active buzzer feedback ───────────────────────────────────────────────────
+#ifndef BUZZER_PIN
+#if CONFIG_IDF_TARGET_ESP32C3
+#define BUZZER_PIN 21
+#else
+#define BUZZER_PIN 32
+#endif
+#endif
+
+#ifndef BUZZER_ACTIVE_HIGH
+#define BUZZER_ACTIVE_HIGH 1
+#endif
+
+#ifndef BUZZER_BEEP_DURATION_MS
+#define BUZZER_BEEP_DURATION_MS 100
+#endif
+
+#ifndef BUZZER_BEEP_GAP_MS
+#define BUZZER_BEEP_GAP_MS 100
+#endif

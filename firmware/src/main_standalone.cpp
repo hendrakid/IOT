@@ -3,6 +3,7 @@
 #include "rfid.h"
 #include "led.h"
 #include "relay.h"
+#include "buzzer.h"
 #include "whitelist.h"
 
 // How long (ms) to hold the LED result before accepting the next card tap.
@@ -20,12 +21,14 @@ void setup()
   initRfid();
   initLeds();
   initRelay();
+  initBuzzer();
   Serial.println(F("[BOOT] Ready."));
 }
 
 void loop()
 {
   loopRelay();
+  loopBuzzer();
 
   if (g_showingResult)
   {
@@ -47,12 +50,14 @@ void loop()
   if (allowed)
   {
     unlockRelay(RELAY_UNLOCK_DURATION_MS);
+    startBuzzerPattern(2);
   }
   else
   {
     lockRelay();
     Serial.print(F("[RFID] Unregistered UID: "));
     Serial.println(uid);
+    startBuzzerPattern(1);
   }
   setAccessLeds(allowed);
 

@@ -8,6 +8,7 @@
 #include "mqtt.h"
 #include "led.h"
 #include "relay.h"
+#include "buzzer.h"
 
 // How long (ms) to show the result before returning to idle screen
 static const uint32_t UID_DISPLAY_DURATION_MS = 3000;
@@ -210,6 +211,7 @@ void setup()
 
     initLeds();
     initRelay();
+    initBuzzer();
 
     connectWiFi();
     initMqtt();
@@ -223,6 +225,7 @@ void loop()
     loopWiFi();
     loopMqtt();
     loopRelay();
+    loopBuzzer();
 
     const uint32_t now = millis();
 
@@ -258,6 +261,7 @@ void loop()
         Serial.println(F("[RFID] Server error — access denied"));
         lockRelay();
         setAccessLeds(false);
+        startBuzzerPattern(1);
         showMessage("Server Error", "Cek IP / koneksi");
     }
     else
@@ -269,6 +273,7 @@ void loop()
         else
             lockRelay();
         setAccessLeds(result.access);
+        startBuzzerPattern(result.access ? 2 : 1);
         showScanResult(result.access, result.registered, result.userName, uid);
     }
     g_showingUID = true;
