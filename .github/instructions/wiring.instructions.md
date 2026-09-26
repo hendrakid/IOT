@@ -39,7 +39,7 @@ Current evidence in `.github/hardware pics`:
 | Status LED (red) | 5mm through-hole | **Digital GPIO** | 3.3V via 100Ω resistor | Access denied / server error; anode (+) long leg |
 | Relay Module | 5V 1-Channel (JQC-3FF-S-Z) | **Digital GPIO** | 5V coil; IN needs 5V HIGH to turn off | Active LOW on IN (verified); **4.7k–10kΩ pull-up IN→5V**; GPIO 26 INPUT when locked |
 | Solenoid lock | 12V DC door lock (solenoid) | **Relay COM/NO** | 12V DC | Red = (+), black = (−); ~0.5–1A; **not** to ESP32 pins |
-| Power Supply | 12V Adaptor | — | 12V DC ≥1A | Solenoid load only (separate from USB 5V logic) |
+| Power Supply | DC adapter | — | Match solenoid rating; 12V DC ≥1A required for this lock | Photo evidence is a **9V 1A** adapter, so it is not a direct 12V supply; keep load power separate from USB 5V logic |
 | Microcontroller (alt) | ESP32-C3 Super Mini | — | 3.3V logic, 5V USB-C power | Single-core RISC-V, WiFi+BLE; native USB-C (no CH340) — needs `ARDUINO_USB_CDC_ON_BOOT=1` for Serial monitor; far fewer GPIOs than DevKit V1 |
 | Active buzzer 2-pin | Pending photo evidence | Digital GPIO | 3.3V preferred; 5V only with transistor driver | Access feedback: 2 beeps granted, 1 beep denied |
 | Touch Sensor | TTP223-style module | Digital GPIO | 3.3V | Touch-to-unlock input; OUT is active HIGH by default |
@@ -354,7 +354,7 @@ flowchart LR
 | **12V adapter +** | Relay **COM** | Supply positive |
 | Relay **NO** | Solenoid **red** wire | (+) |
 | Solenoid **black** wire | **12V adapter −** | (−) return |
-| **12V adapter −** | ESP32 **GND** | Common reference (recommended) |
+| **12V adapter −** | ESP32 **GND** | **Do not connect** — the relay contacts provide isolation; relay module GND remains connected to ESP32 GND |
 | Relay **NC** | — | **Leave unused** (energize-to-unlock) |
 
 ### Circuit (ASCII)
@@ -370,14 +370,16 @@ flowchart LR
                                                               ESP32 GND (tie)
 ```
 
-### Optional — flyback diode (recommended)
+### Flyback diode (required for stable operation)
 
-Inductive kick when solenoid turns off can arc relay contacts. Place **1N4007** (or similar) **across solenoid wires only**:
+The solenoid produces a high-voltage inductive kick when it turns off. This can arc the relay contacts and inject enough EMI to crash or reset the ESP32. Place **** (or similar) **directly across the solenoid wires**, physically close to the solenoid:
 
 | Diode lead | Solenoid wire |
 |------------|---------------|
 | **Cathode** (striped band) | **Red (+)** |
 | **Anode** | **Black (−)** |
+
+Reversed diode polarity shorts the supply when the relay closes. Verify the striped end is on the red positive wire before powering the circuit.
 
 ### Bench check
 
@@ -392,7 +394,9 @@ Inductive kick when solenoid turns off can arc relay contacts. Place **1N4007** 
 1. **Polarity:** red = (+) 12V path through **NO**; reversed polarity may not actuate.
 2. **Current:** use **12V ≥1A** adapter; USB 5V is **not** for the solenoid.
 3. **NC terminal:** do not tie NC unless you switch to fail-safe **de-energize-to-unlock** wiring (not this project).
-4. **Common GND:** tie **12V −** to **ESP32 GND** so logic and load share reference.
+4. **Ground isolation:** do not tie the solenoid adapter negative to ESP32 GND. Only the relay control-side GND connects to ESP32 GND.
+5. **Supply rating:** the adapter visible in `Adaptor AC-DC 9V 1A.jpeg` is 9V 1A. Use a regulated 12V supply rated at least 1A for the photographed 12V lock, or a correctly rated boost converter.
+6. **Cable routing:** keep the solenoid and adapter wires away from the ESP32-C3, USB cable, RFID SPI wiring, and touch input wiring.
 
 ---
 
@@ -402,21 +406,21 @@ Inductive kick when solenoid turns off can arc relay contacts. Place **1N4007** 
          
   RFID-RC522 (MFRC522)                  ESP32 DevKit V1 (CP2102)
   ┌─────────────┐                       ┌────[USB Type C]────┐
-  │    3.3V     │●──────────────┌──────●│3V3              VIN│●───┐             
-  │     RST     │●───────┐      │      ●│GND              GND│●   │                    ┌──────RED─────┐          
-  │     GND     │●─ESP32.GND    │      ●│D15              D13│●   │                 ┌─●|  Anode (+)   |           
-  │     IRQ     │●       │      │      ●│D2               D12│●   │                 │  |  Cathode (-) |●─ESP32.GND
-  │    MISO     │●────┐  └──────┼──────●│D4               D14│●   │                 │  └──────────────┘         
-  │    MOSI     │●───┐│         │      ●│RX2              D27│●───┼─[R100Ω]─────────┘                      
-  │     SCK     │●──┐││         │      ●│TX2              D26│●───┼─────────────┐      ┌─────BLUE─────┐
-  │     SDA     │●──┼┼┼─────────┼──────●│D5               D25│●───┼─[R100Ω]─────┼─────●|  Anode (+)   |
-  └─────────────┘   └┼┼─────────┼──────●│D18              D33│●   │             │      |  Cathode (-) |●─ESP32.GND 
-                     │└─────────┼──────●│D19              D32│●   │             │      └──────────────┘
-                     │          | ┌────●│D21              D35│●   │             │                               
-                     │          │ │    ●│TX0              VN │●   │             └──────[R4.7kΩ]──[R4.7kΩ]──────┐
-                     │          │ │    ●│RX0              D34│●   │                                            |
-                     │          │┌┼────●│D22              VP │●   └────────────────────────┬──[R4.7kΩ]   ┌─────┘
-                     └──────────┼┼┼────●│D23              EN │●                            │       │    ╱
+  │    3.3V     │●──────────────┌──────●│3V3              VIN│●───┐┐             
+  │     RST     │●───────┐      │      ●│GND              GND│●   ││                    ┌──────RED─────┐          
+  │     GND     │●─ESP32.GND    │      ●│D15              D13│●   ││                 ┌─●|  Anode (+)   |           
+  │     IRQ     │●       │      │      ●│D2               D12│●   ││                 │  |  Cathode (-) |●─ESP32.GND
+  │    MISO     │●────┐  └──────┼──────●│D4               D14│●   ││                 │  └──────────────┘         
+  │    MOSI     │●───┐│         │      ●│RX2              D27│●───┼┼─[R100Ω]─────────┘                      
+  │     SCK     │●──┐││         │      ●│TX2              D26│●───┼┼─────────────┐      ┌─────BLUE─────┐
+  │     SDA     │●──┼┼┼─────────┼──────●│D5               D25│●───┼┼─[R100Ω]─────┼─────●|  Anode (+)   |
+  └─────────────┘   └┼┼─────────┼──────●│D18              D33│●   ││             │      |  Cathode (-) |●─ESP32.GND 
+                     │└─────────┼──────●│D19              D32│●   ││             │      └──────────────┘
+                     │          | ┌────●│D21              D35│●   ││             │                               
+                     │          │ │    ●│TX0              VN │●   ││             └──────[R4.7kΩ]──[R4.7kΩ]──────┐
+                     │          │ │    ●│RX0              D34│●   ││                                            |
+                     │          │┌┼────●│D22              VP │●   └┼───────────────────────┐             ┌──────┘
+                     └──────────┼┼┼────●│D23              EN │●    └───────────────────────┼── [R4.7kΩ] ╱
                                 │││     └────────────────────┘                             │       │   ╱ 
 OLED SSD1306                    │││                                                        │       │  ╱  
 (pin order on module)           │││          ╭────Power Module DC──────╮   ESP32.GND───────|───┐   │ ╱   
@@ -426,7 +430,7 @@ OLED SSD1306                    │││                                       
 │     SCK    │●──────────────────┘│          └─(12V)─(5V)─(3.3V)─(GND)─┘               |                |
 │     SDA    │●───────────────────┘             |                 │                    | [Relay 1ch 5V] |
 └────────────┘                                  └─────────────────┼──────╮             |                |
-                                                                  │      |             |  NC   COM  NO  |
+                                                                  │      |             |  NO   COM  NC  |
                                                                   │      |             └───●────●────●──┘
                                                                   │      ╰─────────────────┼────┘        
                                                Solenoid 12V       │                        │            
@@ -521,12 +525,12 @@ If SW LED stays on at idle, the pull-up to **5V** is missing or GPIO 26 is still
   │ (external)      │ R2+R3 series │ 4.7kΩ+4.7kΩ: IN → D26 (verified)            │
   ├─────────────────┼──────────────┼─────────────────────────────────────────────┤
   │ Solenoid 12V    │ Red (+)      │ Relay NO                                    │
-  │                 │ Black (−)    │ 12V adapter (−/GND);                            │
+  │                 │ Black (−)    │ 12V adapter (−), isolated from ESP32 GND    │
   │                 │ (load +)     │ Relay COM → 12V adapter (+)                 │
   │                 │ NC           │ — leave unused                              │
   └─────────────────┴──────────────┴─────────────────────────────────────────────┘
 
-  All verified modules share the same GND rail (ESP32 GND + 12V adapter − + relay GND).
+  All control-side modules share ESP32 GND. The 12V load supply remains isolated by the relay contacts.
 
   Relay control: 5V ──[R1 4.7k]── IN ──[R2 4.7k]──[R3 4.7k]── D26. Do NOT connect D26 directly to IN.
   Solenoid load: 12V+ → COM; NO → red; black → 12V− (see **Relay ↔ 12V Solenoid** section).
@@ -573,9 +577,10 @@ The shield improves **5V rail distribution**; it does **not** remove the **IN→
 ```
 12V adapter (+) ──► Relay COM
 Relay NO ──► Solenoid red (+)
-Solenoid black (−) ──► 12V adapter (−) ──► ESP32 GND (common reference)
+Solenoid black (−) ──► 12V adapter (−)
 
 Relay NC — not used (energize-to-unlock)
+Keep 12V adapter (−) isolated from ESP32 GND.
 Do NOT connect 12V to ESP32, shield logic pins, or MFRC522.
 ```
 
@@ -584,14 +589,14 @@ Do NOT connect 12V to ESP32, shield logic pins, or MFRC522.
 1. **MFRC522 is 3.3V only** — connecting to 5V will damage it; power from ESP32's 3.3V pin
 2. **GPIO 34-39 are input-only** — never assign output devices (relay, LED) to these pins
 3. **GPIO 6-11 are off-limits** — used by internal flash memory
-4. **Common GND is mandatory** — all modules must share the same ground
+4. **Control-side common GND is mandatory** — ESP32, MFRC522, OLED, LEDs, buzzer, touch sensor, and relay module GND share ground; the solenoid adapter remains isolated by the relay contacts
 5. **MFRC522 RST uses GPIO 4** (not GPIO 22) — GPIO 22 is already used by I2C SCL (OLED SCK)
 6. **MFRC522 IRQ pin** — leave unconnected; not needed for polling-mode reads
 7. **OLED pin order on this module: GND (1), VDD (2), SCK (3), SDA (4)** — the "SCK" label on the OLED = I2C SCL; connect to GPIO 22
 8. **Status LEDs**: 100Ω resistor in series with each LED; long leg = anode to resistor/GPIO side; GPIO 25 blue (granted), GPIO 27 red (denied)
 9. **Relay module**: VCC to 5V (VIN); active LOW on IN; **R1 4.7k pull-up IN→5V** + **R2+R3 4.7k series IN→D26** (verified); direct D26→IN clamps IN to ~3.3V → SW always on
 10. **Relay GPIO 26**: firmware `INPUT` when locked / `OUTPUT` LOW unlock; series resistors on IN→D26 are mandatory with 5V pull-up
-11. **12V solenoid**: **COM→12V+**, **NO→red**, **black→12V−**; share **12V−** with ESP32 GND; **NC unused**; never wire 12V to ESP32
+11. **12V solenoid**: **COM→12V+**, **NO→red**, **black→12V−**; keep **12V− isolated from ESP32 GND**; add a flyback diode across the solenoid; **NC unused**
 12. **Fail-safe**: relay de-energized (IN at 5V via pull-up) = locked; firmware calls `lockRelay()` on boot, denied access, and server errors
 13. **Expansion shield 5V jumper**: use **5V** only for relay (and pull-up to the same 5V rail); MFRC522 **must** use **3.3V** on **V** — 5V on RFID **V** will damage the module
 14. **Shield does not fix relay IN level**: GPIO 26 is still 3.3V; **4.7k–10kΩ pull-up IN→5V** is still mandatory with the shield (see bench verification table)

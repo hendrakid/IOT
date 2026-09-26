@@ -104,7 +104,8 @@ This project is an IoT-based Smart Lock and Attendance system using RFID. It fea
   - E2E MQTT (PostgreSQL + Mosquitto + `MQTT_URL`): `cd web && npm run test:e2e:mqtt`
 
 ## Documentation
-- See `docs/` for wiring diagrams, schematics, and further guides.
+- See `docs/` for wiring diagrams, schematics, further guides, and the FAQ.
+- FAQ: `docs/faq.md`
 
 ## Contributing
 Pull requests are welcome! Please add tests for new features and follow the code style guidelines in `.github/copilot-instructions.md`.

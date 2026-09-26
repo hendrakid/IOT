@@ -57,6 +57,7 @@ description: "Use when asking about project progress, current status, completed 
 
 ### Prioritas tinggi (security & stabilitas)
 
+- [ ] **Pasang diode flyback 1N4007 pada solenoid** — pasang paralel sedekat mungkin dengan solenoid (katoda/stripe ke merah `+`, anoda ke hitam `−`), lalu uji buka-tutup berulang untuk memastikan ESP32-C3 tidak lagi mengalami interrupt watchdog/reset
 - [x] **Rate limiting** on `POST /api/scan` — `scanRateLimiter` middleware; env `SCAN_RATE_LIMIT_*`; unit test `scanRateLimit.test.ts`
 - [x] **Firmware deploy** — `firmware/include/config.h.example` + checklist di README; manual: set LAN IP di `config.h`, PlatformIO upload
 - [x] **E2E tests** — `scan.e2e.ts`, `mqttHardware.e2e.ts`; unit `mqttSubscriber.test.ts`; scripts `test:e2e`, `test:e2e:mqtt`
@@ -80,6 +81,7 @@ description: "Use when asking about project progress, current status, completed 
 - No CI/CD pipeline (`.github/workflows/` missing)
 - Repo `docs/` folder empty — hardware schematics not yet added
 - No firmware unit tests (`firmware/test/` empty)
+- FAQ document exists at `docs/faq.md` for recurring troubleshooting cases
 
 ## Notes
 

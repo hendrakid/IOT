@@ -23,6 +23,16 @@
 #define RELAY_PIN 26
 #endif
 
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+#define RELAY_BUILD_NAME "ESP32-C3"
+#define RELAY_BUILD_PIN_NOTE "GPIO2"
+#define RELAY_BUILD_LOCKED_PIN "INPUT"
+#else
+#define RELAY_BUILD_NAME "ESP32 DevKit"
+#define RELAY_BUILD_PIN_NOTE "GPIO26"
+#define RELAY_BUILD_LOCKED_PIN "INPUT"
+#endif
+
 static uint32_t g_relayUnlockUntil = 0;
 static bool g_relayIsUnlocked = false;
 
@@ -91,9 +101,13 @@ inline void unlockRelay(uint32_t durationMs)
 inline void initRelay()
 {
     lockRelay();
-    Serial.print(F("[RELAY] Init OK (locked). GPIO26 read="));
+    Serial.print(F("[RELAY]["));
+    Serial.print(RELAY_BUILD_NAME);
+    Serial.print(F("] Init OK (locked). Pin="));
+    Serial.print(RELAY_BUILD_PIN_NOTE);
+    Serial.print(F(" read="));
     Serial.print(digitalRead(RELAY_PIN));
-    Serial.println(F(" — need 10k series IN↔D26 if SW stays on"));
+    Serial.println(F(" — relay should stay OFF when locked"));
 }
 
 /** Call every loop() — auto-lock when unlock duration expires. */

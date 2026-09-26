@@ -19,6 +19,7 @@ Active work items:
 - CI/CD pipeline — not yet created (`.github/workflows/` missing)
 - Hardware docs (`docs/`) — folder empty, schematics not yet added
 - Firmware unit tests — `firmware/test/` empty
+- FAQ documentation added at `docs/faq.md` for recurring issues and solutions
 
 ## Recent Changes (May 2026)
 
@@ -55,6 +56,7 @@ Active work items:
 5. **CI/CD** — GitHub Actions (build, test, lint); `.github/workflows/` not yet created
 6. **Hardware docs** — populate repo `docs/` with wiring diagrams and schematics
 7. **Firmware unit tests** — PlatformIO Unity tests in `firmware/test/`
+8. **FAQ maintenance** — keep `docs/faq.md` updated with repeated issues and fixes
 
 ## Active Decisions & Considerations
 
