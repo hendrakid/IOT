@@ -2,7 +2,7 @@
 #include "config.h"
 #include "rfid.h"
 #include "led.h"
-#include "relay.h"
+#include "actuator.h"
 #include "buzzer.h"
 #include "touch_unlock.h"
 #include "whitelist.h"
@@ -15,7 +15,7 @@ static uint32_t g_resultShownAt = 0;
 
 static void grantAccess()
 {
-  unlockRelay(RELAY_UNLOCK_DURATION_MS);
+  unlockActuator(ACTUATOR_UNLOCK_DURATION_MS);
   setAccessLeds(true);
   startBuzzerPattern(2);
   g_showingResult = true;
@@ -30,7 +30,7 @@ void setup()
 
   initRfid();
   initLeds();
-  initRelay();
+  initActuator();
   initBuzzer();
   initTouchUnlock();
   Serial.println(F("[BOOT] Ready."));
@@ -38,7 +38,7 @@ void setup()
 
 void loop()
 {
-  loopRelay();
+  loopActuator();
   loopBuzzer();
 
   if (consumeTouchUnlockPressed())
@@ -71,7 +71,7 @@ void loop()
   }
   else
   {
-    lockRelay();
+    lockActuator();
     Serial.print(F("[RFID] Unregistered UID: "));
     Serial.println(uid);
     startBuzzerPattern(1);

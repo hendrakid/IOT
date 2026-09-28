@@ -7,7 +7,7 @@
 #include "rfid.h"
 #include "mqtt.h"
 #include "led.h"
-#include "relay.h"
+#include "actuator.h"
 #include "buzzer.h"
 #include "touch_unlock.h"
 
@@ -20,7 +20,7 @@ static bool g_showingUID = false;
 static void grantTouchUnlock()
 {
     Serial.println(F("[TOUCH] Unlock requested"));
-    unlockRelay(RELAY_UNLOCK_DURATION_MS);
+    unlockActuator(ACTUATOR_UNLOCK_DURATION_MS);
     setAccessLeds(true);
     startBuzzerPattern(2);
     showMessage("Access Granted", "Touch unlock");
@@ -222,7 +222,7 @@ void setup()
     Serial.println(F("[BOOT] RFID OK"));
 
     initLeds();
-    initRelay();
+    initActuator();
     initBuzzer();
     initTouchUnlock();
 
@@ -237,7 +237,7 @@ void loop()
 {
     loopWiFi();
     loopMqtt();
-    loopRelay();
+    loopActuator();
     loopBuzzer();
 
     if (consumeTouchUnlockPressed())
@@ -255,7 +255,7 @@ void loop()
         {
             g_showingUID = false;
             clearLeds();
-            lockRelay();
+            lockActuator();
             showMessage("Smart Lock", "Tap your card...");
         }
         return;
@@ -278,7 +278,7 @@ void loop()
     if (result.serverError)
     {
         Serial.println(F("[RFID] Server error — access denied"));
-        lockRelay();
+        lockActuator();
         setAccessLeds(false);
         startBuzzerPattern(1);
         showMessage("Server Error", "Cek IP / koneksi");
@@ -288,9 +288,9 @@ void loop()
         Serial.print(F("[RFID] Access: "));
         Serial.println(result.access ? F("GRANTED") : F("DENIED"));
         if (result.access)
-            unlockRelay(RELAY_UNLOCK_DURATION_MS);
+            unlockActuator(ACTUATOR_UNLOCK_DURATION_MS);
         else
-            lockRelay();
+            lockActuator();
         setAccessLeds(result.access);
         startBuzzerPattern(result.access ? 2 : 1);
         showScanResult(result.access, result.registered, result.userName, uid);

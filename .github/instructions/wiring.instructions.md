@@ -26,6 +26,7 @@ Current evidence in `.github/hardware pics`:
 - `ESP32-C3 Super Mini.jpg` (ESP32-C3 Super Mini — native USB-C, labeled SPI/I2C/UART pin groups)
 - Active buzzer 2-pin — **Pending Hardware Evidence**
 - TTP223 touch sensor module — **Pending Hardware Evidence**
+- SG90 micro servo 5V — **Pending Hardware Evidence**
 
 ## Component Specifications
 
@@ -43,6 +44,7 @@ Current evidence in `.github/hardware pics`:
 | Microcontroller (alt) | ESP32-C3 Super Mini | — | 3.3V logic, 5V USB-C power | Single-core RISC-V, WiFi+BLE; native USB-C (no CH340) — needs `ARDUINO_USB_CDC_ON_BOOT=1` for Serial monitor; far fewer GPIOs than DevKit V1 |
 | Active buzzer 2-pin | Pending photo evidence | Digital GPIO | 3.3V preferred; 5V only with transistor driver | Access feedback: 2 beeps granted, 1 beep denied |
 | Touch Sensor | TTP223-style module | Digital GPIO | 3.3V | Touch-to-unlock input; OUT is active HIGH by default |
+| Servo (POC) | SG90 micro servo | **PWM GPIO** | 5V VCC; 3.3V signal OK | Door open/close; **Pending Hardware Evidence**. Used when `ACTUATOR_TYPE=ACTUATOR_SERVO`. Do **not** wire relay or solenoid. |
 
 ## ESP32 Pin Capabilities & Constraints
 
@@ -107,11 +109,11 @@ Current evidence in `.github/hardware pics`:
 | GPIO 9 | OLED SCL | I2C | I2C clock line — **strapping pin, also wired to on-board BOOT button** |
 | GPIO 1 | Blue LED anode (via 100Ω) | Digital | Access granted — active HIGH |
 | GPIO 3 | Red LED anode (via 100Ω) | Digital | Access denied / server error — active HIGH |
-| GPIO 2 | Relay IN | Open-drain | Active LOW; same 10kΩ series + 5V pull-up design as DevKit V1 |
+| GPIO 2 | Relay IN **or** SG90 SIG | Open-drain / PWM | `ACTUATOR_RELAY`: active LOW + 10kΩ series + 5V pull-up. `ACTUATOR_SERVO`: PWM to SG90 SIG. **Never both** |
 | GPIO 21 | Active buzzer (+) | Digital | Direct drive only for 3.3V low-current buzzer; safe as GPIO because Serial monitor uses native USB CDC |
 | GPIO 20 | TTP223 OUT/SIG | Digital input | Touch-to-unlock; safe as GPIO because Serial monitor uses native USB CDC |
 | 3.3V | MFRC522 VCC, OLED VCC | Power | 3.3V rail from board |
-| 5V (USB) | Relay VCC, pull-up for IN | Power | 5V from USB-C input |
+| 5V (USB) | Relay VCC / SG90 VCC | Power | Relay: coil + IN pull-up. Servo: prefer dedicated 5V + common GND (USB 5V only for unloaded tests) |
 | GND | All GND pins | Power | Common ground — ALL components share GND |
 
 ### Active Buzzer 2-Pin Wiring (Pending Hardware Evidence)
@@ -131,7 +133,7 @@ flowchart LR
 
 ### TTP223 Touch Unlock Wiring (Pending Hardware Evidence)
 
-Power the touch module from 3.3V so its OUT/SIG level is safe for ESP32 GPIO. Firmware treats OUT/SIG HIGH as a touch request and unlocks the relay for `RELAY_UNLOCK_DURATION_MS`.
+Power the touch module from 3.3V so its OUT/SIG level is safe for ESP32 GPIO. Firmware treats OUT/SIG HIGH as a touch request and unlocks the actuator for `ACTUATOR_UNLOCK_DURATION_MS` (same default 3s as `RELAY_UNLOCK_DURATION_MS`).
 
 | TTP223 Pin | ESP32 DevKit V1 | ESP32-C3 Super Mini | Notes |
 |------------|------------------|----------------------|-------|
@@ -159,6 +161,39 @@ flowchart LR
 **Risk — strapping pins on I2C:** GPIO8 and GPIO9 are ESP32-C3 strapping pins (boot mode selection); GPIO9 is also tied to the board's on-board BOOT button. I2C pull-ups normally idle HIGH, which matches the expected boot state, but this **must be verified physically on first power-up** — if the OLED or its pull-ups hold either line LOW during reset, the board may enter download mode instead of booting normally.
 
 **Note — native USB serial:** this board has no CH340/CP2102 bridge; `platformio.ini` sets `ARDUINO_USB_CDC_ON_BOOT=1` so `Serial` output appears over the USB-C port.
+
+### ESP32-C3 — actuator servo (POC)
+
+> SG90 5V micro servo — **Pending Hardware Evidence** (no photo in `.github/hardware pics`). No ASCII pinout of the servo body. Use this section only when `ACTUATOR_TYPE` is `ACTUATOR_SERVO` in `config.h`.
+>
+> **Do not wire the 5V relay module or the 12V solenoid** on this variant. GPIO 2 is the servo signal pin (same GPIO as relay IN on the solenoid variant). RFID, OLED, LEDs, buzzer, and touch wiring are unchanged.
+
+| SG90 wire (typical) | ESP32-C3 Super Mini | Notes |
+|---------------------|---------------------|-------|
+| Signal (orange / yellow) | GPIO 2 | PWM (`SERVO_PIN`); firmware default locked **0°**, unlocked **90°** |
+| VCC (red) | **5V** (dedicated 5V supply preferred) | **Never 3.3V**. USB 5V only for unloaded bench tests |
+| GND (brown / black) | GND | **Common ground** with ESP32 |
+
+```mermaid
+flowchart LR
+  GPIO["GPIO2 PWM"] --> SIG["SG90 SIG"]
+  V5["5V supply"] --> VCC["SG90 VCC"]
+  EspGnd["ESP32 GND"] --> SGnd["SG90 GND"]
+  V5G["5V supply GND"] --> EspGnd
+```
+
+**Power:** SG90 stall current is roughly 0.5–0.8A and can brown-out the ESP32-C3 if VCC is taken from the same USB 5V rail as the MCU. Prefer a **separate 5V** for the servo with GND tied to ESP32 GND. ESP32 3.3V PWM on SIG is normally enough for SG90.
+
+**Fail-safe:** boot writes `SERVO_ANGLE_LOCKED`; denied / server error / idle return call `lockActuator()`. Auto-close after `ACTUATOR_UNLOCK_DURATION_MS` via `loopActuator()` (no `delay()`).
+
+#### Bench check (servo POC)
+
+| Step | Expected |
+|------|----------|
+| Boot / idle | Horn at locked angle (default 0°) |
+| Access granted or touch unlock | Horn moves to unlocked angle (default 90°) for ~3s |
+| After auto-lock | Horn returns to locked angle |
+| Denied / server error | Horn stays at locked angle |
 
 ## Module Pinout Reference (ASCII)
 
@@ -344,6 +379,8 @@ flowchart LR
 ---
 
 ## Relay ↔ 12V Solenoid (load side)
+
+> Applies when `ACTUATOR_TYPE` is `ACTUATOR_RELAY`. For the ESP32-C3 **servo** variant, skip this entire section — see **ESP32-C3 — actuator servo (POC)** above.
 
 > **12V never goes to ESP32, MFRC522, or OLED.** Only through relay screw terminals **COM / NO / NC**.
 
@@ -602,3 +639,4 @@ Do NOT connect 12V to ESP32, shield logic pins, or MFRC522.
 14. **Shield does not fix relay IN level**: GPIO 26 is still 3.3V; **4.7k–10kΩ pull-up IN→5V** is still mandatory with the shield (see bench verification table)
 15. **30-pin DevKit only**: the shield socket is **15+15**; wide **38-pin (19+19)** DevKit boards do not fit — verify footprint before assembly
 16. **Shield power**: for relay + WiFi under load, prefer **9V 1A** on DC jack (6.5–16V) instead of USB-only if the coil drops out or the board browns out
+17. **Servo vs relay (ESP32-C3)**: GPIO 2 is either relay IN or SG90 SIG (`ACTUATOR_TYPE`). Never wire both. Servo VCC is 5V only; prefer a dedicated 5V rail so stall current does not reset the MCU

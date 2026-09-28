@@ -56,7 +56,17 @@
 #define MQTT_TELEMETRY_INTERVAL_MS 60000
 #define MQTT_RECONNECT_INTERVAL_MS 10000
 
-// ── Relay (5V 1-channel) ──────────────────────────────────────────────────────
+// ── Actuator selection (compile-time) ─────────────────────────────────────────
+// ACTUATOR_RELAY: 5V relay + 12V solenoid (default — existing DevKit/C3 wiring).
+// ACTUATOR_SERVO: SG90 door open/close. Do NOT wire relay or solenoid.
+// ESP32-C3 servo POC: set ACTUATOR_TYPE to ACTUATOR_SERVO in config.h.
+#define ACTUATOR_RELAY 0
+#define ACTUATOR_SERVO 1
+#ifndef ACTUATOR_TYPE
+#define ACTUATOR_TYPE ACTUATOR_RELAY
+#endif
+
+// ── Relay (5V 1-channel) — used when ACTUATOR_TYPE == ACTUATOR_RELAY ──────────
 // Default GPIO 2 on ESP32-C3 Super Mini, GPIO 26 on ESP32 DevKit V1.
 #ifndef RELAY_PIN
 #if CONFIG_IDF_TARGET_ESP32C3
@@ -73,6 +83,28 @@
 
 #ifndef RELAY_UNLOCK_DURATION_MS
 #define RELAY_UNLOCK_DURATION_MS 3000
+#endif
+
+#ifndef ACTUATOR_UNLOCK_DURATION_MS
+#define ACTUATOR_UNLOCK_DURATION_MS RELAY_UNLOCK_DURATION_MS
+#endif
+
+// ── Servo (SG90) — used when ACTUATOR_TYPE == ACTUATOR_SERVO ───────────────────
+// C3 POC: GPIO 2 (same pin as relay IN). VCC = 5V, never 3.3V. See wiring docs.
+#ifndef SERVO_PIN
+#if CONFIG_IDF_TARGET_ESP32C3
+#define SERVO_PIN 2
+#else
+#define SERVO_PIN 26
+#endif
+#endif
+
+#ifndef SERVO_ANGLE_LOCKED
+#define SERVO_ANGLE_LOCKED 0
+#endif
+
+#ifndef SERVO_ANGLE_UNLOCKED
+#define SERVO_ANGLE_UNLOCKED 90
 #endif
 
 // ── Active buzzer feedback ───────────────────────────────────────────────────

@@ -19,7 +19,8 @@ applyTo: "firmware/**"
 - `include/display.h` — OLED helpers
 - `include/led.h` — status LEDs (GPIO 25 blue granted, GPIO 27 red denied)
 - `include/mqtt.h` — PubSubClient connect, telemetry publish, LWT offline
-- `include/relay.h` — relay lock/unlock (GPIO 26, active LOW, auto-lock via `loopRelay()`)
+- `include/actuator.h` — lock/unlock facade (`ACTUATOR_TYPE`: relay or SG90 servo)
+- `include/relay.h` — relay backend (GPIO 26 DevKit / GPIO 2 C3, active LOW, auto-lock via `loopRelay()`)
 
 ## RFID (MFRC522 — SPI)
 
@@ -56,12 +57,14 @@ applyTo: "firmware/**"
 - Interval: `MQTT_TELEMETRY_INTERVAL_MS` (default 60s) — must stay under dashboard 120s offline threshold
 - **`MQTT_BROKER_HOST`**: LAN IP of machine running Mosquitto — never `localhost`
 
-## Relay Control (GPIO)
+## Actuator Control (GPIO)
 
-- `initRelay()` in `setup()` after `initLeds()` — default **locked** at boot
-- `loopRelay()` at start of `loop()` (with `loopMqtt()`) — `millis()` auto-lock after `RELAY_UNLOCK_DURATION_MS`
-- `unlockRelay(duration)` on `result.access == true`; `lockRelay()` on denied, server error, and idle return
-- GPIO 26, active LOW (`RELAY_ACTIVE_LOW` in `config.h`); **4.7k–10kΩ pull-up IN→5V**; locked = `pinMode(INPUT)`, unlock = `OUTPUT` + LOW
+- `initActuator()` in `setup()` after `initLeds()` — default **locked** at boot
+- `loopActuator()` at start of `loop()` (with `loopMqtt()`) — `millis()` auto-lock after `ACTUATOR_UNLOCK_DURATION_MS` (alias of `RELAY_UNLOCK_DURATION_MS`)
+- `unlockActuator(duration)` on `result.access == true`; `lockActuator()` on denied, server error, and idle return
+- Select backend in `config.h`: `ACTUATOR_TYPE` = `ACTUATOR_RELAY` (default) or `ACTUATOR_SERVO`
+- Relay: GPIO 26 / C3 GPIO 2, active LOW (`RELAY_ACTIVE_LOW`); **4.7k–10kΩ pull-up IN→5V**; locked = `pinMode(INPUT)`, unlock = `OUTPUT` + LOW
+- Servo (C3 POC, SG90): GPIO 2 PWM via ESP32Servo; `SERVO_ANGLE_LOCKED` / `SERVO_ANGLE_UNLOCKED`; **no relay or solenoid**; stay attached after move
 - Fail to locked on any error; never `delay()` for unlock timing
 
 ## Error Handling

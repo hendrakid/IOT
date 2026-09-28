@@ -182,6 +182,27 @@ Dokumen ini mencatat masalah yang pernah ditemui saat perakitan, pengujian, dan 
 
 ---
 
+## 11) Servo SG90 tidak bergerak / ESP32-C3 reset saat servo bergerak
+
+### Gejala
+- Log `[SERVO] UNLOCK` muncul tetapi horn tidak bergerak.
+- Board reboot atau USB putus saat grant/touch.
+
+### Penyebab paling umum
+- `ACTUATOR_TYPE` masih `ACTUATOR_RELAY`.
+- VCC servo ke 3.3V, atau SIG tidak ke **GPIO2**.
+- Relay masih terpasang di GPIO2 bersama servo.
+- Servo dan MCU berbagi USB 5V; arus stall SG90 membuat brown-out.
+
+### Solusi
+- Di `config.h` set `#define ACTUATOR_TYPE ACTUATOR_SERVO`.
+- Jangan pasang relay atau solenoid pada varian servo.
+- SIG → GPIO2, VCC → **5V**, GND common.
+- Pakai **5V terpisah** untuk servo (GND tetap common). USB 5V hanya untuk uji tanpa beban.
+- Sesuaikan `SERVO_ANGLE_LOCKED` / `SERVO_ANGLE_UNLOCKED` setelah mekanik pintu diketahui.
+
+---
+
 ## Checklist cepat debugging
 
 1. Cek log serial saat boot.

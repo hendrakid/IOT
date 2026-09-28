@@ -15,6 +15,7 @@ Active work items:
 - Multi-page dashboard including `hardware.html` (live node status via MQTT → SSE)
 - Rate limiting on `POST /api/scan` — implemented (`express-rate-limit`, `SCAN_RATE_LIMIT_*` env)
 - Relay control implemented — GPIO 26, `include/relay.h`, unlock on access granted
+- Servo actuator POC (ESP32-C3) — `include/actuator.h`, `ACTUATOR_TYPE` in `config.h`; GPIO 2 PWM; no relay/solenoid when servo is selected
 - OTA firmware management — planned, not implemented
 - CI/CD pipeline — not yet created (`.github/workflows/` missing)
 - Hardware docs (`docs/`) — folder empty, schematics not yet added
@@ -69,6 +70,8 @@ Active work items:
 | `MQTT_BROKER_HOST` on ESP32 | Must be LAN IP of broker machine — ESP32 cannot use `localhost` |
 | UI + server stale threshold | 120s — `isNodeOnline()` in `app.js` + `staleStatusJob` |
 | Relay GPIO 26, active LOW, energize-to-unlock (NO+COM) | Verified from relay hardware photo |
+| Actuator selected at compile time (`ACTUATOR_TYPE`) | Relay remains default; SG90 servo is C3 POC only; RFID/OLED/LED/MQTT unchanged |
+| Servo C3 GPIO 2, 0° locked / 90° unlocked | Same pin as relay IN so both cannot be wired together |
 | Fail-to-locked on any error | Security — unknown state must not grant access |
 | Card UIDs stored as UPPERCASE hex | ESP32 and API both normalize to uppercase |
 
@@ -90,3 +93,4 @@ Active work items:
 - MFRC522 RST on GPIO 4; IRQ unconnected (polling mode)
 - MQTT test script must `clearTimeout` + `process.exit(0)` after publish — otherwise false timeout exit code
 - Relay: always fail to LOCKED on error
+- Servo SG90: GPIO 2 PWM; do not share the pin with relay; stall current needs a dedicated 5V rail

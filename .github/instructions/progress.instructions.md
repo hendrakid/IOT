@@ -22,7 +22,7 @@ description: "Use when asking about project progress, current status, completed 
 
 **Phase**: 9 — Security & Hardening (In Progress)
 
-**Current Focus**: Relay control implemented. Next: unit tests `hardwareBroadcast`/`staleStatusJob`, OTA, HTTPS, CI/CD, hardware docs.
+**Current Focus**: Actuator facade (`relay` or `servo` via `config.h`). Next: unit tests `hardwareBroadcast`/`staleStatusJob`, OTA, HTTPS, CI/CD, hardware docs.
 
 ## Completed Milestones
 
@@ -65,6 +65,7 @@ description: "Use when asking about project progress, current status, completed 
 ### Prioritas menengah (fitur inti belum lengkap)
 
 - [x] **Relay integration** — `include/relay.h`, GPIO 26, unlock on access granted, fail-to-locked on error
+- [x] **Servo actuator POC (ESP32-C3)** — `include/actuator.h`, `ACTUATOR_TYPE` in `config.h`; GPIO 2 SG90; relay/solenoid omitted on servo wiring
 - [ ] **Unit tests (web)** — `hardwareBroadcast`, `staleStatusJob` (done: `scanController`, `schemas`, `scanBroadcast`, `sseEnv`, `scanRateLimit`, `mqttSubscriber`)
 
 ### Prioritas rendah (production & polish)
