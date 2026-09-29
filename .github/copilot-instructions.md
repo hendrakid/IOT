@@ -355,7 +355,7 @@ See `.github/instructions/wiring.instructions.md` for full pin assignments and A
 - GPIOs 6–11 are **reserved** for internal flash — do not use
 - All modules must share a **common GND**
 
-**Alt board (ESP32-C3 Super Mini, not yet wired):** pins auto-selected at compile time via `CONFIG_IDF_TARGET_ESP32C3` — SPI SS=7/SCK=4/MOSI=6/MISO=5, RFID RST=10, OLED I2C SDA=8/SCL=9, Relay=2, LED blue=1/red=3. GPIO8/GPIO9 are strapping pins (GPIO9 also wired to on-board BOOT button) — verify no LOW-hold at power-up. See `wiring.instructions.md` for full detail.
+**Alt board (ESP32-C3 Super Mini):** pins auto-selected via `CONFIG_IDF_TARGET_ESP32C3` — SPI SS=7/SCK=4/MOSI=6/MISO=5, RFID RST=10, Relay/servo=2, LED blue=1/red=3, buzzer=21, touch=20. **OLED not used** (`DISPLAY_ENABLED=0`); GPIO8/GPIO9 unused (strapping). See `wiring.instructions.md`.
 
 ---
 

@@ -1,16 +1,18 @@
 #pragma once
 
+#include <Arduino.h>
+#include "config.h"
+
+// DISPLAY_ENABLED comes from config.h: 1 on DevKit V1, 0 on ESP32-C3.
+
+#if DISPLAY_ENABLED
+
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Wire.h>
 
 // OLED hardware config — SSD1306 0.96" 128x64
-// ESP32-C3 Super Mini: GND | VDD→3.3V | SCL→GPIO9 | SDA→GPIO8
-// ESP32 DevKit V1:     GND | VDD→3.3V | SCK→GPIO22 | SDA→GPIO21
-#if CONFIG_IDF_TARGET_ESP32C3
-static const uint8_t OLED_SDA_PIN = 8;
-static const uint8_t OLED_SCL_PIN = 9;
-#endif
+// ESP32 DevKit V1: GND | VDD→3.3V | SCK→GPIO22 | SDA→GPIO21 (Wire defaults)
 static const uint8_t SCREEN_WIDTH = 128;
 static const uint8_t SCREEN_HEIGHT = 64;
 static const int8_t OLED_RESET = -1;       // shared with ESP32 reset
@@ -20,9 +22,6 @@ static Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 bool initDisplay()
 {
-#if CONFIG_IDF_TARGET_ESP32C3
-    Wire.begin(OLED_SDA_PIN, OLED_SCL_PIN);
-#endif
     if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_I2C_ADDR))
     {
         Serial.println(F("[OLED] ERROR: begin() failed. Check wiring/I2C address."));
@@ -130,3 +129,52 @@ void showScanResult(bool granted, bool registered, const String &userName, const
 
     display.display();
 }
+
+#else
+
+inline bool initDisplay()
+{
+    Serial.println(F("[OLED] Disabled on ESP32-C3 (GPIO budget). Use Serial/LED/buzzer."));
+    return true;
+}
+
+inline void showMessage(const String &line1, const String &line2 = "")
+{
+    Serial.print(F("[UI] "));
+    Serial.print(line1);
+    if (line2.length() > 0)
+    {
+        Serial.print(F(" | "));
+        Serial.print(line2);
+    }
+    Serial.println();
+}
+
+inline void showUID(const String &uid)
+{
+    Serial.print(F("[UI] Card UID: "));
+    Serial.println(uid);
+}
+
+inline void showAccessResult(bool granted, const String &uid)
+{
+    Serial.print(F("[UI] "));
+    Serial.print(granted ? F("Access Granted") : F("Access Denied"));
+    Serial.print(F(" UID="));
+    Serial.println(uid);
+}
+
+inline void showScanResult(bool granted, bool registered, const String &userName, const String &uid)
+{
+    Serial.print(F("[UI] "));
+    if (!registered)
+        Serial.print(F("Unknown Card"));
+    else
+        Serial.print(granted ? F("Access Granted") : F("Access Denied"));
+    Serial.print(F(" user="));
+    Serial.print(userName);
+    Serial.print(F(" UID="));
+    Serial.println(uid);
+}
+
+#endif

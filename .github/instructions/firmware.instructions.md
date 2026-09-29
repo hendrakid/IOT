@@ -31,7 +31,8 @@ applyTo: "firmware/**"
 
 ## OLED (SSD1306 — I2C)
 
-- `clearDisplay()` before write; `display()` to flush
+- Enabled on ESP32 DevKit V1 only (`DISPLAY_ENABLED=1`). ESP32-C3 uses Serial/LED/buzzer (`DISPLAY_ENABLED=0`) so GPIO8/GPIO9 stay free.
+- When enabled: `clearDisplay()` before write; `display()` to flush
 
 ## Status LEDs (GPIO)
 
@@ -69,7 +70,7 @@ applyTo: "firmware/**"
 
 ## Error Handling
 
-- Display errors on OLED; Serial for debug
+- Display errors on OLED (DevKit) or Serial `[UI]` lines (ESP32-C3); Serial for debug either way
 - MQTT disconnect does not block RFID scan path
 
 ## Naming Conventions

@@ -22,7 +22,7 @@ description: "Use when asking about project progress, current status, completed 
 
 **Phase**: 9 — Security & Hardening (In Progress)
 
-**Current Focus**: Actuator facade (`relay` or `servo` via `config.h`). Next: unit tests `hardwareBroadcast`/`staleStatusJob`, OTA, HTTPS, CI/CD, hardware docs.
+**Current Focus**: ESP32-C3 omits OLED (`DISPLAY_ENABLED=0`) due to GPIO budget. Next: unit tests `hardwareBroadcast`/`staleStatusJob`, OTA, HTTPS, CI/CD, hardware docs.
 
 ## Completed Milestones
 

@@ -105,14 +105,14 @@ Current evidence in `.github/hardware pics`:
 | GPIO 5 | MFRC522 MISO | SPI | SPI data in (hardware default) |
 | GPIO 10 | MFRC522 RST | Digital | Reset pin |
 | — | MFRC522 IRQ | — | **Leave unconnected** (not used in this project) |
-| GPIO 8 | OLED SDA | I2C | I2C data line — **strapping pin**, see risk note below |
-| GPIO 9 | OLED SCL | I2C | I2C clock line — **strapping pin, also wired to on-board BOOT button** |
+| GPIO 8 | — | — | **Unused for now** (strapping pin). OLED **not wired** — firmware `DISPLAY_ENABLED=0` |
+| GPIO 9 | — | — | **Unused for now** (strapping pin + on-board BOOT). OLED **not wired** |
 | GPIO 1 | Blue LED anode (via 100Ω) | Digital | Access granted — active HIGH |
 | GPIO 3 | Red LED anode (via 100Ω) | Digital | Access denied / server error — active HIGH |
 | GPIO 2 | Relay IN **or** SG90 SIG | Open-drain / PWM | `ACTUATOR_RELAY`: active LOW + 10kΩ series + 5V pull-up. `ACTUATOR_SERVO`: PWM to SG90 SIG. **Never both** |
 | GPIO 21 | Active buzzer (+) | Digital | Direct drive only for 3.3V low-current buzzer; safe as GPIO because Serial monitor uses native USB CDC |
 | GPIO 20 | TTP223 OUT/SIG | Digital input | Touch-to-unlock; safe as GPIO because Serial monitor uses native USB CDC |
-| 3.3V | MFRC522 VCC, OLED VCC | Power | 3.3V rail from board |
+| 3.3V | MFRC522 VCC | Power | 3.3V rail from board; **do not wire OLED** on this board for now |
 | 5V (USB) | Relay VCC / SG90 VCC | Power | Relay: coil + IN pull-up. Servo: prefer dedicated 5V + common GND (USB 5V only for unloaded tests) |
 | GND | All GND pins | Power | Common ground — ALL components share GND |
 
@@ -158,7 +158,7 @@ flowchart LR
   GPIO["GPIO buzzer"] --> R["1kΩ-4.7kΩ"] --> B["Base / gate"]
 ```
 
-**Risk — strapping pins on I2C:** GPIO8 and GPIO9 are ESP32-C3 strapping pins (boot mode selection); GPIO9 is also tied to the board's on-board BOOT button. I2C pull-ups normally idle HIGH, which matches the expected boot state, but this **must be verified physically on first power-up** — if the OLED or its pull-ups hold either line LOW during reset, the board may enter download mode instead of booting normally.
+**OLED omitted (GPIO budget):** firmware env `esp32-c3-supermini` sets `DISPLAY_ENABLED=0`. Do not connect the SSD1306. Status is Serial + LED + buzzer. GPIO8/GPIO9 stay free; they remain strapping pins — leave them floating unless a later function stays HIGH at reset.
 
 **Note — native USB serial:** this board has no CH340/CP2102 bridge; `platformio.ini` sets `ARDUINO_USB_CDC_ON_BOOT=1` so `Serial` output appears over the USB-C port.
 
@@ -166,7 +166,7 @@ flowchart LR
 
 > SG90 5V micro servo — **Pending Hardware Evidence** (no photo in `.github/hardware pics`). No ASCII pinout of the servo body. Use this section only when `ACTUATOR_TYPE` is `ACTUATOR_SERVO` in `config.h`.
 >
-> **Do not wire the 5V relay module or the 12V solenoid** on this variant. GPIO 2 is the servo signal pin (same GPIO as relay IN on the solenoid variant). RFID, OLED, LEDs, buzzer, and touch wiring are unchanged.
+> **Do not wire the 5V relay module or the 12V solenoid** on this variant. GPIO 2 is the servo signal pin (same GPIO as relay IN on the solenoid variant). RFID, LEDs, buzzer, and touch wiring are unchanged; **do not wire OLED**.
 
 | SG90 wire (typical) | ESP32-C3 Super Mini | Notes |
 |---------------------|---------------------|-------|

@@ -89,11 +89,11 @@ Dokumen ini mencatat masalah yang pernah ditemui saat perakitan, pengujian, dan 
 - Jalur I2C salah.
 - VCC / GND belum benar.
 - Address OLED tidak sesuai.
+- Pada **ESP32-C3**, firmware **sengaja tidak memakai OLED** (`DISPLAY_ENABLED=0`) karena pin terbatas.
 
 ### Solusi
-- Pastikan OLED diberi daya sesuai modul.
-- Cek SDA dan SCL sesuai board target.
-- Pastikan alamat I2C OLED adalah **0x3C** jika modul default.
+- **ESP32-C3:** jangan pasang OLED. Status ada di Serial Monitor (`[UI] ...`), LED, dan buzzer. GPIO8 dan GPIO9 dibiarkan kosong.
+- **ESP32 DevKit V1:** pastikan OLED diberi daya sesuai modul; SDA GPIO21, SCL GPIO22; alamat I2C **0x3C**.
 
 ---
 

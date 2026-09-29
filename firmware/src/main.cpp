@@ -216,7 +216,11 @@ void setup()
     }
 
     showMessage("Smart Lock", "Initializing...");
+#if DISPLAY_ENABLED
     Serial.println(F("[BOOT] OLED OK"));
+#else
+    Serial.println(F("[BOOT] OLED skipped (ESP32-C3)"));
+#endif
 
     initRfid();
     Serial.println(F("[BOOT] RFID OK"));

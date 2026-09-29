@@ -148,3 +148,14 @@
 #ifndef TOUCH_UNLOCK_COOLDOWN_MS
 #define TOUCH_UNLOCK_COOLDOWN_MS 1000
 #endif
+
+// ── OLED (SSD1306) ───────────────────────────────────────────────────────────
+// DevKit V1: enabled (I2C GPIO21/22). ESP32-C3: disabled — GPIO budget;
+// GPIO8/GPIO9 stay free. Override with -DDISPLAY_ENABLED=1 only if you wire OLED.
+#ifndef DISPLAY_ENABLED
+#if CONFIG_IDF_TARGET_ESP32C3
+#define DISPLAY_ENABLED 0
+#else
+#define DISPLAY_ENABLED 1
+#endif
+#endif

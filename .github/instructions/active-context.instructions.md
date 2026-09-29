@@ -70,7 +70,8 @@ Active work items:
 | `MQTT_BROKER_HOST` on ESP32 | Must be LAN IP of broker machine — ESP32 cannot use `localhost` |
 | UI + server stale threshold | 120s — `isNodeOnline()` in `app.js` + `staleStatusJob` |
 | Relay GPIO 26, active LOW, energize-to-unlock (NO+COM) | Verified from relay hardware photo |
-| Actuator selected at compile time (`ACTUATOR_TYPE`) | Relay remains default; SG90 servo is C3 POC only; RFID/OLED/LED/MQTT unchanged |
+| Actuator selected at compile time (`ACTUATOR_TYPE`) | Relay remains default; SG90 servo is C3 POC only |
+| OLED omitted on ESP32-C3 (`DISPLAY_ENABLED=0`) | Too few GPIOs; GPIO8/9 stay free. DevKit V1 still uses SSD1306. Status via Serial/LED/buzzer |
 | Servo C3 GPIO 2, 0° locked / 90° unlocked | Same pin as relay IN so both cannot be wired together |
 | Fail-to-locked on any error | Security — unknown state must not grant access |
 | Card UIDs stored as UPPERCASE hex | ESP32 and API both normalize to uppercase |
