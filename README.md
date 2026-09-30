@@ -60,6 +60,35 @@ This project is an IoT-based Smart Lock and Attendance system using RFID. It fea
 - Upload: `cd firmware && pio run -t upload`
 - Test: `cd firmware && pio test`
 
+#### Firmware environment behavior
+
+The selected PlatformIO environment determines the target board, source file, available libraries, and runtime behavior. `pio run` only builds the firmware; use `-t upload` to flash it to the board.
+
+| Behavior | `esp32dev` | `esp32-c3-supermini` | `esp32-c3-standalone` |
+| --- | --- | --- | --- |
+| Board | ESP32 DevKit V1 | ESP32-C3 Super Mini | ESP32-C3 Super Mini |
+| Source file | `src/main.cpp` | `src/main.cpp` | `src/main_standalone.cpp` |
+| WiFi | Used | Used | Not used |
+| HTTP API and database attendance | Used | Used | Not used |
+| MQTT hardware telemetry | Used | Used | Not used |
+| RFID access decision | Backend API | Backend API | Local UID whitelist in `include/whitelist.h` |
+| OLED | Enabled | Disabled | Not used |
+| Status feedback | OLED, LEDs, buzzer, Serial | LEDs, buzzer, Serial | LEDs, buzzer, Serial |
+| Actuator default pin | GPIO 26 | GPIO 2 | GPIO 2 |
+| Touch unlock | Enabled | Enabled | Enabled, without server validation |
+| Network/API failure behavior | Deny and stay locked | Deny and stay locked | Not applicable; works offline |
+
+Build a specific environment with one of these commands:
+
+```bash
+cd firmware
+pio run -e esp32dev
+pio run -e esp32-c3-supermini
+pio run -e esp32-c3-standalone
+```
+
+The `esp32dev` and `esp32-c3-supermini` environments are online versions: RFID -> WiFi -> API -> access decision. The `esp32-c3-standalone` environment is an offline version: RFID -> local whitelist -> access decision. It does not send attendance data to the dashboard.
+
 #### Firmware deploy checklist
 1. Find your PC **LAN IP** (`ipconfig` on Windows) — ESP32 cannot use `localhost`.
 2. Start backend stack:
