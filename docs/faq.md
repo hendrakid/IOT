@@ -203,6 +203,61 @@ Dokumen ini mencatat masalah yang pernah ditemui saat perakitan, pengujian, dan 
 
 ---
 
+## 12) Hardware Management menampilkan device offline dan MQTT gagal dengan `state=-2`
+
+### Gejala
+- RFID tetap bisa ditap dan data muncul di **Real-time Access Logs**.
+- **Hardware Management** tidak menampilkan device online.
+- Serial Monitor menampilkan:
+  - `[MQTT] Connecting to 192.168.0.100:1883`
+  - `[MQTT] Connect failed, state=-2`
+
+### Penyebab
+- Access Logs menggunakan HTTP ke API pada port `3000`.
+- Hardware Management membutuhkan telemetry MQTT ke Mosquitto pada port `1883`.
+- Windows Firewall dapat mengizinkan port API tetapi memblokir koneksi masuk ke port MQTT.
+
+### Solusi
+- Jalankan PowerShell sebagai Administrator dan izinkan port MQTT:
+
+```powershell
+New-NetFirewallRule `
+  -DisplayName "Mosquitto MQTT 1883" `
+  -Direction Inbound `
+  -Protocol TCP `
+  -LocalPort 1883 `
+  -Action Allow `
+  -Profile Private
+```
+
+- Pastikan `MQTT_BROKER_HOST` di `firmware/include/config.h` berisi IP LAN PC yang menjalankan Docker, bukan `localhost`:
+
+```cpp
+#define MQTT_BROKER_HOST "192.168.0.100"
+```
+
+- Jika `MQTT_BROKER_HOST` sudah benar dan firmware sedang berjalan, **tidak perlu upload ulang**. Tunggu proses reconnect otomatis atau restart ESP32.
+- Upload ulang hanya jika konfigurasi broker baru diubah, firmware yang terpasang bukan environment online, atau ingin memastikan binary terbaru:
+
+```powershell
+pio run -e esp32-c3-supermini -t upload -t monitor
+```
+
+- Verifikasi telemetry dari PC:
+
+```powershell
+docker exec -it iot-mosquitto-1 mosquitto_sub -h localhost -p 1883 -t "smartlock/ap/1/#" -v
+```
+
+- Jika tetap gagal, pastikan ESP32 dan PC berada pada Wi-Fi utama yang sama. Guest Wi-Fi atau client isolation dapat mencegah ESP32 mengakses PC meskipun Wi-Fi ESP32 berhasil tersambung.
+
+### Catatan
+- `Hard resetting via RTS pin...` adalah pesan normal setelah upload atau monitor dibuka ulang.
+- `state=-2` berarti koneksi TCP ke broker gagal sebelum proses autentikasi MQTT.
+- Setelah telemetry masuk, backend menyimpan status ke PostgreSQL dan Hardware Management akan menampilkan device online.
+
+---
+
 ## Checklist cepat debugging
 
 1. Cek log serial saat boot.
