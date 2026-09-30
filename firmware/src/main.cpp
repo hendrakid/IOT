@@ -241,6 +241,7 @@ void loop()
 {
     loopWiFi();
     loopMqtt();
+    loopRfid();
     loopActuator();
     loopBuzzer();
 

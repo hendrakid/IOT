@@ -38,6 +38,7 @@ void setup()
 
 void loop()
 {
+  loopRfid();
   loopActuator();
   loopBuzzer();
 
