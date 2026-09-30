@@ -46,7 +46,7 @@ applyTo: "firmware/**"
 - `POST /api/scan` with `{ "uid": "...", "access_point_id": ACCESS_POINT_ID }`
 - Reconnect WiFi before HTTP if disconnected
 - `http.setTimeout(HTTP_TIMEOUT_MS)`
-- Fail-safe: deny access on network/parse errors
+- API failure fallback: check `include/whitelist.h`; grant only listed UIDs and keep unlisted UIDs locked
 
 ## MQTT (hardware telemetry)
 
@@ -66,7 +66,7 @@ applyTo: "firmware/**"
 - Select backend in `config.h`: `ACTUATOR_TYPE` = `ACTUATOR_RELAY` (default) or `ACTUATOR_SERVO`
 - Relay: GPIO 26 / C3 GPIO 2, active LOW (`RELAY_ACTIVE_LOW`); **4.7k–10kΩ pull-up IN→5V**; locked = `pinMode(INPUT)`, unlock = `OUTPUT` + LOW
 - Servo (C3 POC, SG90): GPIO 2 PWM via ESP32Servo; `SERVO_ANGLE_LOCKED` / `SERVO_ANGLE_UNLOCKED`; **no relay or solenoid**; stay attached after move
-- Fail to locked on any error; never `delay()` for unlock timing
+- Fail to locked for denied or unlisted UIDs; API errors use the local whitelist fallback. Never use `delay()` for unlock timing
 
 ## Error Handling
 

@@ -10,6 +10,7 @@
 #include "actuator.h"
 #include "buzzer.h"
 #include "touch_unlock.h"
+#include "whitelist.h"
 
 // How long (ms) to show the result before returning to idle screen
 static const uint32_t UID_DISPLAY_DURATION_MS = 3000;
@@ -282,11 +283,25 @@ void loop()
 
     if (result.serverError)
     {
-        Serial.println(F("[RFID] Server error — access denied"));
-        lockActuator();
-        setAccessLeds(false);
-        startBuzzerPattern(1);
-        showMessage("Server Error", "Cek IP / koneksi");
+        const bool whitelistAllowed = isUidAllowed(uid);
+        result.access = whitelistAllowed;
+
+        Serial.print(F("[RFID] API error — local whitelist: "));
+        Serial.println(whitelistAllowed ? F("GRANTED") : F("DENIED"));
+
+        if (whitelistAllowed)
+        {
+            unlockActuator(ACTUATOR_UNLOCK_DURATION_MS);
+            showMessage("Offline Access", "Whitelist OK");
+        }
+        else
+        {
+            lockActuator();
+            showMessage("API Error", "Access Denied");
+        }
+
+        setAccessLeds(whitelistAllowed);
+        startBuzzerPattern(whitelistAllowed ? 2 : 1);
     }
     else
     {

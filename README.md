@@ -76,7 +76,7 @@ The selected PlatformIO environment determines the target board, source file, av
 | Status feedback | OLED, LEDs, buzzer, Serial | LEDs, buzzer, Serial | LEDs, buzzer, Serial |
 | Actuator default pin | GPIO 26 | GPIO 2 | GPIO 2 |
 | Touch unlock | Enabled | Enabled | Enabled, without server validation |
-| Network/API failure behavior | Deny and stay locked | Deny and stay locked | Not applicable; works offline |
+| Network/API failure behavior | Check local whitelist; deny if not listed | Check local whitelist; deny if not listed | Not applicable; works offline |
 
 Build a specific environment with one of these commands:
 
@@ -87,7 +87,7 @@ pio run -e esp32-c3-supermini
 pio run -e esp32-c3-standalone
 ```
 
-The `esp32dev` and `esp32-c3-supermini` environments are online versions: RFID -> WiFi -> API -> access decision. The `esp32-c3-standalone` environment is an offline version: RFID -> local whitelist -> access decision. It does not send attendance data to the dashboard.
+The `esp32dev` and `esp32-c3-supermini` environments are online versions: RFID -> WiFi -> API -> access decision. If the API is unreachable or returns an error, they fall back to the local whitelist in `firmware/include/whitelist.h`; a UID not listed there remains denied. The `esp32-c3-standalone` environment always uses that local whitelist and does not send attendance data to the dashboard.
 
 #### Firmware deploy checklist
 1. Find your PC **LAN IP** (`ipconfig` on Windows) — ESP32 cannot use `localhost`.
