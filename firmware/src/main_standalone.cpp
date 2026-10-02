@@ -8,7 +8,7 @@
 #include "whitelist.h"
 
 // How long (ms) to hold the LED result before accepting the next card tap.
-static const uint32_t LED_RESULT_DISPLAY_MS = 2000;
+static const uint32_t LED_RESULT_DISPLAY_MS = ACTUATOR_UNLOCK_DURATION_MS;
 
 static bool g_showingResult = false;
 static uint32_t g_resultShownAt = 0;
@@ -64,6 +64,9 @@ void loop()
   {
     return;
   }
+
+  setTapLed(true);
+  startBuzzerPattern(1);
 
   const bool allowed = isUidAllowed(uid);
   if (allowed)

@@ -18,7 +18,7 @@ Current evidence in `.github/hardware pics`:
 - `Expansion ESP32 V1 Shiled 30 Pin.png` (ESP32 30P expansion shield — G-V-S headers, 3.3V/5V jumper, DC6.5–16V)
 - `RFID RC522.jpeg` (MFRC522 module)
 - `OLED 0.96 128x64 I2C IIC.jpeg` (SSD1306 OLED, pin order visible: GND, VDD, SCK, SDA)
-- `LED Red and Blue.jpeg` (5mm status LEDs — red = denied, blue = granted)
+- `LED Red and Blue.jpeg` (5mm status LEDs — legacy hardware evidence; green replacement pending)
 - `Relay 1-Channel (5V DC).jpeg` (5V 1-channel relay module — JQC-3FF-S-Z, VCC/GND/IN, NC/COM/NO)
 - `Adaptor AC-DC 9V 1A.jpeg` (optional barrel input for shield DC jack, 6.5–16V range)
 - `Resistor 100 Ohm.jpeg` (LED current limit)
@@ -36,8 +36,8 @@ Current evidence in `.github/hardware pics`:
 | Expansion board | ESP32 ESP32S 30P Expansion board | G-V-S headers | 3.3V or 5V on **V** (jumper) | DC6.5–16V barrel, Micro-USB, USB-C; fixed **5V / 3.3V / GND** block top-right |
 | RFID Reader | RFID-RC522 (MFRC522) | **SPI** | 3.3V | 13.56 MHz, Mifare Classic/Ultralight; pins: SDA, SCK, MOSI, MISO, IRQ, GND, RST, 3.3V |
 | OLED Display | SSD1306 0.96" 128x64 | **I2C** | 3.3V–5V | Address: 0x3C; pin order on module: **GND, VDD, SCK, SDA** |
-| Status LED (blue) | 5mm through-hole | **Digital GPIO** | 3.3V via 100Ω resistor | Access granted indicator; anode (+) long leg |
-| Status LED (red) | 5mm through-hole | **Digital GPIO** | 3.3V via 100Ω resistor | Access denied / server error; anode (+) long leg |
+| Status LED (blue) | 5mm through-hole | **Digital GPIO** | 3.3V via 100Ω resistor | Card-tap/validation indicator; anode (+) long leg |
+| Status LED (green) | 5mm through-hole | **Digital GPIO** | 3.3V via 100Ω resistor | Access granted indicator; replacement hardware evidence pending |
 | Relay Module | 5V 1-Channel (JQC-3FF-S-Z) | **Digital GPIO** | 5V coil; IN needs 5V HIGH to turn off | Active LOW on IN (verified); **4.7k–10kΩ pull-up IN→5V**; GPIO 26 INPUT when locked |
 | Solenoid lock | 12V DC door lock (solenoid) | **Relay COM/NO** | 12V DC | Red = (+), black = (−); ~0.5–1A; **not** to ESP32 pins |
 | Power Supply | DC adapter | — | Match solenoid rating; 12V DC ≥1A required for this lock | Photo evidence is a **9V 1A** adapter, so it is not a direct 12V supply; keep load power separate from USB 5V logic |
@@ -84,8 +84,8 @@ Current evidence in `.github/hardware pics`:
 | — | MFRC522 IRQ | — | **Leave unconnected** (not used in this project) |
 | GPIO 21 | OLED SDA (pin 4 on module) | I2C | I2C data line |
 | GPIO 22 | OLED SCK/SCL (pin 3 on module) | I2C | I2C clock line — module label is "SCK" |
-| GPIO 25 | Blue LED anode (via 100Ω) | Digital | Access granted — active HIGH |
-| GPIO 27 | Red LED anode (via 100Ω) | Digital | Access denied / server error — active HIGH |
+| GPIO 25 | Green LED anode (via 100Ω) | Digital | Access granted — active HIGH |
+| GPIO 27 | Blue LED anode (via 100Ω) | Digital | Card tap/validation — active HIGH |
 | GPIO 26 | Relay IN | Open-drain | Active LOW; **10kΩ IN→5V (VIN)** required — 3.3V alone cannot turn relay off |
 | GPIO 32 | Active buzzer (+) | Digital | Direct drive only for 3.3V low-current buzzer; active HIGH by default |
 | GPIO 33 | TTP223 OUT/SIG | Digital input | Touch-to-unlock; active HIGH by default |
@@ -107,8 +107,8 @@ Current evidence in `.github/hardware pics`:
 | — | MFRC522 IRQ | — | **Leave unconnected** (not used in this project) |
 | GPIO 8 | — | — | **Unused for now** (strapping pin). OLED **not wired** — firmware `DISPLAY_ENABLED=0` |
 | GPIO 9 | — | — | **Unused for now** (strapping pin + on-board BOOT). OLED **not wired** |
-| GPIO 1 | Blue LED anode (via 100Ω) | Digital | Access granted — active HIGH |
-| GPIO 3 | Red LED anode (via 100Ω) | Digital | Access denied / server error — active HIGH |
+| GPIO 1 | Green LED anode (via 100Ω) | Digital | Access granted — active HIGH |
+| GPIO 3 | Blue LED anode (via 100Ω) | Digital | Card tap/validation — active HIGH |
 | GPIO 2 | Relay IN **or** SG90 SIG | Open-drain / PWM | `ACTUATOR_RELAY`: active LOW + 10kΩ series + 5V pull-up. `ACTUATOR_SERVO`: PWM to SG90 SIG. **Never both** |
 | GPIO 21 | Active buzzer (+) | Digital | Direct drive only for 3.3V low-current buzzer; safe as GPIO because Serial monitor uses native USB CDC |
 | GPIO 20 | TTP223 OUT/SIG | Digital input | Touch-to-unlock; safe as GPIO because Serial monitor uses native USB CDC |
@@ -444,12 +444,12 @@ Reversed diode polarity shorts the supply when the relay closes. Verify the stri
   RFID-RC522 (MFRC522)                  ESP32 DevKit V1 (CP2102)
   ┌─────────────┐                       ┌────[USB Type C]────┐
   │    3.3V     │●──────────────┌──────●│3V3              VIN│●───┐┐             
-  │     RST     │●───────┐      │      ●│GND              GND│●   ││                    ┌──────RED─────┐          
+  │     RST     │●───────┐      │      ●│GND              GND│●   ││                    ┌─────GREEN────┐
   │     GND     │●─ESP32.GND    │      ●│D15              D13│●   ││                 ┌─●|  Anode (+)   |           
   │     IRQ     │●       │      │      ●│D2               D12│●   ││                 │  |  Cathode (-) |●─ESP32.GND
   │    MISO     │●────┐  └──────┼──────●│D4               D14│●   ││                 │  └──────────────┘         
   │    MOSI     │●───┐│         │      ●│RX2              D27│●───┼┼─[R100Ω]─────────┘                      
-  │     SCK     │●──┐││         │      ●│TX2              D26│●───┼┼─────────────┐      ┌─────BLUE─────┐
+  │     SCK     │●──┐││         │      ●│TX2              D26│●───┼┼─────────────┐      ┌──TAP BLUE────┐
   │     SDA     │●──┼┼┼─────────┼──────●│D5               D25│●───┼┼─[R100Ω]─────┼─────●|  Anode (+)   |
   └─────────────┘   └┼┼─────────┼──────●│D18              D33│●   ││             │      |  Cathode (-) |●─ESP32.GND 
                      │└─────────┼──────●│D19              D32│●   ││             │      └──────────────┘
@@ -496,8 +496,8 @@ Stack the **30-pin** ESP32 into the shield socket. Use **G-V-S** headers: **left
 |--------|---------------|---|---|---|-------|
 | MFRC522 | D5, D18, D19, D23, D4 | Any **G** | **3.3V** only | SDA→D5, SCK→D18, MOSI→D23, MISO→D19, RST→D4 | IRQ NC. **Never 5V on V** |
 | OLED | D21, D22 | **G** | **3.3V** | SDA→D21, SCL→D22 | Module labels SCK/SDA |
-| Blue LED | D25 | **G** (cathode) | — | **S** via 100Ω to anode | Active HIGH |
-| Red LED | D27 | **G** (cathode) | — | **S** via 100Ω to anode | Active HIGH |
+| Green LED | D25 | **G** (cathode) | — | **S** via 100Ω to anode | Granted indicator, active HIGH |
+| Blue LED | D27 | **G** (cathode) | — | **S** via 100Ω to anode | Tap/validation indicator, active HIGH |
 | Relay | D26 (right) | **G** → GND | **5V** → VCC | **S** → IN | **10kΩ IN→5V** (shield 5V block or same V rail) |
 
 **Relay on D26 row (right, G-V-S):**
@@ -550,9 +550,9 @@ If SW LED stays on at idle, the pull-up to **5V** is missing or GPIO 26 is still
   │                 │ SCK (pin 3)  │ D22 (GPIO 22) — I2C SCL                     │
   │                 │ SDA (pin 4)  │ D21 (GPIO 21) — I2C SDA                     │
   ├─────────────────┼──────────────┼─────────────────────────────────────────────┤
-  │ Blue LED 5mm    │ Anode (+)    │ D25 (GPIO 25) via 100Ω resistor             │
+  │ Green LED 5mm   │ Anode (+)    │ D25 (GPIO 25) via 100Ω resistor             │
   │                 │ Cathode (-)  │ GND                                         │
-  │ Red LED 5mm     │ Anode (+)    │ D27 (GPIO 27) via 100Ω resistor             │
+  │ Blue LED 5mm    │ Anode (+)    │ D27 (GPIO 27) via 100Ω resistor             │
   │                 │ Cathode (-)  │ GND                                         │
   ├─────────────────┼──────────────┼─────────────────────────────────────────────┤
   │ Relay 1-ch 5V   │ VCC          │ 5V (VIN)                                    │
@@ -630,7 +630,7 @@ Do NOT connect 12V to ESP32, shield logic pins, or MFRC522.
 5. **MFRC522 RST uses GPIO 4** (not GPIO 22) — GPIO 22 is already used by I2C SCL (OLED SCK)
 6. **MFRC522 IRQ pin** — leave unconnected; not needed for polling-mode reads
 7. **OLED pin order on this module: GND (1), VDD (2), SCK (3), SDA (4)** — the "SCK" label on the OLED = I2C SCL; connect to GPIO 22
-8. **Status LEDs**: 100Ω resistor in series with each LED; long leg = anode to resistor/GPIO side; GPIO 25 blue (granted), GPIO 27 red (denied)
+8. **Status LEDs**: 100Ω resistor in series with each LED; long leg = anode to resistor/GPIO side; GPIO 25 green (granted), GPIO 27 blue (tap/validation); both LEDs are off at idle and after denied/error validation
 9. **Relay module**: VCC to 5V (VIN); active LOW on IN; **R1 4.7k pull-up IN→5V** + **R2+R3 4.7k series IN→D26** (verified); direct D26→IN clamps IN to ~3.3V → SW always on
 10. **Relay GPIO 26**: firmware `INPUT` when locked / `OUTPUT` LOW unlock; series resistors on IN→D26 are mandatory with 5V pull-up
 11. **12V solenoid**: **COM→12V+**, **NO→red**, **black→12V−**; keep **12V− isolated from ESP32 GND**; add a flyback diode across the solenoid; **NC unused**

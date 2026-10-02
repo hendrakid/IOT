@@ -277,6 +277,8 @@ void loop()
     Serial.print(F("[RFID] Card UID: "));
     Serial.println(uid);
 
+    setTapLed(true);
+    startBuzzerPattern(1);
     showMessage("Checking...", uid);
 
     ScanResult result = postScan(uid);
