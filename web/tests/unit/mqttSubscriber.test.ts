@@ -17,17 +17,19 @@ describe("processMqttMessage", () => {
       status: "online",
       firmware_version: testFirmware,
       power_source: "adapter",
+      actuator_type: "servo",
       signal_dbm: -58,
     };
 
     await processMqttMessage(topic, Buffer.from(JSON.stringify(payload)));
 
     const { rows } = await pool.query(
-      "SELECT online, firmware_version, power_source FROM access_point_status WHERE access_point_id = $1",
+      "SELECT online, firmware_version, power_source, actuator_type FROM access_point_status WHERE access_point_id = $1",
       [apId]
     );
     expect(rows[0]?.online).toBe(true);
     expect(rows[0]?.firmware_version).toBe(testFirmware);
     expect(rows[0]?.power_source).toBe("adapter");
+    expect(rows[0]?.actuator_type).toBe("servo");
   });
 });

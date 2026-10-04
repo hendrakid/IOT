@@ -29,7 +29,7 @@
 
 // ── Access Point ID ────────────────────────────────────────────────────────────
 // Set sesuai ID access point/pintu di backend
-#define ACCESS_POINT_ID 1
+#define ACCESS_POINT_ID 2
 
 // ── Firmware version (shown in hardware dashboard via MQTT telemetry) ─────────
 #ifndef FIRMWARE_VERSION
@@ -64,7 +64,7 @@
 #define POWER_SOURCE_BATTERY 0
 #define POWER_SOURCE_ADAPTER 1
 #ifndef POWER_SOURCE
-#define POWER_SOURCE POWER_SOURCE_BATTERY
+#define POWER_SOURCE POWER_SOURCE_ADAPTER
 #endif
 
 #if POWER_SOURCE == POWER_SOURCE_ADAPTER
@@ -86,7 +86,8 @@
 #define ACTUATOR_RELAY 0
 #define ACTUATOR_SERVO 1
 #ifndef ACTUATOR_TYPE
-#define ACTUATOR_TYPE ACTUATOR_RELAY
+// #define ACTUATOR_TYPE ACTUATOR_RELAY
+#define ACTUATOR_TYPE ACTUATOR_SERVO
 #endif
 
 // ── Relay (5V 1-channel) — used when ACTUATOR_TYPE == ACTUATOR_RELAY ──────────

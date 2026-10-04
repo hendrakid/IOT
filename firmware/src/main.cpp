@@ -19,6 +19,24 @@ static const uint32_t UID_DISPLAY_DURATION_MS = 3000;
 static uint32_t g_uidShownAt = 0;
 static bool g_showingUID = false;
 
+static void printBootConfig()
+{
+    Serial.println(F("[CONFIG] Runtime configuration:"));
+    Serial.print(F("[CONFIG] power_source="));
+    Serial.println(POWER_SOURCE_NAME);
+    Serial.print(F("[CONFIG] access_point_id="));
+    Serial.println(ACCESS_POINT_ID);
+    Serial.print(F("[CONFIG] actuator_type="));
+#if ACTUATOR_TYPE == ACTUATOR_SERVO
+    Serial.print(F("servo"));
+#else
+    Serial.print(F("relay"));
+#endif
+    Serial.print(F(" ("));
+    Serial.print(ACTUATOR_TYPE);
+    Serial.println(F(")"));
+}
+
 static void grantTouchUnlock()
 {
     Serial.println(F("[TOUCH] Unlock requested"));
@@ -240,6 +258,7 @@ void setup()
 
     showMessage("Smart Lock", "Tap your card...");
     Serial.println(F("[BOOT] Ready."));
+    printBootConfig();
 }
 
 void loop()

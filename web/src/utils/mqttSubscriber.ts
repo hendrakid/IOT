@@ -9,6 +9,7 @@ type ParsedTelemetry = {
   mac_address?: string | null;
   firmware_version?: string | null;
   power_source?: "battery" | "adapter" | null;
+  actuator_type?: "relay" | "servo" | null;
   battery_percent?: number | null;
   signal_dbm?: number | null;
   core_temp_c?: number | null;
@@ -71,6 +72,13 @@ function normalizePayload(topic: string, payload: unknown): ParsedTelemetry | nu
         ? null
         : undefined;
 
+  const actuator_type =
+    obj.actuator_type === "relay" || obj.actuator_type === "servo"
+      ? obj.actuator_type
+      : obj.actuator_type === null
+        ? null
+        : undefined;
+
   return {
     access_point_id,
     online,
@@ -78,6 +86,7 @@ function normalizePayload(topic: string, payload: unknown): ParsedTelemetry | nu
     mac_address: toStrOrNull(obj.mac_address),
     firmware_version: toStrOrNull(obj.firmware_version),
     power_source,
+    actuator_type,
     battery_percent: toNumOrNull(obj.battery_percent),
     signal_dbm: toNumOrNull(obj.signal_dbm),
     core_temp_c: toNumOrNull(obj.core_temp_c),
@@ -163,6 +172,7 @@ export async function processMqttMessage(topic: string, message: Buffer): Promis
       mac_address: normalized.mac_address ?? null,
       firmware_version: normalized.firmware_version ?? null,
       power_source: normalized.power_source ?? null,
+      actuator_type: normalized.actuator_type ?? null,
       battery_percent:
         typeof normalized.battery_percent === "number"
           ? Math.max(0, Math.min(100, Math.round(normalized.battery_percent)))

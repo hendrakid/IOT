@@ -46,6 +46,11 @@ static bool publishTelemetry()
     doc["mac_address"] = formatMacAddress();
     doc["firmware_version"] = FIRMWARE_VERSION;
     doc["power_source"] = POWER_SOURCE_NAME;
+#if ACTUATOR_TYPE == ACTUATOR_SERVO
+    doc["actuator_type"] = "servo";
+#else
+    doc["actuator_type"] = "relay";
+#endif
     doc["signal_dbm"] = WiFi.RSSI();
 #ifdef ESP32
     doc["core_temp_c"] = static_cast<float>(temperatureRead());

@@ -13,6 +13,24 @@ static const uint32_t LED_RESULT_DISPLAY_MS = ACTUATOR_UNLOCK_DURATION_MS;
 static bool g_showingResult = false;
 static uint32_t g_resultShownAt = 0;
 
+static void printBootConfig()
+{
+  Serial.println(F("[CONFIG] Runtime configuration:"));
+  Serial.print(F("[CONFIG] power_source="));
+  Serial.println(POWER_SOURCE_NAME);
+  Serial.print(F("[CONFIG] access_point_id="));
+  Serial.println(ACCESS_POINT_ID);
+  Serial.print(F("[CONFIG] actuator_type="));
+#if ACTUATOR_TYPE == ACTUATOR_SERVO
+  Serial.print(F("servo"));
+#else
+  Serial.print(F("relay"));
+#endif
+  Serial.print(F(" ("));
+  Serial.print(ACTUATOR_TYPE);
+  Serial.println(F(")"));
+}
+
 static void grantAccess()
 {
   unlockActuator(ACTUATOR_UNLOCK_DURATION_MS);
@@ -34,6 +52,7 @@ void setup()
   initBuzzer();
   initTouchUnlock();
   Serial.println(F("[BOOT] Ready."));
+  printBootConfig();
 }
 
 void loop()

@@ -172,6 +172,8 @@
                             x-text="'Baterai ' + ap.status.battery_percent + '%'"></span>
                           <span x-show="ap.status.power_source === 'adapter'">Adapter</span>
                           <span x-show="!ap.status.power_source">Sumber daya belum dilaporkan</span>
+                          <span x-show="ap.status.actuator_type" x-text="'Actuator: ' + ap.status.actuator_type"></span>
+                          <span x-show="!ap.status.actuator_type">Actuator belum dilaporkan</span>
                           <span x-show="ap.status.signal_dbm != null" x-text="ap.status.signal_dbm + ' dBm'"></span>
                           <span x-show="ap.status.core_temp_c != null" x-text="ap.status.core_temp_c + '°C'"></span>
                           <span x-show="ap.status.ip_address" x-text="ap.status.ip_address"></span>
