@@ -203,7 +203,20 @@ Dokumen ini mencatat masalah yang pernah ditemui saat perakitan, pengujian, dan 
 
 ---
 
-## 12) Hardware Management menampilkan device offline dan MQTT gagal dengan `state=-2`
+## 12) Perilaku penutupan servo berdasarkan reed switch
+
+Pada mode servo, reed closed memulai timer penutupan default 3 detik. Jika pintu tetap tertutup, servo kembali ke posisi lock saat timer selesai. Jika pintu dibuka sebelum timer selesai, timer dibatalkan dan servo menunggu sampai reed mendeteksi pintu tertutup lagi.
+
+- Lepas blue LED dari GPIO 3 pada ESP32-C3, atau GPIO 27 pada ESP32 DevKit.
+- Hubungkan satu kabel reed ke pin tersebut dan kabel lainnya ke GND.
+- Konfigurasi default memakai `INPUT_PULLUP`, sehingga kontak tertutup dibaca `LOW`.
+- Pastikan magnet cukup dekat dengan reed switch dan gunakan multimeter untuk memastikan tipe NO/NC.
+- Untuk pintu yang tetap tertutup, Serial Monitor menampilkan `[REED] Door stayed closed; close timeout reached`.
+- Untuk pintu yang dibuka, Serial Monitor menampilkan `[REED] Door open`, lalu penguncian setelah `[REED] Door closed`.
+
+Jika reed tetap terbaca tertutup, periksa posisi magnet, sambungan GND, dan apakah switch yang dibeli bertipe normally-open atau normally-closed.
+
+## 13) Hardware Management menampilkan device offline dan MQTT gagal dengan `state=-2`
 
 ### Gejala
 - RFID tetap bisa ditap dan data muncul di **Real-time Access Logs**.

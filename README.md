@@ -39,7 +39,7 @@ This project is an IoT-based Smart Lock and Attendance system using RFID. It fea
 | Microcontroller| ESP32 DevKit V1 (Arduino/PlatformIO)        |
 | RFID Module    | MFRC522 (SPI)                              |
 | Display        | OLED 0.96" 128x64 SSD1306 (I2C)             |
-| Actuator       | 5V Relay Module                             |
+| Actuator       | 5V Relay Module or SG90 servo              |
 | Backend API    | Node.js + Express.js                        |
 | Database       | PostgreSQL                                  |
 | Web Dashboard  | HTML/CSS/JS (Alpine.js + Tailwind CSS)      |
@@ -75,6 +75,7 @@ The selected PlatformIO environment determines the target board, source file, av
 | OLED | Enabled | Disabled | Not used |
 | Status feedback | OLED, LEDs, buzzer, Serial | LEDs, buzzer, Serial | LEDs, buzzer, Serial |
 | Actuator default pin | GPIO 26 | GPIO 2 | GPIO 2 |
+| Servo door-close input | GPIO 27 (blue LED pin) | GPIO 3 (blue LED pin) | GPIO 3 (blue LED pin) |
 | Touch unlock | Enabled | Enabled | Enabled, without server validation |
 | Network/API failure behavior | Check local whitelist; deny if not listed | Check local whitelist; deny if not listed | Not applicable; works offline |
 
@@ -88,6 +89,8 @@ pio run -e esp32-c3-standalone
 ```
 
 The `esp32dev` and `esp32-c3-supermini` environments are online versions: RFID -> WiFi -> API -> access decision. If the API is unreachable or returns an error, they fall back to the local whitelist in `firmware/include/whitelist.h`; a UID not listed there remains denied. The `esp32-c3-standalone` environment always uses that local whitelist and does not send attendance data to the dashboard.
+
+When `ACTUATOR_TYPE` is `ACTUATOR_SERVO`, a closed reed starts the configured close timeout (default 3 seconds). If the door opens before the timeout, the timer is canceled and the servo returns to locked only when the reed detects closed again. If the door stays closed, the servo locks when the timeout expires. The reed switch uses the former blue LED pin (GPIO 3 on ESP32-C3, GPIO 27 on ESP32 DevKit); disconnect the blue LED and wire the reed between that GPIO and GND.
 
 #### Firmware deploy checklist
 1. Find your PC **LAN IP** (`ipconfig` on Windows) — ESP32 cannot use `localhost`.

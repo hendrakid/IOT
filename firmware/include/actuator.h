@@ -38,28 +38,29 @@
 #endif
 
 static Servo g_servo;
-static uint32_t g_actuatorUnlockUntil = 0;
 static bool g_actuatorIsUnlocked = false;
 
 inline void lockActuator()
 {
     g_servo.write(SERVO_ANGLE_LOCKED);
     g_actuatorIsUnlocked = false;
-    g_actuatorUnlockUntil = 0;
     Serial.print(F("[SERVO] LOCK angle="));
     Serial.println(SERVO_ANGLE_LOCKED);
 }
 
 inline void unlockActuator(uint32_t durationMs)
 {
+    (void)durationMs;
     g_servo.write(SERVO_ANGLE_UNLOCKED);
     g_actuatorIsUnlocked = true;
-    g_actuatorUnlockUntil = millis() + durationMs;
     Serial.print(F("[SERVO] UNLOCK angle="));
     Serial.print(SERVO_ANGLE_UNLOCKED);
-    Serial.print(F(" for "));
-    Serial.print(durationMs);
-    Serial.println(F(" ms"));
+    Serial.println(F(" until reed switch reports door closed"));
+}
+
+inline bool isActuatorUnlocked()
+{
+    return g_actuatorIsUnlocked;
 }
 
 inline void initActuator()
@@ -67,7 +68,6 @@ inline void initActuator()
     g_servo.attach(SERVO_PIN);
     g_servo.write(SERVO_ANGLE_LOCKED);
     g_actuatorIsUnlocked = false;
-    g_actuatorUnlockUntil = 0;
     Serial.print(F("[SERVO] Init OK (locked). Pin=GPIO"));
     Serial.print(SERVO_PIN);
     Serial.print(F(" locked="));
@@ -76,18 +76,8 @@ inline void initActuator()
     Serial.println(SERVO_ANGLE_UNLOCKED);
 }
 
-/** Call every loop() — auto-lock when unlock duration expires. */
-inline void loopActuator()
-{
-    if (!g_actuatorIsUnlocked)
-        return;
-
-    if (millis() >= g_actuatorUnlockUntil)
-    {
-        lockActuator();
-        Serial.println(F("[SERVO] Auto-lock"));
-    }
-}
+/** Servo closing is triggered by the reed switch, not by a timer. */
+inline void loopActuator() {}
 
 #else
 

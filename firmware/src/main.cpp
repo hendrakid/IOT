@@ -12,6 +12,7 @@
 #include "buzzer.h"
 #include "touch_unlock.h"
 #include "whitelist.h"
+#include "reed_switch.h"
 
 // How long (ms) to show the result before returning to idle screen
 static const uint32_t UID_DISPLAY_DURATION_MS = 3000;
@@ -41,6 +42,9 @@ static void grantTouchUnlock()
 {
     Serial.println(F("[TOUCH] Unlock requested"));
     unlockActuator(ACTUATOR_UNLOCK_DURATION_MS);
+#if ACTUATOR_TYPE == ACTUATOR_SERVO
+    armReedCloseMonitor();
+#endif
     setAccessLeds(true);
     startBuzzerPattern(2);
     showMessage("Access Granted", "Touch unlock");
@@ -247,6 +251,9 @@ void setup()
 
     initLeds();
     initActuator();
+#if ACTUATOR_TYPE == ACTUATOR_SERVO
+    initReedSwitch();
+#endif
 #if POWER_SOURCE == POWER_SOURCE_BATTERY
     initBatteryMonitor();
 #endif
@@ -267,6 +274,13 @@ void loop()
     loopMqtt();
     loopRfid();
     loopActuator();
+#if ACTUATOR_TYPE == ACTUATOR_SERVO
+    if (consumeReedCloseRequest())
+    {
+        lockActuator();
+        Serial.println(F("[SERVO] Door closed by reed switch"));
+    }
+#endif
     loopBuzzer();
 
     if (consumeTouchUnlockPressed())
@@ -284,7 +298,9 @@ void loop()
         {
             g_showingUID = false;
             clearLeds();
+#if ACTUATOR_TYPE == ACTUATOR_RELAY
             lockActuator();
+#endif
             showMessage("Smart Lock", "Tap your card...");
         }
         return;
@@ -317,6 +333,9 @@ void loop()
         if (whitelistAllowed)
         {
             unlockActuator(ACTUATOR_UNLOCK_DURATION_MS);
+#if ACTUATOR_TYPE == ACTUATOR_SERVO
+            armReedCloseMonitor();
+#endif
             showMessage("Offline Access", "Whitelist OK");
         }
         else
@@ -333,7 +352,12 @@ void loop()
         Serial.print(F("[RFID] Access: "));
         Serial.println(result.access ? F("GRANTED") : F("DENIED"));
         if (result.access)
+        {
             unlockActuator(ACTUATOR_UNLOCK_DURATION_MS);
+#if ACTUATOR_TYPE == ACTUATOR_SERVO
+            armReedCloseMonitor();
+#endif
+        }
         else
             lockActuator();
         setAccessLeds(result.access);

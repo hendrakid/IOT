@@ -61,11 +61,11 @@ applyTo: "firmware/**"
 ## Actuator Control (GPIO)
 
 - `initActuator()` in `setup()` after `initLeds()` — default **locked** at boot
-- `loopActuator()` at start of `loop()` (with `loopMqtt()`) — `millis()` auto-lock after `ACTUATOR_UNLOCK_DURATION_MS` (alias of `RELAY_UNLOCK_DURATION_MS`)
+- `loopActuator()` at start of `loop()` (with `loopMqtt()`); relay uses `millis()` auto-lock, while servo closing is triggered by the debounced reed input
 - `unlockActuator(duration)` on `result.access == true`; `lockActuator()` on denied, server error, and idle return
 - Select backend in `config.h`: `ACTUATOR_TYPE` = `ACTUATOR_RELAY` (default) or `ACTUATOR_SERVO`
 - Relay: GPIO 26 / C3 GPIO 2, active LOW (`RELAY_ACTIVE_LOW`); **4.7k–10kΩ pull-up IN→5V**; locked = `pinMode(INPUT)`, unlock = `OUTPUT` + LOW
-- Servo (C3 POC, SG90): GPIO 2 PWM via ESP32Servo; `SERVO_ANGLE_LOCKED` / `SERVO_ANGLE_UNLOCKED`; **no relay or solenoid**; stay attached after move
+- Servo (C3 POC, SG90): GPIO 2 PWM via ESP32Servo; `SERVO_ANGLE_LOCKED` / `SERVO_ANGLE_UNLOCKED`; **no relay or solenoid**; stays unlocked until the reed switch on the former blue LED pin reports door closed
 - Fail to locked for denied or unlisted UIDs; API errors use the local whitelist fallback. Never use `delay()` for unlock timing
 
 ## Error Handling

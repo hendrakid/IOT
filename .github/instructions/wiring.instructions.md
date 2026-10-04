@@ -27,6 +27,7 @@ Current evidence in `.github/hardware pics`:
 - Active buzzer 2-pin — **Pending Hardware Evidence**
 - TTP223 touch sensor module — **Pending Hardware Evidence**
 - SG90 micro servo 5V — **Pending Hardware Evidence**
+- Magnetic switch sensor alarm reed 2-wire — **Verified from user-provided photo**; two-wire magnetic contact with separate sensor and magnet
 
 ## Component Specifications
 
@@ -45,6 +46,7 @@ Current evidence in `.github/hardware pics`:
 | Active buzzer 2-pin | Pending photo evidence | Digital GPIO | 3.3V preferred; 5V only with transistor driver | Access feedback: 2 beeps granted, 1 beep denied |
 | Touch Sensor | TTP223-style module | Digital GPIO | 3.3V | Touch-to-unlock input; OUT is active HIGH by default |
 | Servo (POC) | SG90 micro servo | **PWM GPIO** | 5V VCC; 3.3V signal OK | Door open/close; **Pending Hardware Evidence**. Used when `ACTUATOR_TYPE=ACTUATOR_SERVO`. Do **not** wire relay or solenoid. |
+| Reed switch | Magnetic alarm contact, 2-wire | Digital input | Dry contact | Mount the sensor and magnet on the door/frame; GPIO uses internal pull-up and the contact connects to GND when closed |
 
 ## ESP32 Pin Capabilities & Constraints
 
@@ -85,7 +87,7 @@ Current evidence in `.github/hardware pics`:
 | GPIO 21 | OLED SDA (pin 4 on module) | I2C | I2C data line |
 | GPIO 22 | OLED SCK/SCL (pin 3 on module) | I2C | I2C clock line — module label is "SCK" |
 | GPIO 25 | Green LED anode (via 100Ω) | Digital | Access granted — active HIGH |
-| GPIO 27 | Blue LED anode (via 100Ω) | Digital | Card tap/validation — active HIGH |
+| GPIO 27 | Blue LED anode (via 100Ω), or reed switch in servo mode | Digital | Blue LED is disconnected in servo mode; reed closed = LOW with internal pull-up |
 | GPIO 26 | Relay IN | Open-drain | Active LOW; **10kΩ IN→5V (VIN)** required — 3.3V alone cannot turn relay off |
 | GPIO 32 | Active buzzer (+) | Digital | Direct drive only for 3.3V low-current buzzer; active HIGH by default |
 | GPIO 33 | TTP223 OUT/SIG | Digital input | Touch-to-unlock; active HIGH by default |
@@ -108,7 +110,7 @@ Current evidence in `.github/hardware pics`:
 | GPIO 8 | — | — | **Unused for now** (strapping pin). OLED **not wired** — firmware `DISPLAY_ENABLED=0` |
 | GPIO 9 | — | — | **Unused for now** (strapping pin + on-board BOOT). OLED **not wired** |
 | GPIO 1 | Green LED anode (via 100Ω) | Digital | Access granted — active HIGH |
-| GPIO 3 | Blue LED anode (via 100Ω) | Digital | Card tap/validation — active HIGH |
+| GPIO 3 | Blue LED anode (via 100Ω), or reed switch in servo mode | Digital | Blue LED is disconnected in servo mode; reed closed = LOW with internal pull-up |
 | GPIO 2 | Relay IN **or** SG90 SIG | Open-drain / PWM | `ACTUATOR_RELAY`: active LOW + 10kΩ series + 5V pull-up. `ACTUATOR_SERVO`: PWM to SG90 SIG. **Never both** |
 | GPIO 21 | Active buzzer (+) | Digital | Direct drive only for 3.3V low-current buzzer; safe as GPIO because Serial monitor uses native USB CDC |
 | GPIO 20 | TTP223 OUT/SIG | Digital input | Touch-to-unlock; safe as GPIO because Serial monitor uses native USB CDC |
@@ -184,15 +186,15 @@ flowchart LR
 
 **Power:** SG90 stall current is roughly 0.5–0.8A and can brown-out the ESP32-C3 if VCC is taken from the same USB 5V rail as the MCU. Prefer a **separate 5V** for the servo with GND tied to ESP32 GND. ESP32 3.3V PWM on SIG is normally enough for SG90.
 
-**Fail-safe:** boot writes `SERVO_ANGLE_LOCKED`; denied / server error / idle return call `lockActuator()`. Auto-close after `ACTUATOR_UNLOCK_DURATION_MS` via `loopActuator()` (no `delay()`).
+**Closing behavior:** boot writes `SERVO_ANGLE_LOCKED`; denied and server-error paths call `lockActuator()`. After an authorized unlock, a reed-closed state starts `SERVO_REED_CLOSE_TIMEOUT_MS` (default 3 seconds). If the door opens before the timeout, the timer is canceled and the servo waits for a debounced reed-closed transition. If the door stays closed, the servo locks when the timeout expires.
 
 #### Bench check (servo POC)
 
 | Step | Expected |
 |------|----------|
 | Boot / idle | Horn at locked angle (default 0°) |
-| Access granted or touch unlock | Horn moves to unlocked angle (default 90°) for ~3s |
-| After auto-lock | Horn returns to locked angle |
+| Access granted or touch unlock while reed is closed | Horn moves to unlocked angle, then returns to locked after the close timeout |
+| Door opens, then reed switch closes | Horn returns to locked angle once after the close transition |
 | Denied / server error | Horn stays at locked angle |
 
 ## Module Pinout Reference (ASCII)

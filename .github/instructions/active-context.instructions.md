@@ -16,6 +16,7 @@ Active work items:
 - Rate limiting on `POST /api/scan` — implemented (`express-rate-limit`, `SCAN_RATE_LIMIT_*` env)
 - Relay control implemented — GPIO 26, `include/relay.h`, unlock on access granted
 - Servo actuator POC (ESP32-C3) — `include/actuator.h`, `ACTUATOR_TYPE` in `config.h`; GPIO 2 PWM; no relay/solenoid when servo is selected
+- Servo reed close — servo mode stays unlocked after grant and locks on debounced reed close; blue LED pin is reserved for reed input
 - OTA firmware management — planned, not implemented
 - CI/CD pipeline — not yet created (`.github/workflows/` missing)
 - Hardware docs (`docs/`) — folder empty, schematics not yet added
@@ -73,6 +74,8 @@ Active work items:
 | Actuator selected at compile time (`ACTUATOR_TYPE`) | Relay remains default; SG90 servo is C3 POC only |
 | OLED omitted on ESP32-C3 (`DISPLAY_ENABLED=0`) | Too few GPIOs; GPIO8/9 stay free. DevKit V1 still uses SSD1306. Status via Serial/LED/buzzer |
 | Servo C3 GPIO 2, 0° locked / 90° unlocked | Same pin as relay IN so both cannot be wired together |
+| Servo reed input | Former blue LED pin: GPIO 3 on C3 / GPIO 27 on DevKit; normally-open switch to GND with `INPUT_PULLUP` |
+| Servo closing behavior | No timed auto-lock; lock on debounced reed closed event, with explicit boot/denied/error locking retained |
 | Fail-to-locked on any error | Security — unknown state must not grant access |
 | Card UIDs stored as UPPERCASE hex | ESP32 and API both normalize to uppercase |
 

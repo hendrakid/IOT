@@ -66,6 +66,7 @@ description: "Use when asking about project progress, current status, completed 
 
 - [x] **Relay integration** — `include/relay.h`, GPIO 26, unlock on access granted, fail-to-locked on error
 - [x] **Servo actuator POC (ESP32-C3)** — `include/actuator.h`, `ACTUATOR_TYPE` in `config.h`; GPIO 2 SG90; relay/solenoid omitted on servo wiring
+- [x] **Servo reed-switch closing** — former blue LED GPIO is a debounced door-closed input; servo remains unlocked until reed close
 - [ ] **Unit tests (web)** — `hardwareBroadcast`, `staleStatusJob` (done: `scanController`, `schemas`, `scanBroadcast`, `sseEnv`, `scanRateLimit`, `mqttSubscriber`)
 
 ### Prioritas rendah (production & polish)

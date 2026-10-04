@@ -131,6 +131,28 @@
 #define SERVO_ANGLE_UNLOCKED 180
 #endif
 
+// ── Reed switch door-closed input — used with the servo actuator ─────────────
+// The former blue LED pin is reserved for the two-wire reed switch in servo mode.
+#ifndef REED_SWITCH_PIN
+#if CONFIG_IDF_TARGET_ESP32C3
+#define REED_SWITCH_PIN 3
+#else
+#define REED_SWITCH_PIN 27
+#endif
+#endif
+
+#ifndef REED_SWITCH_ACTIVE_LOW
+#define REED_SWITCH_ACTIVE_LOW 1
+#endif
+
+#ifndef REED_SWITCH_DEBOUNCE_MS
+#define REED_SWITCH_DEBOUNCE_MS 50
+#endif
+
+#ifndef SERVO_REED_CLOSE_TIMEOUT_MS
+#define SERVO_REED_CLOSE_TIMEOUT_MS ACTUATOR_UNLOCK_DURATION_MS
+#endif
+
 // ── Active buzzer feedback ───────────────────────────────────────────────────
 #ifndef BUZZER_PIN
 #if CONFIG_IDF_TARGET_ESP32C3

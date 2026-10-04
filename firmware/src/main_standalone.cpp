@@ -6,6 +6,7 @@
 #include "buzzer.h"
 #include "touch_unlock.h"
 #include "whitelist.h"
+#include "reed_switch.h"
 
 // How long (ms) to hold the LED result before accepting the next card tap.
 static const uint32_t LED_RESULT_DISPLAY_MS = ACTUATOR_UNLOCK_DURATION_MS;
@@ -34,6 +35,9 @@ static void printBootConfig()
 static void grantAccess()
 {
   unlockActuator(ACTUATOR_UNLOCK_DURATION_MS);
+#if ACTUATOR_TYPE == ACTUATOR_SERVO
+  armReedCloseMonitor();
+#endif
   setAccessLeds(true);
   startBuzzerPattern(2);
   g_showingResult = true;
@@ -49,6 +53,9 @@ void setup()
   initRfid();
   initLeds();
   initActuator();
+#if ACTUATOR_TYPE == ACTUATOR_SERVO
+  initReedSwitch();
+#endif
   initBuzzer();
   initTouchUnlock();
   Serial.println(F("[BOOT] Ready."));
@@ -59,6 +66,13 @@ void loop()
 {
   loopRfid();
   loopActuator();
+#if ACTUATOR_TYPE == ACTUATOR_SERVO
+  if (consumeReedCloseRequest())
+  {
+    lockActuator();
+    Serial.println(F("[SERVO] Door closed by reed switch"));
+  }
+#endif
   loopBuzzer();
 
   if (consumeTouchUnlockPressed())
