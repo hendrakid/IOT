@@ -5,6 +5,7 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include "config.h"
+#include "battery_monitor.h"
 
 static WiFiClient g_wifiClient;
 static PubSubClient g_mqttClient(g_wifiClient);
@@ -44,9 +45,15 @@ static bool publishTelemetry()
     doc["ip_address"] = WiFi.localIP().toString();
     doc["mac_address"] = formatMacAddress();
     doc["firmware_version"] = FIRMWARE_VERSION;
+    doc["power_source"] = POWER_SOURCE_NAME;
     doc["signal_dbm"] = WiFi.RSSI();
 #ifdef ESP32
     doc["core_temp_c"] = static_cast<float>(temperatureRead());
+#endif
+#if POWER_SOURCE == POWER_SOURCE_BATTERY
+    const float batteryVoltage = readBatteryVoltage();
+    doc["battery_voltage"] = batteryVoltage;
+    doc["battery_percent"] = batteryPercentFromVoltage(batteryVoltage);
 #endif
 
     String payload;

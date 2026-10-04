@@ -6,6 +6,7 @@
 #include "display.h"
 #include "rfid.h"
 #include "mqtt.h"
+#include "battery_monitor.h"
 #include "led.h"
 #include "actuator.h"
 #include "buzzer.h"
@@ -228,6 +229,9 @@ void setup()
 
     initLeds();
     initActuator();
+#if POWER_SOURCE == POWER_SOURCE_BATTERY
+    initBatteryMonitor();
+#endif
     initBuzzer();
     initTouchUnlock();
 

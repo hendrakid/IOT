@@ -60,6 +60,19 @@
 #define MQTT_PASSWORD ""
 #endif
 
+// Fixed power source for this device. Set per firmware build/device.
+#define POWER_SOURCE_BATTERY 0
+#define POWER_SOURCE_ADAPTER 1
+#ifndef POWER_SOURCE
+#define POWER_SOURCE POWER_SOURCE_BATTERY
+#endif
+
+#if POWER_SOURCE == POWER_SOURCE_ADAPTER
+#define POWER_SOURCE_NAME "adapter"
+#else
+#define POWER_SOURCE_NAME "battery"
+#endif
+
 // Publish telemetry every N ms (keep under 2 min for dashboard online threshold)
 #define MQTT_TELEMETRY_INTERVAL_MS 60000
 
