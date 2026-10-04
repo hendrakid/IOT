@@ -46,9 +46,10 @@
 #define MQTT_BROKER_PORT 1883
 #endif
 
-// Unique client id per device (change if running multiple ESP32 on same broker)
-#ifndef MQTT_CLIENT_ID
-#define MQTT_CLIENT_ID "smartlock-ap-1"
+// Client IDs must be unique. The final ID is generated as
+// MQTT_CLIENT_ID_PREFIX + ACCESS_POINT_ID, e.g. smartlock-ap-1.
+#ifndef MQTT_CLIENT_ID_PREFIX
+#define MQTT_CLIENT_ID_PREFIX "smartlock-ap-"
 #endif
 
 // Optional broker credentials (leave empty if broker allows anonymous)

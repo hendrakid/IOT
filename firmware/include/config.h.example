@@ -41,8 +41,9 @@
 #define MQTT_BROKER_PORT 1883
 #endif
 
-#ifndef MQTT_CLIENT_ID
-#define MQTT_CLIENT_ID "smartlock-ap-1"
+// The firmware appends ACCESS_POINT_ID so every device gets a unique MQTT ID.
+#ifndef MQTT_CLIENT_ID_PREFIX
+#define MQTT_CLIENT_ID_PREFIX "smartlock-ap-"
 #endif
 
 #ifndef MQTT_USERNAME

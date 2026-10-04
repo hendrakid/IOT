@@ -12,6 +12,7 @@ static PubSubClient g_mqttClient(g_wifiClient);
 
 static char g_telemetryTopic[48];
 static char g_statusTopic[48];
+static char g_mqttClientId[40];
 static uint32_t g_lastTelemetryMs = 0;
 static uint32_t g_lastMqttReconnectMs = 0;
 
@@ -31,6 +32,8 @@ static void buildMqttTopics()
              "smartlock/ap/%d/telemetry", ACCESS_POINT_ID);
     snprintf(g_statusTopic, sizeof(g_statusTopic),
              "smartlock/ap/%d/status", ACCESS_POINT_ID);
+    snprintf(g_mqttClientId, sizeof(g_mqttClientId),
+             "%s%d", MQTT_CLIENT_ID_PREFIX, ACCESS_POINT_ID);
 }
 
 static bool publishTelemetry()
@@ -97,6 +100,8 @@ static bool connectMqtt()
     Serial.print(MQTT_BROKER_HOST);
     Serial.print(':');
     Serial.println(MQTT_BROKER_PORT);
+    Serial.print(F("[MQTT] Client ID: "));
+    Serial.println(g_mqttClientId);
 
     const bool hasAuth = strlen(MQTT_USERNAME) > 0;
     bool connected = false;
@@ -104,7 +109,7 @@ static bool connectMqtt()
     if (hasAuth)
     {
         connected = g_mqttClient.connect(
-            MQTT_CLIENT_ID,
+            g_mqttClientId,
             MQTT_USERNAME,
             MQTT_PASSWORD,
             g_statusTopic,
@@ -115,7 +120,7 @@ static bool connectMqtt()
     else
     {
         connected = g_mqttClient.connect(
-            MQTT_CLIENT_ID,
+            g_mqttClientId,
             g_statusTopic,
             0,
             false,
